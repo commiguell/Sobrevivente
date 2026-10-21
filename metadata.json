@@ -1,0 +1,8 @@
+{
+  "name": "Raiz Selvagem — Sobrevivencialismo & Comunidade",
+  "description": "Plataforma portuguesa de sobrevivencialismo ético, autonomia na natureza, biblioteca de manuais práticos e rede social de campo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
