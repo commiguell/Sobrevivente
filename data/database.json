@@ -1,0 +1,42 @@
+{
+  "users": [
+    {
+      "id": "usr_admin_default",
+      "name": "Gonçalo Alvim",
+      "email": "goncalo@sobrevivente.eu",
+      "passwordHash": "4d50dcd00d87887827129983c8c53139842a972e80f94c31bcd11cd5af8131491b1b263b4a281f676f17341d136440358b3b178a787685168612a4a2a780d491",
+      "salt": "salt_seed_123",
+      "region": "Norte Atlântico & Gerês",
+      "experienceLevel": "Avançado",
+      "createdAt": "2026-10-22T00:19:31.097Z",
+      "lastLoginAt": "2026-10-22T00:19:31.097Z",
+      "badges": [
+        "Especialista em Nós",
+        "Explorador de 100km",
+        "Guardião da Água"
+      ],
+      "xp": 730
+    },
+    {
+      "id": "usr_1792628371099_9c4914ea",
+      "name": "Tiago Mendonça",
+      "email": "tiago@sobrevivente.eu",
+      "passwordHash": "5846e7039660e036d1c6bfe29fedcae0ae9152b45410890ad5f3d08ee213abd9e15b73e51e721a75834d3349c51f3bd4cfc19eefce19047e25d606faf9076336",
+      "salt": "f1b003a72a71eb553ceabceff79bc110",
+      "region": "Serra da Estrela & Beiras",
+      "experienceLevel": "Intermédio",
+      "createdAt": "2026-10-22T00:19:31.099Z",
+      "lastLoginAt": "2026-10-22T00:19:37.632Z",
+      "badges": [
+        "Iniciado da Raiz",
+        "Sentinela 72 Horas"
+      ],
+      "xp": 150
+    }
+  ],
+  "meta": {
+    "version": "1.0.0",
+    "updatedAt": "2026-10-22T00:19:37.632Z",
+    "totalRegistered": 2
+  }
+}

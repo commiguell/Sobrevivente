@@ -55,15 +55,20 @@ import {
   BadgeItem,
 } from './data/raizData';
 import { BushcraftIllustration } from './components/BotanicalIllustrations';
+import { AuthModal, AuthUser } from './components/AuthModal';
 
 export default function App() {
   // Navigation & Modal States
   const [activeMobileTab, setActiveMobileTab] = useState<'inicio' | 'manuais' | 'comunidade' | 'kit' | 'perfil'>('inicio');
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'entrar' | 'registar'>('entrar');
-  const [authEmail, setAuthEmail] = useState('');
-  const [authName, setAuthName] = useState('');
-  const [loggedUser, setLoggedUser] = useState<{ name: string; region: string } | null>(null);
+  const [loggedUser, setLoggedUser] = useState<AuthUser | null>(() => {
+    try {
+      const saved = localStorage.getItem('sobrevivente_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   // Category & Manuals Filtering
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('todas');
@@ -489,14 +494,16 @@ export default function App() {
          ===================================================================== */}
       <header className="sticky top-0 z-40 glass-nav">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-8 h-16 md:h-20 flex items-center justify-between gap-8">
-          {/* Zone 1: Brand Title (Single line wordmark with leaf/compass icon) */}
+          {/* Zone 1: Brand Title (Single line wordmark with site medallion logo) */}
           <a
             href="#inicio"
-            className="flex items-center gap-3 text-[#E6D7C3] hover:opacity-90 transition-opacity whitespace-nowrap shrink-0"
+            className="flex items-center gap-3 text-[#E6D7C3] hover:opacity-95 transition-opacity whitespace-nowrap shrink-0 group"
           >
-            <span className="w-9 h-9 rounded-full bg-[#5A6B44]/30 border border-white/15 flex items-center justify-center text-[#A8B88A]">
-              <Compass className="w-5 h-5" strokeWidth={1.5} />
-            </span>
+            <img
+              src="/assets/aistudio/logo_7a6369a0.png"
+              alt="Sobrevivente.eu Emblema"
+              className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover border border-[#E6D7C3]/30 shadow-md shadow-black/40 group-hover:scale-105 transition-transform"
+            />
             <span className="font-display text-xl sm:text-2xl font-semibold tracking-tight text-[#E6D7C3]">
               Sobrevivente.eu
             </span>
@@ -534,9 +541,10 @@ export default function App() {
           <div className="flex items-center shrink-0">
             <button
               onClick={() => setAuthModalOpen(true)}
-              className="px-5 py-2.5 rounded-full text-sm font-medium bg-[#5A6B44]/40 hover:bg-[#5A6B44]/65 text-[#E6D7C3] border border-white/15 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              className="px-5 py-2.5 rounded-full text-sm font-medium bg-[#5A6B44]/40 hover:bg-[#5A6B44]/65 text-[#E6D7C3] border border-white/15 transition-colors whitespace-nowrap shrink-0 cursor-pointer flex items-center gap-2"
             >
-              {loggedUser ? loggedUser.name : 'Entrar'}
+              <User className="w-4 h-4 text-[#A8B88A]" strokeWidth={1.5} />
+              <span>{loggedUser ? loggedUser.name : 'Entrar / Inscrição'}</span>
             </button>
           </div>
         </div>
@@ -563,11 +571,14 @@ export default function App() {
                 Biblioteca de Campo · Rede Social de Autonomia · Portugal
               </p>
 
+              {/* Title in 3 separate lines as requested */}
               <h1
-                className="font-display font-semibold text-[#E6D7C3] tracking-tight leading-[1.08]"
-                style={{ fontSize: 'clamp(2.35rem, 4.2vw, 3.85rem)' }}
+                className="font-display font-semibold text-[#E6D7C3] tracking-tight leading-[1.12]"
+                style={{ fontSize: 'clamp(2.5rem, 4.4vw, 4.1rem)' }}
               >
-                Prepara-te. Adapta-te. Sobrevive.
+                <span className="block">Prepara-te.</span>
+                <span className="block text-[#A8B88A]">Adapta-te.</span>
+                <span className="block text-[#C85A3E]">Sobrevive.</span>
               </h1>
 
               <p className="text-base sm:text-lg text-[#E6D7C3]/85 leading-relaxed max-w-[60ch] font-normal">
@@ -579,10 +590,7 @@ export default function App() {
               {/* Primary Pill CTA + Secondary Sage Button */}
               <div className="flex flex-wrap items-center gap-4">
                 <button
-                  onClick={() => {
-                    setAuthMode('registar');
-                    setAuthModalOpen(true);
-                  }}
+                  onClick={() => setAuthModalOpen(true)}
                   className="px-7 py-3.5 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-[#E6D7C3] font-medium text-sm sm:text-base transition-all shadow-lg shadow-black/25 flex items-center gap-2.5 whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <span>Juntar-me à comunidade</span>
@@ -2074,8 +2082,12 @@ export default function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
             <div className="space-y-3">
-              <div className="flex items-center gap-2.5">
-                <Compass className="w-5 h-5 text-[#A8B88A]" strokeWidth={1.5} />
+              <div className="flex items-center gap-3">
+                <img
+                  src="/assets/aistudio/logo_7a6369a0.png"
+                  alt="Sobrevivente.eu Emblema"
+                  className="w-8 h-8 rounded-full object-cover border border-[#E6D7C3]/25"
+                />
                 <span className="font-display text-xl font-semibold text-[#E6D7C3]">
                   Sobrevivente.eu
                 </span>
@@ -2290,165 +2302,23 @@ export default function App() {
       )}
 
       {/* =====================================================================
-          MODAL 2: ENTRAR / PASSAPORTE DE CAMPO & PERFIL COM INSÍGNIAS
+          MODAL 2: POPUP DE LOGIN & INSCRIÇÃO COM BASE DE DADOS DO SERVIDOR
          ===================================================================== */}
-      {authModalOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
-          onClick={() => setAuthModalOpen(false)}
-        >
-          <div
-            className="glass-card max-w-lg w-full p-6 sm:p-8 space-y-6 my-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <Compass className="w-5 h-5 text-[#A8B88A]" strokeWidth={1.5} />
-                <h2 className="font-display text-2xl text-[#E6D7C3] font-semibold">
-                  Passaporte de Campo · Sobrevivente.eu
-                </h2>
-              </div>
-              <button
-                onClick={() => setAuthModalOpen(false)}
-                className="p-2 rounded-full glass-pill text-[#E6D7C3]/75 hover:text-[#E6D7C3] cursor-pointer"
-              >
-                <X className="w-4 h-4" strokeWidth={1.5} />
-              </button>
-            </div>
-
-            {/* Explorer Profile & Featured Badges Preview */}
-            <div className="p-5 rounded-[20px] bg-white/[0.04] border border-white/12 space-y-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-full bg-[#5A6B44]/60 border border-[#A8B88A]/50 flex items-center justify-center font-display text-xl font-semibold text-[#E6D7C3]">
-                    {(loggedUser ? loggedUser.name : 'Diogo Santarém').charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-display text-lg text-[#E6D7C3] font-semibold">
-                      {loggedUser ? loggedUser.name : 'Diogo Santarém (Modo Explorador)'}
-                    </p>
-                    <p className="text-xs text-[#A8B88A] tabular-nums">
-                      {explorerRankTitle} · {totalExplorerXp} XP · Kit 72h: {kitStats.percentage}%
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Displayed Badges on Profile */}
-              <div className="space-y-2 pt-2 border-t border-white/10">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#E6D7C3]/75 font-medium">
-                    Insígnias exibidas no seu perfil ({featuredBadges.length}/3):
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthModalOpen(false);
-                      setSocialTab('conquistas');
-                      scrollToSection('comunidade', 'comunidade');
-                    }}
-                    className="text-[#A8B88A] hover:underline cursor-pointer"
-                  >
-                    Gerir conquistas →
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {featuredBadges.map((b) => (
-                    <div
-                      key={b.id}
-                      className="px-3 py-1.5 rounded-xl bg-[#5A6B44]/40 border border-[#A8B88A]/40 flex items-center gap-2 text-xs text-[#E6D7C3]"
-                    >
-                      <span className="text-[#A8B88A]">{renderBadgeIcon(b.iconKey, 'w-3.5 h-3.5')}</span>
-                      <span className="font-medium">{b.title}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {loggedUser ? (
-              <div className="flex items-center justify-between gap-3">
-                <button
-                  onClick={() => {
-                    setAuthModalOpen(false);
-                    setSocialTab('conquistas');
-                    scrollToSection('comunidade', 'comunidade');
-                  }}
-                  className="flex-1 py-3 rounded-full bg-[#5A6B44]/60 hover:bg-[#5A6B44] text-xs sm:text-sm font-medium text-[#E6D7C3] cursor-pointer"
-                >
-                  Ver Todas as Insígnias ({unlockedBadges.length}/{badges.length})
-                </button>
-                <button
-                  onClick={() => {
-                    setLoggedUser(null);
-                    setAuthModalOpen(false);
-                  }}
-                  className="px-5 py-3 rounded-full glass-pill text-xs sm:text-sm text-[#E6D7C3] hover:border-[#C85A3E] cursor-pointer"
-                >
-                  Terminar Sessão
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleAuthSubmit} className="space-y-4">
-                <div className="flex gap-2 p-1 rounded-full glass-pill">
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode('entrar')}
-                    className={`flex-1 py-2 rounded-full text-xs font-medium cursor-pointer ${
-                      authMode === 'entrar' ? 'bg-[#5A6B44] text-[#E6D7C3]' : 'text-[#E6D7C3]/70'
-                    }`}
-                  >
-                    Iniciar Sessão
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode('registar')}
-                    className={`flex-1 py-2 rounded-full text-xs font-medium cursor-pointer ${
-                      authMode === 'registar' ? 'bg-[#C85A3E] text-[#E6D7C3]' : 'text-[#E6D7C3]/70'
-                    }`}
-                  >
-                    Personalizar Perfil
-                  </button>
-                </div>
-
-                {authMode === 'registar' && (
-                  <div>
-                    <label className="block text-xs text-[#E6D7C3]/75 mb-1.5">Nome ou Alcunha de Campo</label>
-                    <input
-                      type="text"
-                      required
-                      value={authName}
-                      onChange={(e) => setAuthName(e.target.value)}
-                      placeholder="Ex.: Duarte Vasconcelos"
-                      className="w-full px-4 py-3 rounded-[14px] bg-black/30 border border-white/15 text-sm text-[#E6D7C3] focus:outline-none focus:border-[#A8B88A]"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-xs text-[#E6D7C3]/75 mb-1.5">Email</label>
-                  <input
-                    type="email"
-                    required
-                    value={authEmail}
-                    onChange={(e) => setAuthEmail(e.target.value)}
-                    placeholder="explorador@sobrevivente.eu"
-                    className="w-full px-4 py-3 rounded-[14px] bg-black/30 border border-white/15 text-sm text-[#E6D7C3] focus:outline-none focus:border-[#A8B88A]"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3.5 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-sm font-medium text-[#E6D7C3] transition-colors cursor-pointer"
-                >
-                  {authMode === 'entrar' ? 'Guardar Passaporte de Campo →' : 'Confirmar Registo Gratuito →'}
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        currentUser={loggedUser}
+        onLoginSuccess={(u) => {
+          setLoggedUser(u);
+          setBadgeToast(`Bem-vindo, ${u.name}! Inscrição verificada na base de dados.`);
+          setTimeout(() => setBadgeToast(null), 3500);
+        }}
+        onLogout={() => {
+          setLoggedUser(null);
+          setBadgeToast('Sessão terminada.');
+          setTimeout(() => setBadgeToast(null), 2500);
+        }}
+      />
     </div>
   );
 }

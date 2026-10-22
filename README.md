@@ -69,3 +69,24 @@ Se contratou um plano VPS ou ativou o recurso "Aplicação Node.js" no hPanel:
 
 ### Método 3: Envio Automático do GitHub para a Hostinger via FTP (GitHub Actions)
 Se preferir que a Hostinger atualize automaticamente sempre que fizer um `git push` no GitHub, crie o ficheiro `.github/workflows/deploy.yml` com a ação FTP Deploy da Hostinger.
+
+---
+
+## 🗄️ Base de Dados no Servidor (Novas Inscrições e Login)
+
+O projeto inclui dois modos de funcionamento para a base de dados:
+
+1. **Modo Automático Integrado (Node.js / Sem configuração):**
+   - O servidor guarda automaticamente os novos membros em `data/database.json`.
+   - As palavras-passe são protegidas com encriptação criptográfica (salt + PBKDF2/SHA-512).
+   - Endpoints disponíveis:
+     - `POST /api/auth/register` — Regista novo utilizador com nome, email, password, região e nível.
+     - `POST /api/auth/login` — Autentica e inicia sessão.
+     - `GET /api/auth/stats` — Estatísticas de membros registados.
+
+2. **Modo MySQL / phpMyAdmin da Hostinger:**
+   - Se preferir usar o MySQL oficial da Hostinger (hPanel $\rightarrow$ Bancos de Dados MySQL):
+   - Abra o **phpMyAdmin** na Hostinger.
+   - Clique em **Importar** e selecione o ficheiro `database.sql` incluído na raiz deste projeto.
+   - As tabelas `utilizadores`, `utilizadores_insignias` e `inscricoes_eventos` serão criadas de imediato com índices otimizados.
+
