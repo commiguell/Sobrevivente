@@ -436,15 +436,6 @@ export default function App() {
     setNewsletterSubmitted(true);
   };
 
-  // Auth Handler
-  const handleAuthSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!authEmail.trim()) return;
-    const displayName = authName.trim() || authEmail.split('@')[0];
-    setLoggedUser({ name: displayName, region: 'Serra da Lousã' });
-    setAuthModalOpen(false);
-  };
-
   const scrollToSection = (id: string, tab: typeof activeMobileTab) => {
     setActiveMobileTab(tab);
     const el = document.getElementById(id);
@@ -559,14 +550,14 @@ export default function App() {
            =================================================================== */}
         <section id="inicio" className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
           {/* Left Column: Value Proposition & Dual CTAs */}
-          <div className="lg:col-span-7 glass-card p-7 sm:p-11 flex flex-col justify-between relative overflow-hidden">
+          <div className="lg:col-span-7 glass-card p-6 sm:p-11 flex flex-col justify-between relative overflow-hidden">
             {/* Subtle radial highlight */}
             <div
               className="absolute -top-24 -left-24 w-72 h-72 rounded-full pointer-events-none"
               style={{ background: 'radial-gradient(circle, rgba(168,184,138,0.16) 0%, transparent 70%)' }}
             />
 
-            <div className="space-y-6 relative z-10">
+            <div className="space-y-6 relative z-10 text-center lg:text-left flex flex-col items-center lg:items-start">
               <p className="text-xs sm:text-sm tracking-wide text-[#A8B88A] font-medium">
                 Biblioteca de Campo · Rede Social de Autonomia · Portugal
               </p>
@@ -574,24 +565,24 @@ export default function App() {
               {/* Title in 3 separate lines as requested */}
               <h1
                 className="font-display font-semibold text-[#E6D7C3] tracking-tight leading-[1.12]"
-                style={{ fontSize: 'clamp(2.5rem, 4.4vw, 4.1rem)' }}
+                style={{ fontSize: 'clamp(2.4rem, 4.4vw, 4.1rem)' }}
               >
                 <span className="block">Prepara-te.</span>
                 <span className="block text-[#A8B88A]">Adapta-te.</span>
                 <span className="block text-[#C85A3E]">Sobrevive.</span>
               </h1>
 
-              <p className="text-base sm:text-lg text-[#E6D7C3]/85 leading-relaxed max-w-[60ch] font-normal">
+              <p className="text-base sm:text-lg text-[#E6D7C3]/85 leading-relaxed max-w-[60ch] font-normal mx-auto lg:mx-0">
                 Conhecimento prático partilhado por biólogos, guias de montanha e técnicos de proteção civil. Aprenda a filtrar água, construir abrigos térmicos, orientar-se sem rede e preparar a sua família com serenidade e profundo respeito pela natureza.
               </p>
             </div>
 
-            <div className="pt-8 mt-8 border-t border-white/10 space-y-6 relative z-10">
+            <div className="pt-8 mt-8 border-t border-white/10 space-y-6 relative z-10 w-full flex flex-col items-center lg:items-start">
               {/* Primary Pill CTA + Secondary Sage Button */}
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full sm:w-auto">
                 <button
                   onClick={() => setAuthModalOpen(true)}
-                  className="px-7 py-3.5 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-[#E6D7C3] font-medium text-sm sm:text-base transition-all shadow-lg shadow-black/25 flex items-center gap-2.5 whitespace-nowrap shrink-0 cursor-pointer"
+                  className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-[#E6D7C3] font-medium text-sm sm:text-base transition-all shadow-lg shadow-black/25 flex items-center justify-center gap-2.5 whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <span>Juntar-me à comunidade</span>
                   <ArrowRight className="w-4 h-4" strokeWidth={1.75} />
@@ -599,14 +590,14 @@ export default function App() {
 
                 <a
                   href="#manuais"
-                  className="px-6 py-3.5 rounded-full bg-[#A8B88A]/18 hover:bg-[#A8B88A]/28 text-[#E6D7C3] border border-[#A8B88A]/40 font-medium text-sm sm:text-base transition-colors whitespace-nowrap shrink-0"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-[#A8B88A]/18 hover:bg-[#A8B88A]/28 text-[#E6D7C3] border border-[#A8B88A]/40 font-medium text-sm sm:text-base transition-colors whitespace-nowrap shrink-0 text-center flex items-center justify-center"
                 >
                   Explorar manuais
                 </a>
               </div>
 
               {/* Quiet unboxed proof summary */}
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-[#E6D7C3]/70 tabular-nums">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-3 gap-y-1 text-xs sm:text-sm text-[#E6D7C3]/70 tabular-nums text-center lg:text-left">
                 <span>148 manuais revistos por especialistas</span>
                 <span aria-hidden="true">·</span>
                 <span>12.400 membros em Portugal</span>
@@ -616,9 +607,9 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right Column: Organic Glassmorphism Field Card Showcase (Inspired by Leafora reference) */}
+          {/* Right Column: Organic Glassmorphism Field Card Showcase */}
           <div className="lg:col-span-5 glass-card p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden">
-            <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-4 text-center sm:text-left">
               <div>
                 <p className="text-xs text-[#A8B88A]">Caderno de Campo em Destaque</p>
                 <h2 className="font-display text-xl text-[#E6D7C3] mt-0.5">
@@ -627,7 +618,7 @@ export default function App() {
               </div>
               <button
                 onClick={() => setActiveManualModal(FEATURED_MANUALS[0])}
-                className="p-2.5 rounded-full glass-pill text-[#E6D7C3]/80 hover:text-[#E6D7C3] transition-colors cursor-pointer"
+                className="p-2.5 rounded-full glass-pill text-[#E6D7C3]/80 hover:text-[#E6D7C3] transition-colors cursor-pointer shrink-0"
                 title="Abrir Manual Completo"
               >
                 <BookOpen className="w-4 h-4" strokeWidth={1.5} />
@@ -650,15 +641,15 @@ export default function App() {
             </div>
 
             {/* 4 Pillars Mini-Grid (Water, Fire, Shelter, Navigation) */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 text-center sm:text-left">
               <button
                 onClick={() => {
                   setSelectedCategory('agua');
                   scrollToSection('manuais', 'manuais');
                 }}
-                className="p-3.5 rounded-[16px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-left transition-colors cursor-pointer"
+                className="p-3.5 rounded-[16px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 flex flex-col items-center sm:items-start transition-colors cursor-pointer"
               >
-                <div className="flex items-center justify-between text-[#A8B88A] mb-1">
+                <div className="flex items-center justify-between w-full text-[#A8B88A] mb-1">
                   <Droplets className="w-4 h-4" strokeWidth={1.5} />
                   <span className="text-xs font-mono tabular-nums">24 guias</span>
                 </div>
@@ -671,9 +662,9 @@ export default function App() {
                   setSelectedCategory('abrigo');
                   scrollToSection('manuais', 'manuais');
                 }}
-                className="p-3.5 rounded-[16px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-left transition-colors cursor-pointer"
+                className="p-3.5 rounded-[16px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 flex flex-col items-center sm:items-start transition-colors cursor-pointer"
               >
-                <div className="flex items-center justify-between text-[#A8B88A] mb-1">
+                <div className="flex items-center justify-between w-full text-[#A8B88A] mb-1">
                   <Tent className="w-4 h-4" strokeWidth={1.5} />
                   <span className="text-xs font-mono tabular-nums">22 guias</span>
                 </div>
@@ -688,8 +679,8 @@ export default function App() {
             3. CHIPS DE CATEGORIA COM ÍCONES + 4. MANUAIS EM DESTAQUE
            =================================================================== */}
         <section id="manuais" className="space-y-8 scroll-mt-24">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 text-center md:text-left items-center md:items-end">
+            <div className="mx-auto md:mx-0">
               <p className="text-xs sm:text-sm text-[#A8B88A] font-medium mb-1">
                 01. Biblioteca Técnica de Campo
               </p>
@@ -699,21 +690,21 @@ export default function App() {
             </div>
 
             {/* Search & Saved Filter Controls */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="relative flex-1 sm:w-64">
+            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-end gap-3 w-full md:w-auto">
+              <div className="relative w-full sm:w-64">
                 <Search className="w-4 h-4 text-[#E6D7C3]/50 absolute left-3.5 top-1/2 -translate-y-1/2" strokeWidth={1.5} />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Procurar técnica, planta, nó..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full glass-pill text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/45 focus:outline-none focus:border-[#A8B88A]"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-full glass-pill text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/45 focus:outline-none focus:border-[#A8B88A] text-center sm:text-left"
                 />
               </div>
 
               <button
                 onClick={() => setOnlySavedManuals(!onlySavedManuals)}
-                className={`px-4 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer border ${
+                className={`w-full sm:w-auto px-4 py-2.5 rounded-full text-sm font-medium flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer border ${
                   onlySavedManuals
                     ? 'bg-[#C85A3E] text-[#E6D7C3] border-[#C85A3E]'
                     : 'glass-pill text-[#E6D7C3]/85 hover:text-[#E6D7C3]'
@@ -756,11 +747,11 @@ export default function App() {
           </div>
 
           {/* Active Category Context Description */}
-          <div className="flex items-center justify-between text-xs sm:text-sm text-[#E6D7C3]/70 border-b border-white/10 pb-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-[#E6D7C3]/70 border-b border-white/10 pb-3 text-center sm:text-left gap-2">
             <span>
               {CATEGORIES.find((c) => c.id === selectedCategory)?.description}
             </span>
-            <span className="font-mono tabular-nums whitespace-nowrap ml-4">
+            <span className="font-mono tabular-nums whitespace-nowrap">
               {filteredManuals.length} {filteredManuals.length === 1 ? 'manual visível' : 'manuais visíveis'}
             </span>
           </div>
@@ -860,8 +851,8 @@ export default function App() {
             6. FICHA-EXEMPLO DE TÉCNICA (ESTILO CARTÃO DE PRODUTO / LEAFORA REF)
            =================================================================== */}
         <section className="space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-center sm:text-left items-center sm:items-end">
+            <div className="mx-auto sm:mx-0">
               <p className="text-xs sm:text-sm text-[#A8B88A] font-medium mb-1">
                 02. Ficha Técnica Interativa
               </p>
@@ -871,7 +862,7 @@ export default function App() {
             </div>
 
             {/* Technique Switcher Tabs */}
-            <div className="flex items-center gap-1.5 p-1.5 rounded-full glass-pill self-start">
+            <div className="flex items-center gap-1.5 p-1.5 rounded-full glass-pill overflow-x-auto max-w-full justify-center mx-auto sm:mx-0">
               {TECHNIQUE_CARDS.map((t, idx) => (
                 <button
                   key={t.id}
@@ -938,7 +929,7 @@ export default function App() {
             </div>
 
             {/* Right Specification Sheet with 4 Attribute Columns */}
-            <div className="lg:col-span-7 flex flex-col justify-between space-y-6">
+            <div className="lg:col-span-7 flex flex-col justify-between space-y-6 text-center sm:text-left">
               <div className="space-y-4">
                 <div>
                   <h3 className="font-display text-2xl sm:text-3xl text-[#E6D7C3] font-semibold">
@@ -950,7 +941,7 @@ export default function App() {
                 </div>
 
                 {/* Unboxed Rating & Condition Row */}
-                <div className="flex items-center gap-4 text-xs sm:text-sm text-[#E6D7C3]/85 tabular-nums">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs sm:text-sm text-[#E6D7C3]/85 tabular-nums">
                   <span className="inline-flex items-center gap-1.5">
                     <Star className="w-4 h-4 text-[#C85A3E]" strokeWidth={1.5} fill="#C85A3E" />
                     <strong>{activeTechnique.rating}</strong> ({activeTechnique.reviewsCount} validações em campo)
@@ -959,13 +950,13 @@ export default function App() {
                   <span>Condição ideal: {activeTechnique.lightCondition}</span>
                 </div>
 
-                <p className="text-sm sm:text-base text-[#E6D7C3]/85 leading-relaxed">
+                <p className="text-sm sm:text-base text-[#E6D7C3]/85 leading-relaxed mx-auto sm:mx-0">
                   {activeTechnique.description}
                 </p>
 
                 {/* 4 Attribute Columns with Thin-Line Icons & Vertical Hairline Dividers */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/12 border-y border-white/12 py-5">
-                  <div className="px-3 py-2 sm:py-0 flex flex-col items-start sm:items-center sm:text-center">
+                  <div className="px-3 py-2 sm:py-0 flex flex-col items-center text-center">
                     <SlidersHorizontal className="w-5 h-5 text-[#A8B88A] mb-2" strokeWidth={1.5} />
                     <span className="text-xs text-[#E6D7C3]/60">Dificuldade</span>
                     <span className="text-sm font-semibold text-[#E6D7C3] mt-0.5">
@@ -976,7 +967,7 @@ export default function App() {
                     </span>
                   </div>
 
-                  <div className="px-3 py-2 sm:py-0 flex flex-col items-start sm:items-center sm:text-center">
+                  <div className="px-3 py-2 sm:py-0 flex flex-col items-center text-center">
                     <Layers className="w-5 h-5 text-[#A8B88A] mb-2" strokeWidth={1.5} />
                     <span className="text-xs text-[#E6D7C3]/60">Material</span>
                     <span className="text-sm font-semibold text-[#E6D7C3] mt-0.5">
@@ -987,7 +978,7 @@ export default function App() {
                     </span>
                   </div>
 
-                  <div className="px-3 py-2 sm:py-0 flex flex-col items-start sm:items-center sm:text-center">
+                  <div className="px-3 py-2 sm:py-0 flex flex-col items-center text-center">
                     <Clock className="w-5 h-5 text-[#A8B88A] mb-2" strokeWidth={1.5} />
                     <span className="text-xs text-[#E6D7C3]/60">Tempo</span>
                     <span className="text-sm font-semibold text-[#E6D7C3] mt-0.5 tabular-nums">
@@ -998,7 +989,7 @@ export default function App() {
                     </span>
                   </div>
 
-                  <div className="px-3 py-2 sm:py-0 flex flex-col items-start sm:items-center sm:text-center">
+                  <div className="px-3 py-2 sm:py-0 flex flex-col items-center text-center">
                     <ShieldAlert className="w-5 h-5 text-[#C85A3E] mb-2" strokeWidth={1.5} />
                     <span className="text-xs text-[#E6D7C3]/60">Risco</span>
                     <span className="text-sm font-semibold text-[#E6D7C3] mt-0.5">
@@ -1011,7 +1002,7 @@ export default function App() {
                 </div>
 
                 {/* Quick Steps Summary */}
-                <div className="space-y-2 pt-1">
+                <div className="space-y-2 pt-1 text-left">
                   <p className="text-xs font-medium text-[#A8B88A]">Resumo de Execução:</p>
                   <ol className="space-y-1.5 text-xs sm:text-sm text-[#E6D7C3]/80">
                     {activeTechnique.stepsPreview.map((step, i) => (
@@ -1027,18 +1018,18 @@ export default function App() {
               </div>
 
               {/* Action Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-                <div>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 text-center sm:text-left">
+                <div className="text-center sm:text-left">
                   <span className="text-xs text-[#E6D7C3]/60 block">Acesso Livre na Biblioteca</span>
                   <span className="font-display text-lg text-[#E6D7C3] font-semibold">
                     Ficha Verificada #0{activeTechIndex + 1}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                   <button
                     onClick={() => toggleSaveTech(activeTechnique.id)}
-                    className="px-5 py-3 rounded-full bg-[#5A6B44]/55 hover:bg-[#5A6B44]/80 text-[#E6D7C3] text-sm font-medium border border-[#A8B88A]/40 transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
+                    className="w-full sm:w-auto justify-center px-5 py-3 rounded-full bg-[#5A6B44]/55 hover:bg-[#5A6B44]/80 text-[#E6D7C3] text-sm font-medium border border-[#A8B88A]/40 transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
                   >
                     <Backpack className="w-4 h-4" strokeWidth={1.5} />
                     <span>
@@ -1048,7 +1039,7 @@ export default function App() {
 
                   <button
                     onClick={() => setActiveManualModal(FEATURED_MANUALS[activeTechIndex])}
-                    className="px-6 py-3 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-[#E6D7C3] text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
+                    className="w-full sm:w-auto justify-center px-6 py-3 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-[#E6D7C3] text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
                   >
                     <span>Ver Manual Completo</span>
                     <ArrowRight className="w-4 h-4" strokeWidth={1.5} />
@@ -1067,8 +1058,8 @@ export default function App() {
             5. REDE SOCIAL (FEED, GRUPOS REGIONAIS, FÓRUM, SAÍDAS DE CAMPO)
            =================================================================== */}
         <section id="comunidade" className="space-y-8 scroll-mt-24">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 text-center md:text-left items-center md:items-end">
+            <div className="mx-auto md:mx-0">
               <p className="text-xs sm:text-sm text-[#A8B88A] font-medium mb-1">
                 03. Rede Social & Entreajuda de Campo
               </p>
@@ -1078,7 +1069,7 @@ export default function App() {
             </div>
 
             {/* Interactive Social Sub-Navigation Tabs */}
-            <div className="flex items-center gap-1.5 p-1.5 rounded-full glass-pill overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-1.5 p-1.5 rounded-full glass-pill overflow-x-auto no-scrollbar max-w-full justify-start sm:justify-center mx-auto md:mx-0">
               <button
                 onClick={() => setSocialTab('feed')}
                 className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
@@ -1136,13 +1127,13 @@ export default function App() {
           {/* TAB 1: FEED DE CAMPO */}
           {socialTab === 'feed' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
                 <p className="text-sm text-[#E6D7C3]/75">
                   Relatos verificados de treino, abrigos, etnobotânica e travessias partilhados pelos membros.
                 </p>
                 <button
                   onClick={() => setShowNewPostForm(!showNewPostForm)}
-                  className="px-4 py-2 rounded-full bg-[#5A6B44]/55 hover:bg-[#5A6B44]/80 text-xs sm:text-sm font-medium text-[#E6D7C3] border border-[#A8B88A]/40 flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
+                  className="w-full sm:w-auto justify-center px-4 py-2 rounded-full bg-[#5A6B44]/55 hover:bg-[#5A6B44]/80 text-xs sm:text-sm font-medium text-[#E6D7C3] border border-[#A8B88A]/40 flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" strokeWidth={1.5} />
                   <span>Partilhar Relato de Campo</span>
@@ -1472,13 +1463,13 @@ export default function App() {
           {socialTab === 'conquistas' && (
             <div className="space-y-8">
               {/* User Public Profile Showcase Card with Featured Badges */}
-              <div className="glass-card p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                <div className="lg:col-span-5 flex items-start sm:items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-[#5A6B44]/55 border border-[#A8B88A]/50 flex items-center justify-center font-display text-2xl font-semibold text-[#E6D7C3] shrink-0">
+              <div className="glass-card p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-center sm:text-left">
+                <div className="lg:col-span-5 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+                  <div className="w-16 h-16 rounded-full bg-[#5A6B44]/55 border border-[#A8B88A]/50 flex items-center justify-center font-display text-2xl font-semibold text-[#E6D7C3] shrink-0 mx-auto sm:mx-0">
                     {(loggedUser ? loggedUser.name : 'Diogo Santarém').charAt(0)}
                   </div>
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-xs text-[#A8B88A]">
+                    <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-[#A8B88A]">
                       <span>{explorerRankTitle}</span>
                       <span aria-hidden="true">·</span>
                       <span className="font-mono tabular-nums">{totalExplorerXp} XP</span>
@@ -1494,7 +1485,7 @@ export default function App() {
 
                 {/* Featured Badges Displayed on Profile */}
                 <div className="lg:col-span-7 space-y-3">
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex flex-col sm:flex-row items-center justify-between text-xs gap-1 text-center sm:text-left">
                     <span className="text-[#A8B88A] font-medium">
                       Insígnias em Exibição no Perfil ({featuredBadges.length}/3):
                     </span>
@@ -1510,7 +1501,7 @@ export default function App() {
                     {featuredBadges.map((b) => (
                       <div
                         key={b.id}
-                        className="p-3.5 rounded-[16px] bg-white/[0.05] border border-[#A8B88A]/40 flex items-center gap-3"
+                        className="p-3.5 rounded-[16px] bg-white/[0.05] border border-[#A8B88A]/40 flex items-center gap-3 text-left"
                       >
                         <div className="w-9 h-9 rounded-full bg-[#5A6B44]/50 border border-white/15 flex items-center justify-center text-[#E6D7C3] shrink-0">
                           {renderBadgeIcon(b.iconKey, 'w-4 h-4')}
@@ -1633,25 +1624,25 @@ export default function App() {
            =================================================================== */}
         <section id="kits" className="space-y-8 scroll-mt-24">
           <div className="glass-card p-6 sm:p-10 space-y-8">
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-              <div className="space-y-2">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 text-center lg:text-left items-center lg:items-end">
+              <div className="space-y-2 mx-auto lg:mx-0">
                 <p className="text-xs sm:text-sm text-[#A8B88A] font-medium">
                   04. Ferramenta de Prontidão Familiar & Individual
                 </p>
                 <h2 className="font-display text-2xl sm:text-4xl text-[#E6D7C3] font-semibold">
                   Checklist Interativa: Kit de 72 Horas
                 </h2>
-                <p className="text-sm sm:text-base text-[#E6D7C3]/75 max-w-[65ch]">
+                <p className="text-sm sm:text-base text-[#E6D7C3]/75 max-w-[65ch] mx-auto lg:mx-0">
                   Configure e audite a sua mochila de autonomia para 3 dias. O peso total é calculado em tempo real para garantir mobilidade confortável em terreno variado.
                 </p>
               </div>
 
               {/* Filter & Export Actions */}
-              <div className="flex flex-wrap items-center gap-2.5">
-                <div className="flex items-center gap-1 p-1 rounded-full glass-pill">
+              <div className="flex flex-wrap items-center justify-center lg:justify-end gap-2.5 mx-auto lg:mx-0">
+                <div className="flex items-center gap-1 p-1 rounded-full glass-pill overflow-x-auto max-w-full justify-center">
                   <button
                     onClick={() => setKitFilter('todos')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
                       kitFilter === 'todos' ? 'bg-[#5A6B44] text-[#E6D7C3]' : 'text-[#E6D7C3]/70'
                     }`}
                   >
@@ -1659,7 +1650,7 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => setKitFilter('em-falta')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
                       kitFilter === 'em-falta' ? 'bg-[#C85A3E] text-[#E6D7C3]' : 'text-[#E6D7C3]/70'
                     }`}
                   >
@@ -1667,7 +1658,7 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => setKitFilter('prontos')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
                       kitFilter === 'prontos' ? 'bg-[#5A6B44] text-[#E6D7C3]' : 'text-[#E6D7C3]/70'
                     }`}
                   >
@@ -1677,7 +1668,7 @@ export default function App() {
 
                 <button
                   onClick={handleExportKitTxt}
-                  className="px-4 py-2 rounded-full glass-pill text-xs font-medium text-[#E6D7C3] hover:border-[#A8B88A] flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 rounded-full glass-pill text-xs font-medium text-[#E6D7C3] hover:border-[#A8B88A] flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
                 >
                   <Download className="w-3.5 h-3.5" strokeWidth={1.5} />
                   <span>Exportar TXT</span>
@@ -1685,7 +1676,7 @@ export default function App() {
 
                 <button
                   onClick={() => setKitItems(INITIAL_KIT_72H)}
-                  className="p-2 rounded-full glass-pill text-[#E6D7C3]/70 hover:text-[#E6D7C3] cursor-pointer"
+                  className="p-2 rounded-full glass-pill text-[#E6D7C3]/70 hover:text-[#E6D7C3] cursor-pointer shrink-0"
                   title="Repor estado padrão"
                 >
                   <RotateCcw className="w-4 h-4" strokeWidth={1.5} />
@@ -1695,8 +1686,8 @@ export default function App() {
 
             {/* Progress Bar & Telemetry Strip */}
             <div className="p-5 rounded-[20px] bg-black/25 border border-white/12 space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-center sm:text-left">
+                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
                   <span className="font-display text-xl sm:text-2xl font-semibold text-[#E6D7C3] tabular-nums">
                     {kitStats.percentage}% concluído
                   </span>
@@ -1705,7 +1696,7 @@ export default function App() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-4 font-mono text-xs tabular-nums text-[#A8B88A]">
+                <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-1 font-mono text-xs tabular-nums text-[#A8B88A]">
                   <span>Peso na mochila: <strong>{kitStats.currentWeightKg} kg</strong></span>
                   <span aria-hidden="true">·</span>
                   <span>Peso total previsto: {kitStats.totalWeightKg} kg</span>
@@ -1770,28 +1761,28 @@ export default function App() {
             </div>
 
             {/* Add Custom Item to Kit */}
-            <form onSubmit={handleAddCustomKitItem} className="pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-3">
+            <form onSubmit={handleAddCustomKitItem} className="pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-3 items-stretch justify-center">
               <input
                 type="text"
                 value={newItemLabel}
                 onChange={(e) => setNewItemLabel(e.target.value)}
                 placeholder="Adicionar equipamento personalizado ao seu Kit (ex.: Filtro Sawyer Mini, Medicação)..."
-                className="flex-1 px-4 py-2.5 rounded-full bg-black/25 border border-white/15 text-xs sm:text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/45 focus:outline-none focus:border-[#A8B88A]"
+                className="flex-1 px-4 py-2.5 rounded-full bg-black/25 border border-white/15 text-xs sm:text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/45 focus:outline-none focus:border-[#A8B88A] text-center sm:text-left"
               />
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2">
                 <input
                   type="number"
                   min={10}
                   max={5000}
                   value={newItemWeight}
                   onChange={(e) => setNewItemWeight(e.target.value)}
-                  className="w-24 px-3.5 py-2.5 rounded-full bg-black/25 border border-white/15 text-xs sm:text-sm font-mono tabular-nums text-[#E6D7C3] focus:outline-none"
+                  className="w-24 px-3.5 py-2.5 rounded-full bg-black/25 border border-white/15 text-xs sm:text-sm font-mono tabular-nums text-[#E6D7C3] focus:outline-none text-center"
                   title="Peso em gramas"
                 />
                 <span className="text-xs text-[#E6D7C3]/60">g</span>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-full bg-[#5A6B44]/60 hover:bg-[#5A6B44] text-xs sm:text-sm font-medium text-[#E6D7C3] whitespace-nowrap cursor-pointer"
+                  className="flex-1 sm:flex-initial px-5 py-2.5 rounded-full bg-[#5A6B44]/60 hover:bg-[#5A6B44] text-xs sm:text-sm font-medium text-[#E6D7C3] whitespace-nowrap cursor-pointer text-center"
                 >
                   + Adicionar Item
                 </button>
@@ -1804,7 +1795,7 @@ export default function App() {
             MAPA DE BIOMAS E ZONAS DE TREINO EM PORTUGAL (NAV LINK #MAPA)
            =================================================================== */}
         <section id="mapa" className="space-y-8 scroll-mt-24">
-          <div>
+          <div className="text-center sm:text-left">
             <p className="text-xs sm:text-sm text-[#A8B88A] font-medium mb-1">
               05. Cartografia & Biomas Portugueses
             </p>
@@ -1845,7 +1836,7 @@ export default function App() {
                 const activeGroup = groups.find((g) => g.id === selectedBiomeId) || groups[0];
                 return (
                   <>
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-4">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-white/10 pb-4 text-center sm:text-left">
                       <div>
                         <span className="text-xs text-[#A8B88A]">Bioma Selecionado</span>
                         <h3 className="font-display text-2xl text-[#E6D7C3] font-semibold">
@@ -1854,13 +1845,13 @@ export default function App() {
                       </div>
                       <button
                         onClick={() => toggleGroupJoin(activeGroup.id)}
-                        className="px-4 py-2 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-xs font-medium text-[#E6D7C3] cursor-pointer"
+                        className="w-full sm:w-auto px-4 py-2 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-xs font-medium text-[#E6D7C3] cursor-pointer text-center"
                       >
                         {activeGroup.joined ? 'Inscrito neste Núcleo ✓' : 'Juntar-me a este Núcleo'}
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs sm:text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs sm:text-sm text-center sm:text-left">
                       <div className="p-3.5 rounded-[14px] bg-white/[0.04] border border-white/8">
                         <span className="text-[#E6D7C3]/60 block text-xs">Flora Dominante</span>
                         <strong className="text-[#E6D7C3] mt-1 block">
@@ -1887,7 +1878,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    <p className="text-xs sm:text-sm text-[#E6D7C3]/75 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-[#E6D7C3]/75 leading-relaxed text-center sm:text-left">
                       Cada núcleo regional organiza treinos mensais gratuitos de orientação cartográfica, identificação botânica e revisão de equipamento de emergência em parceria com associações florestais locais.
                     </p>
                   </>
@@ -1901,20 +1892,18 @@ export default function App() {
             8. TESTEMUNHOS + NÚMEROS DA COMUNIDADE
            =================================================================== */}
         <section className="space-y-10">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <p className="text-xs sm:text-sm text-[#A8B88A] font-medium mb-1">
-                06. Impacto Real & Prova Comunitária
-              </p>
-              <h2 className="font-display text-2xl sm:text-4xl text-[#E6D7C3] font-semibold">
-                Vozes da Comunidade Sobrevivente.eu
-              </h2>
-            </div>
+          <div className="text-center sm:text-left">
+            <p className="text-xs sm:text-sm text-[#A8B88A] font-medium mb-1">
+              06. Impacto Real & Prova Comunitária
+            </p>
+            <h2 className="font-display text-2xl sm:text-4xl text-[#E6D7C3] font-semibold">
+              Vozes da Comunidade Sobrevivente.eu
+            </h2>
           </div>
 
           {/* Community Quantitative Metrics Bar (Tabular Numerals) */}
-          <div className="glass-card p-6 sm:p-8 grid grid-cols-2 lg:grid-cols-4 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-white/12">
-            <div className="pt-3 sm:pt-0 sm:px-4 first:pl-0">
+          <div className="glass-card p-6 sm:p-8 grid grid-cols-2 lg:grid-cols-4 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-white/12 text-center">
+            <div className="pt-3 sm:pt-0 sm:px-4 first:pl-0 flex flex-col items-center">
               <p className="font-display text-3xl sm:text-4xl font-semibold text-[#E6D7C3] tabular-nums">
                 12.480
               </p>
@@ -1926,7 +1915,7 @@ export default function App() {
               </p>
             </div>
 
-            <div className="pt-3 sm:pt-0 sm:px-4">
+            <div className="pt-3 sm:pt-0 sm:px-4 flex flex-col items-center">
               <p className="font-display text-3xl sm:text-4xl font-semibold text-[#E6D7C3] tabular-nums">
                 148
               </p>
@@ -1938,7 +1927,7 @@ export default function App() {
               </p>
             </div>
 
-            <div className="pt-3 sm:pt-0 sm:px-4">
+            <div className="pt-3 sm:pt-0 sm:px-4 flex flex-col items-center">
               <p className="font-display text-3xl sm:text-4xl font-semibold text-[#E6D7C3] tabular-nums">
                 18
               </p>
@@ -1950,7 +1939,7 @@ export default function App() {
               </p>
             </div>
 
-            <div className="pt-3 sm:pt-0 sm:px-4">
+            <div className="pt-3 sm:pt-0 sm:px-4 flex flex-col items-center">
               <p className="font-display text-3xl sm:text-4xl font-semibold text-[#E6D7C3] tabular-nums">
                 310+
               </p>
@@ -1968,18 +1957,18 @@ export default function App() {
             {TESTIMONIALS.map((t) => (
               <blockquote
                 key={t.id}
-                className="glass-card p-6 sm:p-7 flex flex-col justify-between space-y-6"
+                className="glass-card p-6 sm:p-7 flex flex-col justify-between space-y-6 text-center sm:text-left"
               >
                 <p className="text-sm sm:text-base text-[#E6D7C3]/90 leading-relaxed italic font-display">
                   “{t.quote}”
                 </p>
 
-                <footer className="pt-4 border-t border-white/10 space-y-1">
+                <footer className="pt-4 border-t border-white/10 space-y-1 flex flex-col items-center sm:items-start text-center sm:text-left">
                   <div className="font-semibold text-sm text-[#E6D7C3]">{t.name}</div>
                   <div className="text-xs text-[#A8B88A]">
                     {t.role} · {t.region}
                   </div>
-                  <div className="text-xs text-[#E6D7C3]/60 pt-1 flex items-center gap-1.5">
+                  <div className="text-xs text-[#E6D7C3]/60 pt-1 flex items-center justify-center sm:justify-start gap-1.5">
                     <Award className="w-3.5 h-3.5 text-[#C85A3E] shrink-0" strokeWidth={1.5} />
                     <span>{t.outcome}</span>
                   </div>
@@ -1992,25 +1981,25 @@ export default function App() {
         {/* ===================================================================
             9. CTA FINAL: REGISTO POR EMAIL
            =================================================================== */}
-        <section className="glass-card p-8 sm:p-12 relative overflow-hidden">
+        <section className="glass-card p-6 sm:p-12 relative overflow-hidden">
           <div
             className="absolute -right-20 -bottom-20 w-80 h-80 rounded-full pointer-events-none"
             style={{ background: 'radial-gradient(circle, rgba(200,90,62,0.18) 0%, transparent 70%)' }}
           />
 
-          <div className="max-w-2xl space-y-6 relative z-10">
+          <div className="max-w-2xl space-y-6 relative z-10 text-center sm:text-left mx-auto sm:mx-0">
             <p className="text-xs sm:text-sm text-[#A8B88A] font-medium">
               Comece Hoje a Sua Jornada de Autonomia
             </p>
-            <h2 className="font-display text-3xl sm:text-4xl text-[#E6D7C3] font-semibold leading-tight">
+            <h2 className="font-display text-2xl sm:text-4xl text-[#E6D7C3] font-semibold leading-tight">
               Receba o Caderno PDF “Kit 72h & Flora Ibérica” e junte-se ao seu grupo regional.
             </h2>
-            <p className="text-sm sm:text-base text-[#E6D7C3]/80 leading-relaxed">
+            <p className="text-sm sm:text-base text-[#E6D7C3]/80 leading-relaxed mx-auto sm:mx-0">
               Sem spam nem alarmismo. Apenas um boletim quinzenal com novos manuais práticos, calendário de saídas de campo na sua região e alertas sazonais de segurança florestal.
             </p>
 
             {newsletterSubmitted ? (
-              <div className="p-5 rounded-[18px] bg-[#5A6B44]/40 border border-[#A8B88A]/50 space-y-1">
+              <div className="p-5 rounded-[18px] bg-[#5A6B44]/40 border border-[#A8B88A]/50 space-y-1 text-center sm:text-left">
                 <p className="font-display text-lg text-[#E6D7C3] font-semibold">
                   Bem-vindo ao Sobrevivente.eu!
                 </p>
@@ -2028,14 +2017,14 @@ export default function App() {
                     value={newsletterEmail}
                     onChange={(e) => setNewsletterEmail(e.target.value)}
                     placeholder="O seu melhor email (ex.: tiago@dominio.pt)"
-                    className="flex-1 px-5 py-3.5 rounded-full bg-black/30 border border-white/15 text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/45 focus:outline-none focus:border-[#A8B88A]"
+                    className="flex-1 px-5 py-3.5 rounded-full bg-black/30 border border-white/15 text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/45 focus:outline-none focus:border-[#A8B88A] text-center sm:text-left"
                   />
 
                   <select
                     value={newsletterRegion}
                     onChange={(e) => setNewsletterRegion(e.target.value)}
                     aria-label="Selecione a sua região"
-                    className="px-4 py-3.5 rounded-full bg-black/30 border border-white/15 text-sm text-[#E6D7C3] focus:outline-none focus:border-[#A8B88A]"
+                    className="px-4 py-3.5 rounded-full bg-black/30 border border-white/15 text-sm text-[#E6D7C3] focus:outline-none focus:border-[#A8B88A] text-center sm:text-left"
                   >
                     <option value="Norte & Gerês" className="bg-[#1F2E24]">Norte & Gerês</option>
                     <option value="Beiras & Serra da Estrela" className="bg-[#1F2E24]">Beiras & Serra da Estrela</option>
@@ -2047,14 +2036,14 @@ export default function App() {
 
                   <button
                     type="submit"
-                    className="px-7 py-3.5 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-[#E6D7C3] font-medium text-sm transition-colors flex items-center justify-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
+                    className="px-7 py-3.5 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-[#E6D7C3] font-medium text-sm transition-colors flex items-center justify-center gap-2 whitespace-nowrap shrink-0 cursor-pointer w-full sm:w-auto"
                   >
                     <span>Criar Conta Gratuita</span>
                     <Send className="w-4 h-4" strokeWidth={1.5} />
                   </button>
                 </div>
                 {newsletterError && (
-                  <p className="text-xs text-[#C85A3E] pl-2">{newsletterError}</p>
+                  <p className="text-xs text-[#C85A3E] text-center sm:text-left pl-2">{newsletterError}</p>
                 )}
               </form>
             )}
@@ -2068,8 +2057,8 @@ export default function App() {
       <footer className="relative z-10 border-t border-white/12 bg-[#142018]/90 backdrop-blur-xl pb-24 md:pb-12 pt-12">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-8 space-y-10">
           {/* Safety Notice Box (Aviso de Segurança e Ética Florestal) */}
-          <div className="p-5 rounded-[20px] bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row items-start gap-4">
-            <AlertTriangle className="w-5 h-5 text-[#C85A3E] shrink-0 mt-0.5" strokeWidth={1.5} />
+          <div className="p-5 rounded-[20px] bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
+            <AlertTriangle className="w-5 h-5 text-[#C85A3E] shrink-0 mt-0.5 mx-auto sm:mx-0" strokeWidth={1.5} />
             <div className="space-y-1 text-xs text-[#E6D7C3]/75 leading-relaxed">
               <p className="font-semibold text-[#E6D7C3]">
                 Aviso de Segurança, Ética Florestal e Responsabilidade Legal
@@ -2080,9 +2069,9 @@ export default function App() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm text-center md:text-left">
+            <div className="space-y-3 flex flex-col items-center md:items-start">
+              <div className="flex items-center gap-3 justify-center md:justify-start">
                 <img
                   src="/assets/aistudio/logo_7a6369a0.png"
                   alt="Sobrevivente.eu Emblema"
@@ -2092,12 +2081,12 @@ export default function App() {
                   Sobrevivente.eu
                 </span>
               </div>
-              <p className="text-xs text-[#E6D7C3]/65 leading-relaxed">
+              <p className="text-xs text-[#E6D7C3]/65 leading-relaxed max-w-xs md:max-w-none">
                 Plataforma de sobrevivencialismo sereno, bushcraft ético e resiliência comunitária.
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col items-center md:items-start">
               <p className="text-xs font-semibold text-[#A8B88A]">Biblioteca de Manuais</p>
               <ul className="space-y-1.5 text-xs text-[#E6D7C3]/70">
                 <li><a href="#manuais" onClick={() => setSelectedCategory('agua')} className="hover:text-[#E6D7C3]">Purificação de Água</a></li>
@@ -2107,7 +2096,7 @@ export default function App() {
               </ul>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col items-center md:items-start">
               <p className="text-xs font-semibold text-[#A8B88A]">Comunidade & Campo</p>
               <ul className="space-y-1.5 text-xs text-[#E6D7C3]/70">
                 <li><a href="#comunidade" onClick={() => setSocialTab('grupos')} className="hover:text-[#E6D7C3]">Núcleos Regionais</a></li>
@@ -2117,7 +2106,7 @@ export default function App() {
               </ul>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col items-center md:items-start">
               <p className="text-xs font-semibold text-[#A8B88A]">Ligações & Redes</p>
               <ul className="space-y-1.5 text-xs text-[#E6D7C3]/70">
                 <li>Canal Rádio Comunitário: PMR446 C8/S12</li>
@@ -2127,7 +2116,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#E6D7C3]/55">
+          <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#E6D7C3]/55 text-center sm:text-left">
             <span>© 2026 Sobrevivente.eu · Todos os direitos reservados.</span>
             <span>Desenhado em comunhão com a floresta autóctone portuguesa.</span>
           </div>
