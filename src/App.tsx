@@ -27,6 +27,14 @@ import {
   UserCheck,
   Calendar,
   Layers,
+  ShoppingBag,
+  Wrench,
+  Sparkles,
+  Weight,
+  Plus,
+  Trash2,
+  ExternalLink,
+  Eye,
 } from 'lucide-react';
 import {
   FEATURED_MANUALS,
@@ -34,10 +42,54 @@ import {
   INITIAL_FORUM_QUESTIONS,
   ManualItem,
 } from './data/raizData';
+import {
+  SURVIVAL_GEAR_ITEMS,
+  GEAR_CATEGORIES,
+  GearItem,
+  GearCategory,
+} from './data/gearData';
+import { PortugalReliefMap, PORTUGAL_PEAKS } from './components/PortugalReliefMap';
 import { BushcraftIllustration } from './components/BotanicalIllustrations';
 import { AuthModal, AuthUser } from './components/AuthModal';
 
-type PillarType = 'manuais' | 'informacoes' | 'grupos' | 'foruns' | 'pessoas';
+type PillarType = 'manuais' | 'informacoes' | 'grupos' | 'foruns' | 'pessoas' | 'loja';
+
+export type PortugalDistrict =
+  | 'Aveiro'
+  | 'Beja'
+  | 'Braga'
+  | 'Bragança'
+  | 'Castelo Branco'
+  | 'Coimbra'
+  | 'Évora'
+  | 'Faro'
+  | 'Guarda'
+  | 'Leiria'
+  | 'Lisboa'
+  | 'Portalegre'
+  | 'Porto'
+  | 'Santarém'
+  | 'Setúbal'
+  | 'Viana do Castelo'
+  | 'Vila Real'
+  | 'Viseu'
+  | 'Açores'
+  | 'Madeira';
+
+export interface DistrictInfo {
+  name: PortugalDistrict;
+  region: 'Norte' | 'Centro' | 'Lisboa e Vale do Tejo' | 'Alentejo' | 'Algarve' | 'Regiões Autónomas';
+  level: 'Reduzido' | 'Moderado' | 'Elevado' | 'Muito Elevado' | 'Máximo';
+  color: string;
+  temp: string;
+  humidity: string;
+  wind: string;
+  criticalZones: string;
+  waterPoints: string;
+  emergencyContact: string;
+  fireAlert: string;
+  icnfNotice: string;
+}
 
 interface PillarRevealCardProps {
   id: string;
@@ -112,15 +164,74 @@ export default function App() {
   const [activePillarModal, setActivePillarModal] = useState<PillarType | null>(null);
   const [selectedManualDetail, setSelectedManualDetail] = useState<ManualItem | null>(null);
 
-  // Interactive Live Info State (District Fire Risk Simulator)
-  const [selectedDistrict, setSelectedDistrict] = useState<'Braga' | 'Guarda' | 'Castelo Branco' | 'Santarém' | 'Faro'>('Guarda');
+  // Hero Display Mode (Emblema de Metal vs Relevo de Portugal + Ilhas)
+  const [heroDisplayMode, setHeroDisplayMode] = useState<'emblema' | 'relevo'>('emblema');
+
+  // Loja de Sobrevivência & Utensílios State
+  const [selectedGearCategory, setSelectedGearCategory] = useState<GearCategory>('todas');
+  const [gearSearchQuery, setGearSearchQuery] = useState('');
+  const [selectedGearDetail, setSelectedGearDetail] = useState<GearItem | null>(null);
+  const [myLoadoutItemIds, setMyLoadoutItemIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('sobrevivente_loadout');
+      return saved ? JSON.parse(saved) : ['filtro-sawyer-squeeze', 'barra-ferrocerium-xl', 'faca-bushcraft-scandi'];
+    } catch {
+      return ['filtro-sawyer-squeeze', 'barra-ferrocerium-xl', 'faca-bushcraft-scandi'];
+    }
+  });
+
+  const toggleLoadoutItem = (id: string) => {
+    setMyLoadoutItemIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id];
+      try {
+        localStorage.setItem('sobrevivente_loadout', JSON.stringify(next));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  };
+
+  const handleDownloadLoadoutTxt = () => {
+    const selectedItems = SURVIVAL_GEAR_ITEMS.filter((item) => myLoadoutItemIds.includes(item.id));
+    const totalWeight = selectedItems.reduce((acc, curr) => acc + curr.weightGrams, 0);
+    const lines = [
+      'SOBREVIVENTE.EU — LISTA DE EQUIPAMENTO & UTENSÍLIOS DE CAMPO',
+      `Data de Emissão: ${new Date().toLocaleDateString('pt-PT')}`,
+      `Total de Utensílios: ${selectedItems.length}`,
+      `Peso Total Estimado: ${(totalWeight / 1000).toFixed(2)} kg (${totalWeight} gramas)`,
+      '----------------------------------------------------------------',
+      'UTENSÍLIOS SELECIONADOS PARA A MOCHILA:',
+      ...selectedItems.map(
+        (item, idx) =>
+          `${idx + 1}. [${item.categoryLabel.toUpperCase()}] ${item.name} (${item.weightGrams}g)\n   Classificação: ${item.fieldVerdict} | Pontuação: ${item.utilityScore}/10 | Preço Est.: ${item.priceEstimate}\n   Especificações: ${item.specs}\n   Contexto em Portugal: ${item.portugalContext}\n`
+      ),
+      '----------------------------------------------------------------',
+      'Curadoria de campo: Sobrevivente.eu — Testado no terreno sem patrocínios.',
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'minha-mochila-sobrevivente.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Interactive Live Info State (All 18 Districts + Azores & Madeira)
+  const [selectedDistrict, setSelectedDistrict] = useState<PortugalDistrict>('Guarda');
+  const [districtRegionFilter, setDistrictRegionFilter] = useState<string>('Todos');
+  const [districtSearchQuery, setDistrictSearchQuery] = useState<string>('');
 
   // Interactive Member Finder Filter
   const [memberRegionFilter, setMemberRegionFilter] = useState<string>('Todas');
 
   // Prevent background scroll when any modal is open
   useEffect(() => {
-    const isModalActive = authModalOpen || activePillarModal !== null || selectedManualDetail !== null;
+    const isModalActive =
+      authModalOpen || activePillarModal !== null || selectedManualDetail !== null || selectedGearDetail !== null;
     const prevOverflow = document.body.style.overflow;
     if (isModalActive) {
       document.body.style.overflow = 'hidden';
@@ -130,13 +241,15 @@ export default function App() {
     return () => {
       document.body.style.overflow = prevOverflow;
     };
-  }, [authModalOpen, activePillarModal, selectedManualDetail]);
+  }, [authModalOpen, activePillarModal, selectedManualDetail, selectedGearDetail]);
 
   // Handle ESC key to close open modals
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (selectedManualDetail) {
+        if (selectedGearDetail) {
+          setSelectedGearDetail(null);
+        } else if (selectedManualDetail) {
           setSelectedManualDetail(null);
         } else if (activePillarModal) {
           setActivePillarModal(null);
@@ -147,7 +260,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedManualDetail, activePillarModal, authModalOpen]);
+  }, [selectedGearDetail, selectedManualDetail, activePillarModal, authModalOpen]);
 
   // Export a manual as offline text file
   const handleDownloadManualTxt = (manual: ManualItem) => {
@@ -181,63 +294,329 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  // District Fire Risk Data
-  const districtRiskData: Record<
-    'Braga' | 'Guarda' | 'Castelo Branco' | 'Santarém' | 'Faro',
-    {
-      level: 'Reduzido' | 'Moderado' | 'Elevado' | 'Muito Elevado' | 'Máximo';
-      color: string;
-      temp: string;
-      humidity: string;
-      wind: string;
-      fireAlert: string;
-      icnfNotice: string;
-    }
-  > = {
-    Braga: {
-      level: 'Moderado',
-      color: '#A8B88A',
-      temp: '18°C',
-      humidity: '68%',
-      wind: '14 km/h NW',
-      fireAlert: 'Vigilância habitual em zonas de mato no PNPG (Gerês).',
-      icnfNotice: 'Queimas autorizadas mediante registo obrigatório na plataforma do ICNF.',
+  // Download offline TXT district safety bulletin
+  const handleDownloadDistrictBulletinTxt = (districtKey: PortugalDistrict) => {
+    const data = districtRiskData[districtKey];
+    if (!data) return;
+    const lines = [
+      '================================================================',
+      'SOBREVIVENTE.EU — BOLETIM DE MONITORIZAÇÃO E RISCO RURAL',
+      '================================================================',
+      `Distrito / Região : ${data.name} (${data.region})`,
+      `Data de Emissão   : ${new Date().toLocaleDateString('pt-PT')} ${new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`,
+      `Índice de Perigo  : ${data.level.toUpperCase()}`,
+      '----------------------------------------------------------------',
+      'CONDIÇÕES METEOROLÓGICAS DE SUPERFÍCIE:',
+      `- Temperatura Estimada : ${data.temp}`,
+      `- Humidade Relativa    : ${data.humidity}`,
+      `- Vento e Rajadas      : ${data.wind}`,
+      '----------------------------------------------------------------',
+      'MONITORIZAÇÃO DE RECURSOS & TERRENO:',
+      `- Zonas Críticas / Serras : ${data.criticalZones}`,
+      `- Fontes Hídricas Ativas  : ${data.waterPoints}`,
+      `- Contacto Emergência/CDOS: ${data.emergencyContact}`,
+      '----------------------------------------------------------------',
+      'ALERTA DA PROTEÇÃO CIVIL (ANEPC):',
+      data.fireAlert,
+      '',
+      'DIRETIVAS E RESTRIÇÕES FLORESTAIS (ICNF):',
+      data.icnfNotice,
+      '================================================================',
+      'Boletim comunitário compilado por Sobrevivente.eu para uso offline no terreno.',
+      'Em caso de emergência ou avistamento de incêndio, ligue imediatamente 112 ou 117.',
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `boletim-risco-${data.name.toLowerCase().replace(/\s+/g, '-')}-sobrevivente.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Complete District Risk & Territorial Data for all Portugal (18 Districts + Azores & Madeira)
+  const districtRiskData: Record<PortugalDistrict, DistrictInfo> = {
+    Aveiro: {
+      name: 'Aveiro',
+      region: 'Centro',
+      level: 'Elevado',
+      color: '#D4A359',
+      temp: '22°C',
+      humidity: '55%',
+      wind: '18 km/h NW',
+      criticalZones: 'Maciço da Gafanha, Serras da Freita e Arada, Vale do Vouga',
+      waterPoints: '14 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Aveiro / 112',
+      fireAlert: 'Aviso Amarelo: Risco agravado nas encostas serranas de Arouca e Sever do Vouga.',
+      icnfNotice: 'Queimas condicionadas a validação prévia. Proibido fogo de recreio no maciço da Freita.',
     },
-    Guarda: {
+    Beja: {
+      name: 'Beja',
+      region: 'Alentejo',
       level: 'Muito Elevado',
       color: '#C85A3E',
-      temp: '29°C',
-      humidity: '24%',
-      wind: '28 km/h E (Rajadas)',
-      fireAlert: 'Aviso Laranja: Proibição total de queimas e fogueiras em toda a Serra da Estrela.',
-      icnfNotice: 'Pernoita restrita a parques de campismo homologados. Acesso a trilhos condicionado.',
+      temp: '34°C',
+      humidity: '20%',
+      wind: '20 km/h E',
+      criticalZones: 'Parque Natural do Vale do Guadiana, Planície de Mértola e Serpa',
+      waterPoints: '9 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Beja / 112',
+      fireAlert: 'Aviso Laranja: Calor abrasador e secura extrema de combustíveis finos no Baixo Alentejo.',
+      icnfNotice: 'Proibição absoluta de fogueiras e queimas. Trabalhos com ceifeiras condicionados a período noturno.',
+    },
+    Braga: {
+      name: 'Braga',
+      region: 'Norte',
+      level: 'Moderado',
+      color: '#A8B88A',
+      temp: '20°C',
+      humidity: '65%',
+      wind: '14 km/h NW',
+      criticalZones: 'Parque Nacional Peneda-Gerês, Serra da Cabreira, Vale do Cávado',
+      waterPoints: '26 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Braga / 112',
+      fireAlert: 'Vigilância habitual em zonas de mato e serrania florestal no vale do Cávado.',
+      icnfNotice: 'Queimas autorizadas apenas mediante registo obrigatório e confirmação na plataforma ICNF.',
+    },
+    Bragança: {
+      name: 'Bragança',
+      region: 'Norte',
+      level: 'Muito Elevado',
+      color: '#C85A3E',
+      temp: '28°C',
+      humidity: '25%',
+      wind: '24 km/h NE',
+      criticalZones: 'Parque Natural de Montesinho, Serra da Nogueira, Planalto Mirandês',
+      waterPoints: '19 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Bragança / 112',
+      fireAlert: 'Aviso Laranja: Elevado risco de ignição em áreas de giestal e soutos montanhosos.',
+      icnfNotice: 'Acesso condicionado a caminhos rurais em perímetro florestal. Interdição de queimas.',
     },
     'Castelo Branco': {
+      name: 'Castelo Branco',
+      region: 'Centro',
       level: 'Máximo',
       color: '#E0533C',
       temp: '33°C',
       humidity: '18%',
       wind: '32 km/h NE',
-      fireAlert: 'Alerta Vermelho ANEPC: Tolerância zero para equipamentos com fagulhas e fogueiras.',
-      icnfNotice: 'Circulação proibida em caminhos florestais não pavimentados durante o período crítico.',
+      criticalZones: 'Serra da Gardunha, Tejo Internacional, Pinhal Interior Sul (Oleiros/Sertã)',
+      waterPoints: '15 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Castelo Branco / 112',
+      fireAlert: 'Alerta Vermelho ANEPC: Tolerância zero para equipamentos motorizados com fagulhas e fogueiras.',
+      icnfNotice: 'Circulação proibida em caminhos florestais não pavimentados durante o período de maior calor.',
     },
-    Santarém: {
+    Coimbra: {
+      name: 'Coimbra',
+      region: 'Centro',
       level: 'Elevado',
       color: '#D4A359',
-      temp: '27°C',
-      humidity: '38%',
-      wind: '18 km/h W',
-      fireAlert: 'Atenção aos pinhais litorais e lezírias com biomassa seca.',
-      icnfNotice: 'Consulte a junta de freguesia antes de qualquer trabalho rural motorizado.',
+      temp: '26°C',
+      humidity: '42%',
+      wind: '17 km/h W',
+      criticalZones: 'Serra da Lousã, Serra do Buçaco, Vales do Rio Alva e Ceira',
+      waterPoints: '22 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Coimbra / 112',
+      fireAlert: 'Aviso Amarelo: Monitorização reforçada nos relevos xistosos da Lousã e Arganil.',
+      icnfNotice: 'Aconselhada restrição de circulação apeada em trilhos de bivaque florestal isolados.',
+    },
+    Évora: {
+      name: 'Évora',
+      region: 'Alentejo',
+      level: 'Muito Elevado',
+      color: '#C85A3E',
+      temp: '33°C',
+      humidity: '21%',
+      wind: '22 km/h SE',
+      criticalZones: 'Serra d’Ossa, Montados de Sobro e Azinho do Alentejo Central',
+      waterPoints: '11 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Évora / 112',
+      fireAlert: 'Aviso Laranja ANEPC: Condições favoráveis a rápida propagação com baixa humidade relativa.',
+      icnfNotice: 'Interdição completa do uso de fogareiros ou fontes de chama aberta fora de recintos urbanos.',
     },
     Faro: {
+      name: 'Faro',
+      region: 'Algarve',
       level: 'Muito Elevado',
       color: '#C85A3E',
       temp: '31°C',
       humidity: '22%',
       wind: '22 km/h SE',
-      fireAlert: 'Monchique e Serra do Caldeirão em patrulhamento preventivo permanente.',
+      criticalZones: 'Serra de Monchique, Serra do Caldeirão, Espinhaço de Cão',
+      waterPoints: '13 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Faro / 112',
+      fireAlert: 'Monchique e Serra do Caldeirão em patrulhamento preventivo permanente com vigilância aérea.',
       icnfNotice: 'Fontes naturais de montanha com caudal reduzido — garanta filtragem e autonomia hídrica.',
+    },
+    Guarda: {
+      name: 'Guarda',
+      region: 'Centro',
+      level: 'Muito Elevado',
+      color: '#C85A3E',
+      temp: '29°C',
+      humidity: '24%',
+      wind: '28 km/h E (Rajadas)',
+      criticalZones: 'Serra da Estrela (Torre, Manteigas, Seia, Gouveia), Sabugal',
+      waterPoints: '31 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Guarda / 112',
+      fireAlert: 'Aviso Laranja: Proibição total de queimas e fogueiras em toda a Serra da Estrela.',
+      icnfNotice: 'Pernoita restrita a parques de campismo homologados. Acesso a trilhos de altitude condicionado.',
+    },
+    Leiria: {
+      name: 'Leiria',
+      region: 'Centro',
+      level: 'Moderado',
+      color: '#A8B88A',
+      temp: '23°C',
+      humidity: '52%',
+      wind: '19 km/h N',
+      criticalZones: 'Pinhal do Rei (Leiria), Serra dos Candeeiros, Maciço Calcário',
+      waterPoints: '12 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Leiria / 112',
+      fireAlert: 'Vigilância costeira e atenções redobradas na orla florestal de transição dunar.',
+      icnfNotice: 'Proibido qualquer tipo de fogueira em zona de pinhal e matas dunares litorais.',
+    },
+    Lisboa: {
+      name: 'Lisboa',
+      region: 'Lisboa e Vale do Tejo',
+      level: 'Moderado',
+      color: '#A8B88A',
+      temp: '24°C',
+      humidity: '56%',
+      wind: '21 km/h NW',
+      criticalZones: 'Parque Natural de Sintra-Cascais, Parque Florestal de Monsanto, Serra de Montejunto',
+      waterPoints: '17 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Lisboa / 112',
+      fireAlert: 'Aviso de segurança: Risco moderado com vento de nortada nas cristas de Sintra.',
+      icnfNotice: 'Parque Natural de Sintra-Cascais: interdição de trânsito em perímetro florestal nos dias de alerta agravado.',
+    },
+    Portalegre: {
+      name: 'Portalegre',
+      region: 'Alentejo',
+      level: 'Muito Elevado',
+      color: '#C85A3E',
+      temp: '32°C',
+      humidity: '23%',
+      wind: '25 km/h E',
+      criticalZones: 'Parque Natural da Serra de São Mamede, Marvão e Castelo de Vide',
+      waterPoints: '14 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Portalegre / 112',
+      fireAlert: 'Aviso Laranja: Risco elevado nas cristas de quartzito e sobreirais de São Mamede.',
+      icnfNotice: 'Queimas de sobrantes proibidas. Acesso condicionado a veículos motorizados em vias florestais.',
+    },
+    Porto: {
+      name: 'Porto',
+      region: 'Norte',
+      level: 'Moderado',
+      color: '#A8B88A',
+      temp: '21°C',
+      humidity: '62%',
+      wind: '16 km/h NW',
+      criticalZones: 'Serras de Valongo e Santa Justa, Vale do Douro Litoral',
+      waterPoints: '18 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Porto / 112',
+      fireAlert: 'Situação com humidade atlântica favorável; vigilância preventiva em manchas florestais periurbanas.',
+      icnfNotice: 'Registo e validação obrigatória para quaisquer queimas agrícolas em zonas florestadas.',
+    },
+    Santarém: {
+      name: 'Santarém',
+      region: 'Lisboa e Vale do Tejo',
+      level: 'Elevado',
+      color: '#D4A359',
+      temp: '27°C',
+      humidity: '38%',
+      wind: '18 km/h W',
+      criticalZones: 'Lezírias do Tejo, Serras de Aire e Candeeiros, Maciço Florestal de Tomar',
+      waterPoints: '16 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Santarém / 112',
+      fireAlert: 'Atenção aos pinhais litorais e áreas agrícolas com biomassa e palha seca.',
+      icnfNotice: 'Consulte a junta de freguesia antes de qualquer trabalho mecânico em espaço rural.',
+    },
+    Setúbal: {
+      name: 'Setúbal',
+      region: 'Lisboa e Vale do Tejo',
+      level: 'Moderado',
+      color: '#A8B88A',
+      temp: '25°C',
+      humidity: '50%',
+      wind: '18 km/h W',
+      criticalZones: 'Parque Natural da Arrábida, Litoral Alentejano (Sines/Grândola/Alcácer)',
+      waterPoints: '15 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Setúbal / 112',
+      fireAlert: 'Vigilância permanente nos pinhais de Grândola e nas encostas calcárias da Arrábida.',
+      icnfNotice: 'Acesso a praias selvagens e falésias da Arrábida condicionado para circulação automóvel.',
+    },
+    'Viana do Castelo': {
+      name: 'Viana do Castelo',
+      region: 'Norte',
+      level: 'Reduzido',
+      color: '#5B9A68',
+      temp: '19°C',
+      humidity: '72%',
+      wind: '14 km/h NW',
+      criticalZones: 'Serra d’Arga, Vale do Rio Lima, Porta do Mezio e Soajo (PNPG)',
+      waterPoints: '28 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Viana do Castelo / 112',
+      fireAlert: 'Nível verde na orla costeira e vales fluviais; patrulhamento preventivo na Serra d’Arga.',
+      icnfNotice: 'Queimas autorizadas desde que comunicadas previamente ao posto florestal ou bombeiros.',
+    },
+    'Vila Real': {
+      name: 'Vila Real',
+      region: 'Norte',
+      level: 'Elevado',
+      color: '#D4A359',
+      temp: '26°C',
+      humidity: '35%',
+      wind: '20 km/h NE',
+      criticalZones: 'Serra do Marão, Parque Natural do Alvão, Alto Douro Vinhateiro',
+      waterPoints: '21 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Vila Real / 112',
+      fireAlert: 'Aviso Amarelo: Encostas secas e relevo íngreme na bacia duriense.',
+      icnfNotice: 'Sapadores florestais em piquete de intervenção rápida na serra do Marão.',
+    },
+    Viseu: {
+      name: 'Viseu',
+      region: 'Centro',
+      level: 'Elevado',
+      color: '#D4A359',
+      temp: '26°C',
+      humidity: '36%',
+      wind: '19 km/h NE',
+      criticalZones: 'Serra do Caramulo, Maciço da Gralheira (Montemuro), Vale do Dão',
+      waterPoints: '23 fontes ativas catalogadas',
+      emergencyContact: 'CDOS Viseu / 112',
+      fireAlert: 'Aviso Amarelo: Áreas de pinhal e povoamentos florestais sob monitorização ativa.',
+      icnfNotice: 'Proibida a queima de amontoados em dias de vento; mantenha faixas limpas de gestão de combustível.',
+    },
+    Açores: {
+      name: 'Açores',
+      region: 'Regiões Autónomas',
+      level: 'Reduzido',
+      color: '#5B9A68',
+      temp: '21°C',
+      humidity: '78%',
+      wind: '22 km/h W',
+      criticalZones: 'Caldeira das Sete Cidades, Faial (Capelinhos), Montanha do Pico',
+      waterPoints: '35 nascentes ativas catalogadas',
+      emergencyContact: 'Serviço Regional de Proteção Civil dos Açores (SRPCBA) / 112',
+      fireAlert: 'Risco rural reduzido. Avisos de precaução para nevoeiros de altitude e precipitação local.',
+      icnfNotice: 'Subida à Montanha do Pico sujeita a autorização prévia e localizador GPS individual.',
+    },
+    Madeira: {
+      name: 'Madeira',
+      region: 'Regiões Autónomas',
+      level: 'Elevado',
+      color: '#D4A359',
+      temp: '25°C',
+      humidity: '48%',
+      wind: '26 km/h NE (Alísios)',
+      criticalZones: 'Maciço Montanhoso Central (Pico Ruivo / Pico do Arieiro), Floresta Laurissilva',
+      waterPoints: '42 levadas e nascentes ativas catalogadas',
+      emergencyContact: 'Serviço Regional de Proteção Civil da Madeira (SRPC Madeira) / 112',
+      fireAlert: 'Aviso Amarelo: Vento canalizado nas cristas e vales profundos com risco de queda de pedras.',
+      icnfNotice: 'Acesso a trilhos e levadas de montanha condicionado. Expressamente proibido fogo na Laurissilva.',
     },
   };
 
@@ -369,6 +748,13 @@ export default function App() {
             >
               Encontrar Pessoas
             </a>
+            <a
+              href="#loja"
+              className="hover:text-[#E6D7C3] underline-offset-8 hover:underline decoration-[#A8B88A] transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 text-[#A8B88A]" />
+              <span>Loja de Utensílios</span>
+            </a>
           </nav>
 
           {/* Zone 3: Quick Action / Mobile Hamburger */}
@@ -463,6 +849,14 @@ export default function App() {
               >
                 Encontrar Outras Pessoas
               </a>
+              <a
+                href="#loja"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1.5 hover:text-[#A8B88A] transition-colors flex items-center gap-2"
+              >
+                <ShoppingBag className="w-4 h-4 text-[#A8B88A]" />
+                <span>Loja & Utensílios de Sobrevivência</span>
+              </a>
             </nav>
             <div className="pt-3 border-t border-white/10 flex flex-col gap-2.5">
               <a
@@ -507,26 +901,26 @@ export default function App() {
         >
           {/* Left Column: Phrasing, Editorial Subtitle, Exact 2 Buttons */}
           <div className="lg:col-span-6 space-y-8 text-center lg:text-left flex flex-col items-center lg:items-start">
-            <span className="text-xs sm:text-sm tracking-widest uppercase text-[#A8B88A]/90 font-medium">
+            <span className="hero-fade-kicker text-xs sm:text-sm tracking-widest uppercase text-[#A8B88A]/90 font-medium">
               Comunidade de Resiliência & Autonomia · Portugal
             </span>
 
-            {/* Exact phrases in separate lines, original colors & format */}
+            {/* Exact phrases in separate lines, original colors & format with progressive fade-in */}
             <h1
               className="font-display font-semibold tracking-tight leading-[1.08]"
               style={{ fontSize: 'clamp(2.6rem, 5.2vw, 4.4rem)' }}
             >
-              <span className="block text-[#E6D7C3]">Prepara-te.</span>
-              <span className="block text-[#A8B88A]">Adapta-te.</span>
-              <span className="block text-[#C85A3E]">Sobrevive.</span>
+              <span className="hero-fade-title-1 block text-[#E6D7C3]">Prepara-te.</span>
+              <span className="hero-fade-title-2 block text-[#A8B88A]">Adapta-te.</span>
+              <span className="hero-fade-title-3 block text-[#C85A3E]">Sobrevive.</span>
             </h1>
 
-            <p className="text-base sm:text-lg text-[#E6D7C3]/80 leading-relaxed max-w-[52ch] font-normal">
+            <p className="hero-fade-desc text-base sm:text-lg text-[#E6D7C3]/80 leading-relaxed max-w-[52ch] font-normal">
               A comunidade independente em Portugal dedicada à partilha de manuais técnicos de campo, monitorização territorial em tempo real, núcleos regionais e entreajuda de proximidade.
             </p>
 
-            {/* Exactly two buttons right at the start as requested */}
-            <div className="pt-2 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            {/* Exactly two buttons right at the start as requested with progressive fade-in */}
+            <div className="hero-fade-buttons pt-2 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
               {/* Button 1: Entrar with link www.sobrevivente.eu/entrar */}
               <a
                 href="https://www.sobrevivente.eu/entrar"
@@ -555,7 +949,7 @@ export default function App() {
             </div>
 
             {/* Subtle editorial trust anchors */}
-            <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-[#E6D7C3]/65">
+            <div className="hero-fade-badges pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-[#E6D7C3]/65">
               <span>Manuais Práticos</span>
               <span aria-hidden="true">·</span>
               <span>Dados em Tempo Real</span>
@@ -566,9 +960,9 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right Column: Architectural Pedestal Showcase inspired by reference image */}
-          <div className="lg:col-span-6 flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-[460px] aspect-[4/5] rounded-[36px] bg-gradient-to-b from-[#203a29] via-[#1a3123] to-[#122218] p-8 border border-white/10 shadow-2xl flex flex-col justify-between overflow-hidden group">
+          {/* Right Column: Architectural Pedestal Showcase with Metal Logo & Portugal + Islands Relief Map */}
+          <div className="lg:col-span-6 flex justify-center lg:justify-end hero-fade-pedestal">
+            <div className="relative w-full max-w-[480px] rounded-[36px] bg-gradient-to-b from-[#203a29] via-[#1a3123] to-[#122218] p-6 sm:p-7 border border-white/10 shadow-2xl flex flex-col justify-between overflow-hidden group">
               {/* Subtle top spotlight glow */}
               <div
                 className="absolute top-0 right-0 w-64 h-64 pointer-events-none rounded-full"
@@ -577,43 +971,122 @@ export default function App() {
                 }}
               />
 
-              {/* Top Card Label */}
-              <div className="relative z-10 flex items-center justify-between text-xs text-[#A8B88A] tracking-wider uppercase">
-                <span>Comunidade Sobrevivente</span>
-                <span>Portugal</span>
-              </div>
+              {/* Top Card Controls: Title & View Mode Selector */}
+              <div className="relative z-20 flex items-center justify-between gap-2 pb-3 border-b border-white/10">
+                <div className="flex flex-col">
+                  <span className="text-[11px] uppercase tracking-wider text-[#A8B88A] font-mono">
+                    Território & Identidade
+                  </span>
+                  <span className="text-xs text-[#E6D7C3]/90 font-medium">
+                    Portugal · Açores · Madeira
+                  </span>
+                </div>
 
-              {/* Pedestal Centerpiece with Logo & Botanical Elements */}
-              <div className="relative z-10 flex flex-col items-center my-auto">
-                {/* 3D Geometric Pedestal block */}
-                <div className="relative flex flex-col items-center">
-                  {/* Floating Medallion with light reflection */}
-                  <div className="relative mb-6 transform group-hover:scale-105 transition-transform duration-500">
-                    <img
-                      src="/assets/aistudio/logo_7a6369a0.png"
-                      alt="Emblema Sobrevivente.eu em bronze na coluna arquitetónica"
-                      className="w-36 h-36 sm:w-44 sm:h-44 object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.6)]"
-                    />
-                  </div>
-
-                  {/* The architectural pedestal surface */}
-                  <div className="w-56 sm:w-64 h-12 bg-[#264531] rounded-t-xl border-t border-x border-[#A8B88A]/30 shadow-lg flex items-center justify-center">
-                    <span className="text-[11px] uppercase tracking-widest text-[#E6D7C3]/75 font-mono">
-                      Autonomia · Natureza
-                    </span>
-                  </div>
-                  {/* Pedestal base plinth */}
-                  <div className="w-64 sm:w-72 h-7 bg-[#1c3324] rounded-b-lg border-b border-x border-black/40 shadow-2xl" />
+                {/* Mode Selector */}
+                <div className="flex items-center gap-1 p-1 bg-[#132217] rounded-lg border border-white/10 text-xs">
+                  <button
+                    onClick={() => setHeroDisplayMode('emblema')}
+                    className={`px-2.5 py-1 rounded-md font-mono text-[11px] transition-colors ${
+                      heroDisplayMode === 'emblema'
+                        ? 'bg-[#264531] text-[#E6D7C3] shadow-sm font-semibold'
+                        : 'text-[#E6D7C3]/60 hover:text-white'
+                    }`}
+                    aria-label="Ver emblema de metal"
+                  >
+                    Emblema
+                  </button>
+                  <button
+                    onClick={() => setHeroDisplayMode('relevo')}
+                    className={`px-2.5 py-1 rounded-md font-mono text-[11px] transition-colors flex items-center gap-1 ${
+                      heroDisplayMode === 'relevo'
+                        ? 'bg-[#264531] text-[#E6D7C3] shadow-sm font-semibold'
+                        : 'text-[#E6D7C3]/60 hover:text-white'
+                    }`}
+                    aria-label="Ver mapa de relevo de Portugal e Ilhas"
+                  >
+                    <span>Relevo</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#C85A3E]" />
+                  </button>
                 </div>
               </div>
 
+              {/* Card Center: Mode 1 (Emblema com Relevo ao Fundo) vs Mode 2 (Mapa de Relevo Completo) */}
+              {heroDisplayMode === 'emblema' ? (
+                <div className="relative z-10 flex flex-col items-center my-auto py-4">
+                  {/* Background Relief Map watermark/contours behind pedestal */}
+                  <div
+                    className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none transform scale-95"
+                    aria-hidden="true"
+                  >
+                    <PortugalReliefMap compact={true} className="w-full h-full max-h-[290px]" />
+                  </div>
+
+                  {/* 3D Geometric Pedestal block with Floating Metal Medallion */}
+                  <div className="relative flex flex-col items-center z-10">
+                    {/* Floating Medallion with light reflection */}
+                    <div className="relative mb-5 transform group-hover:scale-105 transition-transform duration-500">
+                      <img
+                        src="/assets/aistudio/logo_7a6369a0.png"
+                        alt="Emblema Sobrevivente.eu em bronze sobre o relevo do território português"
+                        className="w-32 h-32 sm:w-40 sm:h-40 object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.65)]"
+                      />
+                    </div>
+
+                    {/* Architectural pedestal surface */}
+                    <div className="w-56 sm:w-64 h-11 bg-[#264531] rounded-t-xl border-t border-x border-[#A8B88A]/30 shadow-lg flex items-center justify-center">
+                      <span className="text-[11px] uppercase tracking-widest text-[#E6D7C3]/80 font-mono">
+                        Autonomia · Natureza
+                      </span>
+                    </div>
+                    {/* Pedestal base plinth */}
+                    <div className="w-64 sm:w-72 h-6 bg-[#1c3324] rounded-b-lg border-b border-x border-black/40 shadow-2xl" />
+
+                    {/* Regional Altitudes Interactive Pill */}
+                    <button
+                      onClick={() => setHeroDisplayMode('relevo')}
+                      className="mt-4 px-3 py-1.5 rounded-full bg-[#142318]/90 hover:bg-[#1a3021] border border-[#A8B88A]/30 text-[11px] text-[#A8B88A] hover:text-[#E6D7C3] transition-colors flex items-center gap-2 font-mono group/btn"
+                    >
+                      <Layers className="w-3.5 h-3.5 text-[#C85A3E] group-hover/btn:rotate-12 transition-transform" />
+                      <span>Relevo: Açores 2.351m · Estrela 1.993m · Madeira 1.862m</span>
+                      <ChevronRight className="w-3 h-3 text-[#A8B88A]" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Mode 2: Full Interactive Topographic Relief Map with Portugal, Madeira & Açores */
+                <div className="relative z-10 flex flex-col items-center my-auto py-2 animate-in fade-in duration-200">
+                  <div className="w-full flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-mono text-[#A8B88A]">
+                      Mapa Topográfico & Curvas de Nível
+                    </span>
+                    <button
+                      onClick={() => setHeroDisplayMode('emblema')}
+                      className="flex items-center gap-1.5 text-[11px] text-[#E6D7C3]/75 hover:text-white transition-colors"
+                      title="Voltar ao emblema"
+                    >
+                      <img
+                        src="/assets/aistudio/logo_7a6369a0.png"
+                        alt="Miniatura do logótipo"
+                        className="w-5 h-5 object-contain"
+                      />
+                      <span className="underline">Ver Emblema</span>
+                    </button>
+                  </div>
+
+                  {/* Render the full SVG Topographic Relief Map */}
+                  <div className="w-full bg-[#122218]/90 rounded-2xl p-2 border border-white/10 shadow-inner">
+                    <PortugalReliefMap compact={false} />
+                  </div>
+                </div>
+              )}
+
               {/* Bottom Quote & Explorer CTA */}
-              <div className="relative z-10 text-center space-y-2 pt-4 border-t border-white/10">
+              <div className="relative z-10 text-center space-y-1.5 pt-3 border-t border-white/10">
                 <p className="text-xs text-[#E6D7C3]/75 italic font-display">
                   «O conhecimento de campo não pesa na mochila.»
                 </p>
                 <div className="flex items-center justify-center gap-2 text-[11px] text-[#A8B88A]">
-                  <span>5 Pilares da Comunidade abaixo</span>
+                  <span>6 Pilares da Comunidade abaixo</span>
                   <ArrowRight className="w-3.5 h-3.5 animate-bounce" />
                 </div>
               </div>
@@ -629,15 +1102,15 @@ export default function App() {
             O que poderá encontrar na comunidade
           </p>
           <h2 className="font-display text-3xl sm:text-4xl text-[#E6D7C3] font-medium tracking-tight mt-2">
-            Os 5 Pilares de Autonomia
+            Os 6 Pilares de Autonomia
           </h2>
           <p className="text-sm sm:text-base text-[#E6D7C3]/70 max-w-[62ch] mx-auto mt-3">
-            Estrutura pensada para capacitar qualquer pessoa com conhecimento prático, dados reais sobre o território português e uma rede solidária.
+            Estrutura completa pensada para capacitar qualquer pessoa com conhecimento prático, dados reais sobre o território português, equipamento de campo testado e uma rede solidária.
           </p>
         </section>
 
         {/* ===================================================================
-            THE 5 PILLARS: Vertical Rounded Showcase Cards (Inspired by Reference)
+            THE 6 PILLARS: Vertical Rounded Showcase Cards (2x3 Balanced Grid)
            =================================================================== */}
         <section className="max-w-[1280px] mx-auto px-4 sm:px-8 pb-24">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
@@ -710,27 +1183,88 @@ export default function App() {
               className="rounded-[32px] bg-gradient-to-b from-[#1d3525] to-[#14261a] p-7 border border-white/10 hover:border-[#A8B88A]/40 transition-all duration-300 shadow-xl flex flex-col justify-between group"
             >
               <div className="space-y-6">
-                {/* Visual Pedestal Header */}
-                <div className="w-full aspect-[4/3] rounded-2xl bg-[#142318] border border-white/5 overflow-hidden relative flex flex-col justify-between p-5">
+                {/* Visual Pedestal Header with Dynamic Live District Status */}
+                <div className="w-full rounded-2xl bg-[#142318] border border-white/5 overflow-hidden relative flex flex-col justify-between p-5 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-mono text-[#A8B88A]">IPMA & ANEPC Live</span>
-                    <span className="text-xs px-2 py-0.5 rounded bg-[#C85A3E]/20 text-[#C85A3E] border border-[#C85A3E]/30 font-medium">
-                      Risco Rural
+                    <span
+                      className="text-xs px-2.5 py-0.5 rounded-full font-semibold border transition-colors"
+                      style={{
+                        backgroundColor: `${districtRiskData[selectedDistrict]?.color || '#C85A3E'}22`,
+                        color: districtRiskData[selectedDistrict]?.color || '#C85A3E',
+                        borderColor: `${districtRiskData[selectedDistrict]?.color || '#C85A3E'}50`,
+                      }}
+                    >
+                      {districtRiskData[selectedDistrict]?.level || 'Muito Elevado'}
                     </span>
                   </div>
 
-                  <div className="space-y-1 my-auto">
-                    <div className="text-2xl font-display font-medium text-[#E6D7C3]">
-                      Perigo de Incêndio
+                  <div className="space-y-1.5 my-auto">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-display font-medium text-[#E6D7C3]">
+                        Perigo de Incêndio
+                      </span>
+                      <span className="text-xs font-mono font-normal text-[#E6D7C3]/80">
+                        {districtRiskData[selectedDistrict]?.temp} · {districtRiskData[selectedDistrict]?.humidity}
+                      </span>
                     </div>
-                    <div className="text-xs text-[#E6D7C3]/70">
-                      Atualização diária por concelho e fontes de água ativas.
+                    <p className="text-xs text-[#E6D7C3]/75 line-clamp-2">
+                      {districtRiskData[selectedDistrict]?.fireAlert}
+                    </p>
+
+                    {/* Quick District Selector directly inside the card */}
+                    <div className="pt-2">
+                      <label htmlFor="landing-district-select" className="text-[10px] uppercase font-mono tracking-wider text-[#A8B88A] block mb-1">
+                        Distrito em consulta:
+                      </label>
+                      <div className="relative flex items-center">
+                        <MapPin className="w-3.5 h-3.5 text-[#A8B88A] absolute left-2.5 pointer-events-none" />
+                        <select
+                          id="landing-district-select"
+                          value={selectedDistrict}
+                          onChange={(e) => setSelectedDistrict(e.target.value as PortugalDistrict)}
+                          className="w-full bg-[#1c3324] text-[#E6D7C3] text-xs py-1.5 pl-8 pr-3 rounded-lg border border-white/10 hover:border-[#A8B88A]/40 focus:border-[#A8B88A] focus:outline-none cursor-pointer"
+                        >
+                          <optgroup label="Norte">
+                            <option value="Braga">Braga</option>
+                            <option value="Bragança">Bragança</option>
+                            <option value="Porto">Porto</option>
+                            <option value="Viana do Castelo">Viana do Castelo</option>
+                            <option value="Vila Real">Vila Real</option>
+                          </optgroup>
+                          <optgroup label="Centro">
+                            <option value="Aveiro">Aveiro</option>
+                            <option value="Castelo Branco">Castelo Branco</option>
+                            <option value="Coimbra">Coimbra</option>
+                            <option value="Guarda">Guarda</option>
+                            <option value="Leiria">Leiria</option>
+                            <option value="Viseu">Viseu</option>
+                          </optgroup>
+                          <optgroup label="Lisboa e Vale do Tejo">
+                            <option value="Lisboa">Lisboa</option>
+                            <option value="Santarém">Santarém</option>
+                            <option value="Setúbal">Setúbal</option>
+                          </optgroup>
+                          <optgroup label="Alentejo">
+                            <option value="Beja">Beja</option>
+                            <option value="Évora">Évora</option>
+                            <option value="Portalegre">Portalegre</option>
+                          </optgroup>
+                          <optgroup label="Algarve">
+                            <option value="Faro">Faro</option>
+                          </optgroup>
+                          <optgroup label="Regiões Autónomas">
+                            <option value="Açores">Açores</option>
+                            <option value="Madeira">Madeira</option>
+                          </optgroup>
+                        </select>
+                      </div>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10 text-[#E6D7C3]/60 font-mono">
-                    <span>Guarda: Muito Elevado</span>
-                    <span>112 / 117</span>
+                    <span className="truncate max-w-[170px]">{selectedDistrict}: {districtRiskData[selectedDistrict]?.level}</span>
+                    <span>18 Distritos + Ilhas</span>
                   </div>
                 </div>
 
@@ -743,7 +1277,7 @@ export default function App() {
                     Informações Úteis Actualizadas
                   </h3>
                   <p className="text-sm text-[#E6D7C3]/75 mt-2 leading-relaxed">
-                    Acompanhamento contínuo das condições no território português. Risco de incêndio rural diário, avisos de proteção civil, nascentes hídricas e normas ICNF.
+                    Acompanhamento contínuo dos 18 distritos de Portugal continental e das regiões autónomas dos Açores e Madeira. Risco de incêndio rural diário, avisos de proteção civil, nascentes hídricas e normas ICNF.
                   </p>
                 </div>
 
@@ -751,7 +1285,7 @@ export default function App() {
                 <ul className="space-y-2 text-xs text-[#E6D7C3]/80 pt-2 border-t border-white/10">
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
-                    <span>Índice diário de risco florestal por distrito</span>
+                    <span>Consulta completa dos 18 distritos + Açores e Madeira</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
@@ -771,7 +1305,7 @@ export default function App() {
                   className="w-full py-3 px-5 rounded-full bg-[#24422e] hover:bg-[#2e533b] text-[#E6D7C3] font-medium text-xs tracking-wide transition-colors flex items-center justify-center gap-2 border border-[#A8B88A]/25 cursor-pointer"
                 >
                   <Thermometer className="w-4 h-4 text-[#A8B88A]" />
-                  <span>Consultar Alertas e Risco</span>
+                  <span>Consultar Todos os Distritos</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -936,7 +1470,7 @@ export default function App() {
             <PillarRevealCard
               id="pessoas"
               delayMs={240}
-              className="rounded-[32px] bg-gradient-to-b from-[#1d3525] to-[#14261a] p-7 border border-white/10 hover:border-[#A8B88A]/40 transition-all duration-300 shadow-xl flex flex-col justify-between group md:col-span-2 lg:col-span-1"
+              className="rounded-[32px] bg-gradient-to-b from-[#1d3525] to-[#14261a] p-7 border border-white/10 hover:border-[#A8B88A]/40 transition-all duration-300 shadow-xl flex flex-col justify-between group"
             >
               <div className="space-y-6">
                 {/* Visual Pedestal Header */}
@@ -1002,6 +1536,83 @@ export default function App() {
                 >
                   <UserCheck className="w-4 h-4 text-[#A8B88A]" />
                   <span>Encontrar Praticantes Próximos</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </PillarRevealCard>
+
+            {/* -------------------------------------------------------------
+                PILLAR 6: LOJA & UTENSÍLIOS DE SOBREVIVÊNCIA
+               ------------------------------------------------------------- */}
+            <PillarRevealCard
+              id="loja"
+              delayMs={360}
+              className="rounded-[32px] bg-gradient-to-b from-[#1d3525] to-[#14261a] p-7 border border-white/10 hover:border-[#A8B88A]/40 transition-all duration-300 shadow-xl flex flex-col justify-between group"
+            >
+              <div className="space-y-6">
+                {/* Visual Pedestal Header */}
+                <div className="w-full aspect-[4/3] rounded-2xl bg-[#142318] border border-white/5 overflow-hidden relative flex flex-col justify-between p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono text-[#A8B88A]">Bazar & Equipamento</span>
+                    <span className="text-xs px-2 py-0.5 rounded bg-[#C85A3E]/20 text-[#C85A3E] border border-[#C85A3E]/30 font-medium">
+                      12 Utensílios Úteis
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 my-auto">
+                    <div className="text-sm font-semibold text-[#E6D7C3] flex items-center gap-2">
+                      <ShoppingBag className="w-4 h-4 text-[#A8B88A]" />
+                      <span>Ferramentas Testadas no Terreno</span>
+                    </div>
+                    <p className="text-xs text-[#E6D7C3]/70">
+                      Água, fogo, abrigo, corte, rádio e primeiros socorros sem quinquilharias.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10 text-[#E6D7C3]/60 font-mono">
+                    <span>Filtros · Faca Scandi · Tarp</span>
+                    <span>Lista 72h</span>
+                  </div>
+                </div>
+
+                {/* Typography Header */}
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                    Pilar 06
+                  </span>
+                  <h3 className="font-display text-2xl text-[#E6D7C3] font-semibold mt-1">
+                    Loja & Utensílios Úteis
+                  </h3>
+                  <p className="text-sm text-[#E6D7C3]/75 mt-2 leading-relaxed">
+                    Utensílios e equipamento de sobrevivência indispensáveis, rigorosamente avaliados por praticantes em Portugal. Sem patrocínios ou brinquedos: apenas ferramentas que salvam vidas.
+                  </p>
+                </div>
+
+                {/* Feature Checklist */}
+                <ul className="space-y-2 text-xs text-[#E6D7C3]/80 pt-2 border-t border-white/10">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Curadoria séria: testado nas serras e matas nacionais</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Fichas técnicas com peso exato em gramas e utilidade</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Montagem interativa e exportação do kit de mochila</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Card Action */}
+              <div className="pt-6 mt-6 border-t border-white/10">
+                <button
+                  onClick={() => setActivePillarModal('loja')}
+                  className="w-full py-3 px-5 rounded-full bg-[#24422e] hover:bg-[#2e533b] text-[#E6D7C3] font-medium text-xs tracking-wide transition-colors flex items-center justify-center gap-2 border border-[#A8B88A]/25 cursor-pointer"
+                >
+                  <ShoppingBag className="w-4 h-4 text-[#A8B88A]" />
+                  <span>Explorar Loja de Utensílios</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -1388,94 +1999,228 @@ export default function App() {
               </button>
             </div>
 
-            {/* Modal Body: District Risk Inspector */}
+            {/* Modal Body: Complete Portugal District Risk Inspector */}
             <div className="p-6 overflow-y-auto space-y-6">
-              <div>
-                <span className="text-xs uppercase tracking-wider text-[#A8B88A] font-mono font-medium">
-                  Selecione o Distrito para Consultar o Perigo Rural IPMA:
-                </span>
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {(['Braga', 'Guarda', 'Castelo Branco', 'Santarém', 'Faro'] as const).map((dist) => (
+              {/* Filter Controls: Search & Regional Categorization */}
+              <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <span className="text-xs uppercase tracking-wider text-[#A8B88A] font-mono font-medium">
+                    Consultar Todos os Distritos de Portugal (18 + Regiões Autónomas):
+                  </span>
+                  <div className="relative w-full sm:w-64">
+                    <Search className="w-3.5 h-3.5 text-[#A8B88A] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={districtSearchQuery}
+                      onChange={(e) => setDistrictSearchQuery(e.target.value)}
+                      placeholder="Pesquisar distrito ou serra..."
+                      className="w-full bg-[#142318] text-[#E6D7C3] placeholder-[#E6D7C3]/40 text-xs py-1.5 pl-8 pr-7 rounded-full border border-white/10 focus:border-[#A8B88A] focus:outline-none"
+                    />
+                    {districtSearchQuery && (
+                      <button
+                        onClick={() => setDistrictSearchQuery('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#E6D7C3]/50 hover:text-[#E6D7C3]"
+                        aria-label="Limpar pesquisa"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Regional Filter Tabs */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {[
+                    { id: 'Todos', label: 'Todos (20)' },
+                    { id: 'Norte', label: 'Norte (5)' },
+                    { id: 'Centro', label: 'Centro (6)' },
+                    { id: 'Lisboa e Vale do Tejo', label: 'Lisboa & Tejo (3)' },
+                    { id: 'Alentejo', label: 'Alentejo (3)' },
+                    { id: 'Algarve', label: 'Algarve (1)' },
+                    { id: 'Regiões Autónomas', label: 'Ilhas (2)' },
+                  ].map((tab) => (
                     <button
-                      key={dist}
-                      onClick={() => setSelectedDistrict(dist)}
-                      className={`px-4 py-2 rounded-full text-xs font-medium transition-all cursor-pointer ${
-                        selectedDistrict === dist
-                          ? 'bg-[#E6D7C3] text-[#16271c] font-semibold shadow-md'
-                          : 'bg-[#1c3324] text-[#E6D7C3]/80 hover:bg-[#23422f] border border-white/10'
+                      key={tab.id}
+                      onClick={() => setDistrictRegionFilter(tab.id)}
+                      className={`px-3 py-1 rounded-full text-[11px] font-mono transition-colors cursor-pointer ${
+                        districtRegionFilter === tab.id
+                          ? 'bg-[#A8B88A] text-[#16271c] font-semibold'
+                          : 'bg-[#142318] text-[#E6D7C3]/70 hover:bg-[#1c3324] border border-white/5'
                       }`}
                     >
-                      {dist}
+                      {tab.label}
                     </button>
                   ))}
                 </div>
+
+                {/* District Buttons Grid */}
+                <div className="flex flex-wrap gap-2 pt-2 max-h-48 overflow-y-auto p-1 rounded-xl bg-[#132218]/50 border border-white/5">
+                  {(Object.keys(districtRiskData) as PortugalDistrict[])
+                    .filter((key) => {
+                      const item = districtRiskData[key];
+                      if (!item) return false;
+                      const matchesRegion =
+                        districtRegionFilter === 'Todos' || item.region === districtRegionFilter;
+                      const matchesSearch =
+                        districtSearchQuery.trim() === '' ||
+                        item.name.toLowerCase().includes(districtSearchQuery.toLowerCase()) ||
+                        item.criticalZones.toLowerCase().includes(districtSearchQuery.toLowerCase()) ||
+                        item.region.toLowerCase().includes(districtSearchQuery.toLowerCase());
+                      return matchesRegion && matchesSearch;
+                    })
+                    .map((dist) => {
+                      const info = districtRiskData[dist];
+                      const isSelected = selectedDistrict === dist;
+                      return (
+                        <button
+                          key={dist}
+                          onClick={() => setSelectedDistrict(dist)}
+                          className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer flex items-center gap-2 border ${
+                            isSelected
+                              ? 'bg-[#E6D7C3] text-[#16271c] font-semibold shadow-md border-[#E6D7C3]'
+                              : 'bg-[#1c3324] text-[#E6D7C3]/80 hover:bg-[#23422f] border-white/10'
+                          }`}
+                        >
+                          <span
+                            className="w-2 h-2 rounded-full shrink-0"
+                            style={{ backgroundColor: info.color }}
+                            title={`Perigo: ${info.level}`}
+                          />
+                          <span>{dist}</span>
+                        </button>
+                      );
+                    })}
+                </div>
               </div>
 
-              {/* Active District Dashboard Card */}
+              {/* Active District Comprehensive Dashboard Card */}
               {districtRiskData[selectedDistrict] && (
-                <div className="p-6 rounded-2xl bg-[#142318] border border-white/10 space-y-5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                <div className="p-6 rounded-2xl bg-[#142318] border border-white/10 space-y-5 shadow-inner">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-white/10 pb-4">
                     <div>
-                      <span className="text-xs font-mono text-[#A8B88A]">Boletim Territorial</span>
-                      <h4 className="font-display text-xl text-[#E6D7C3] font-semibold">
-                        Distrito de {selectedDistrict}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono text-[#A8B88A]">
+                          Boletim Territorial · Região {districtRiskData[selectedDistrict].region}
+                        </span>
+                      </div>
+                      <h4 className="font-display text-2xl text-[#E6D7C3] font-semibold mt-0.5">
+                        {selectedDistrict === 'Açores' || selectedDistrict === 'Madeira'
+                          ? `Região Autónoma dos ${selectedDistrict}`
+                          : `Distrito de ${selectedDistrict}`}
                       </h4>
+                      <p className="text-xs text-[#E6D7C3]/70 mt-1 flex items-center gap-1.5">
+                        <Navigation className="w-3.5 h-3.5 text-[#A8B88A]" />
+                        <span>Relevos & Zonas Críticas: {districtRiskData[selectedDistrict].criticalZones}</span>
+                      </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-[#E6D7C3]/70">Nível de Perigo:</span>
-                      <span
-                        className="px-3 py-1 rounded-full text-xs font-semibold"
-                        style={{
-                          backgroundColor: `${districtRiskData[selectedDistrict].color}25`,
-                          color: districtRiskData[selectedDistrict].color,
-                          border: `1px solid ${districtRiskData[selectedDistrict].color}40`,
-                        }}
-                      >
-                        {districtRiskData[selectedDistrict].level}
+                    <div className="flex flex-col sm:items-end gap-1.5 shrink-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-[#E6D7C3]/70">Nível de Perigo IPMA:</span>
+                        <span
+                          className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
+                          style={{
+                            backgroundColor: `${districtRiskData[selectedDistrict].color}25`,
+                            color: districtRiskData[selectedDistrict].color,
+                            border: `1px solid ${districtRiskData[selectedDistrict].color}50`,
+                          }}
+                        >
+                          {districtRiskData[selectedDistrict].level}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-mono text-[#E6D7C3]/50">
+                        Índice FWI Atualizado Hoje
                       </span>
                     </div>
                   </div>
 
-                  {/* Weather Parameters */}
-                  <div className="grid grid-cols-3 gap-3">
+                  {/* 4-Metric Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="p-3 rounded-xl bg-[#1c3324] border border-white/5 text-center">
-                      <span className="text-[11px] text-[#A8B88A] font-mono">Temperatura</span>
-                      <p className="text-base font-semibold text-[#E6D7C3] mt-0.5">
+                      <div className="flex items-center justify-center gap-1 text-[11px] text-[#A8B88A] font-mono">
+                        <Thermometer className="w-3.5 h-3.5" />
+                        <span>Temperatura</span>
+                      </div>
+                      <p className="text-lg font-semibold text-[#E6D7C3] mt-1">
                         {districtRiskData[selectedDistrict].temp}
                       </p>
                     </div>
                     <div className="p-3 rounded-xl bg-[#1c3324] border border-white/5 text-center">
-                      <span className="text-[11px] text-[#A8B88A] font-mono">Humidade Relativa</span>
-                      <p className="text-base font-semibold text-[#E6D7C3] mt-0.5">
+                      <div className="flex items-center justify-center gap-1 text-[11px] text-[#A8B88A] font-mono">
+                        <Droplets className="w-3.5 h-3.5" />
+                        <span>Humidade</span>
+                      </div>
+                      <p className="text-lg font-semibold text-[#E6D7C3] mt-1">
                         {districtRiskData[selectedDistrict].humidity}
                       </p>
                     </div>
                     <div className="p-3 rounded-xl bg-[#1c3324] border border-white/5 text-center">
-                      <span className="text-[11px] text-[#A8B88A] font-mono">Vento / Rajadas</span>
-                      <p className="text-base font-semibold text-[#E6D7C3] mt-0.5">
+                      <div className="flex items-center justify-center gap-1 text-[11px] text-[#A8B88A] font-mono">
+                        <Wind className="w-3.5 h-3.5" />
+                        <span>Vento</span>
+                      </div>
+                      <p className="text-sm font-semibold text-[#E6D7C3] mt-1 truncate">
                         {districtRiskData[selectedDistrict].wind}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[#1c3324] border border-white/5 text-center">
+                      <div className="flex items-center justify-center gap-1 text-[11px] text-[#A8B88A] font-mono">
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span>Fontes de Água</span>
+                      </div>
+                      <p className="text-xs font-semibold text-[#E6D7C3] mt-1 line-clamp-1">
+                        {districtRiskData[selectedDistrict].waterPoints}
                       </p>
                     </div>
                   </div>
 
-                  {/* Directives */}
-                  <div className="space-y-2 text-xs">
-                    <div className="p-3 rounded-xl bg-[#1f2821] border border-white/5 flex items-start gap-3">
+                  {/* Directives & Regulations */}
+                  <div className="space-y-2.5 text-xs">
+                    <div className="p-3.5 rounded-xl bg-[#1f2821] border border-white/5 flex items-start gap-3">
                       <AlertTriangle className="w-4 h-4 text-[#C85A3E] shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-semibold text-[#E6D7C3]">Alerta ANEPC: </span>
+                        <span className="font-semibold text-[#E6D7C3]">Alerta ANEPC / Proteção Civil: </span>
                         <span className="text-[#E6D7C3]/80">{districtRiskData[selectedDistrict].fireAlert}</span>
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-[#1f2821] border border-white/5 flex items-start gap-3">
+                    <div className="p-3.5 rounded-xl bg-[#1f2821] border border-white/5 flex items-start gap-3">
                       <Shield className="w-4 h-4 text-[#A8B88A] shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-semibold text-[#E6D7C3]">Normas ICNF: </span>
+                        <span className="font-semibold text-[#E6D7C3]">Diretivas e Normas ICNF: </span>
                         <span className="text-[#E6D7C3]/80">{districtRiskData[selectedDistrict].icnfNotice}</span>
                       </div>
                     </div>
+
+                    <div className="p-3.5 rounded-xl bg-[#1b2f23] border border-[#A8B88A]/20 flex items-start gap-3">
+                      <PhoneCall className="w-4 h-4 text-[#A8B88A] shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold text-[#E6D7C3]">Apoio Operacional & Emergência: </span>
+                        <span className="text-[#E6D7C3]/80">{districtRiskData[selectedDistrict].emergencyContact} — Emergências Ligue 112 ou 117</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Actions */}
+                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10">
+                    <button
+                      onClick={() => handleDownloadDistrictBulletinTxt(selectedDistrict)}
+                      className="w-full sm:w-auto px-4 py-2 rounded-full border border-[#A8B88A]/40 text-[#E6D7C3] text-xs font-medium hover:bg-[#A8B88A]/10 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5 text-[#A8B88A]" />
+                      <span>Descarregar Boletim deste Distrito (TXT)</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActivePillarModal('grupos');
+                        setMemberRegionFilter(districtRiskData[selectedDistrict].region);
+                      }}
+                      className="w-full sm:w-auto px-4 py-2 rounded-full bg-[#24422e] hover:bg-[#2e533b] text-[#E6D7C3] text-xs font-medium transition-colors flex items-center justify-center gap-2 border border-[#A8B88A]/30 cursor-pointer"
+                    >
+                      <Users className="w-3.5 h-3.5 text-[#A8B88A]" />
+                      <span>Ver Núcleos da Região {districtRiskData[selectedDistrict].region}</span>
+                    </button>
                   </div>
                 </div>
               )}
@@ -1483,9 +2228,9 @@ export default function App() {
               {/* Water sources reminder */}
               <div className="p-4 rounded-xl bg-[#102319] border border-[#A8B88A]/30 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-3">
-                  <Droplets className="w-5 h-5 text-[#A8B88A]" />
-                  <span>
-                    No Sobrevivente.eu mantemos um mapa colaborativo com mais de 140 fontes e nascentes catalogadas em Portugal.
+                  <Droplets className="w-5 h-5 text-[#A8B88A] shrink-0" />
+                  <span className="text-[#E6D7C3]/90">
+                    No Sobrevivente.eu mantemos um cadastro colaborativo georreferenciado com mais de 140 fontes, levadas e nascentes ativas em Portugal continental e ilhas.
                   </span>
                 </div>
               </div>
@@ -1863,6 +2608,448 @@ export default function App() {
                   Inscrever-se
                 </a>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 6: LOJA & UTENSÍLIOS DE SOBREVIVÊNCIA */}
+      {activePillarModal === 'loja' && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-loja-titulo"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setActivePillarModal(null)}
+        >
+          <div
+            className="w-full max-w-5xl max-h-[92vh] bg-[#16271c] border border-white/15 rounded-[28px] overflow-hidden flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-[#132218]">
+              <div>
+                <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                  Pilar 06 · Equipamento & Ferramentas Úteis
+                </span>
+                <h3 id="modal-loja-titulo" className="font-display text-2xl text-[#E6D7C3] font-semibold">
+                  Loja de Sobrevivência & Utensílios de Campo
+                </h3>
+              </div>
+              <button
+                onClick={() => setActivePillarModal(null)}
+                className="p-2 rounded-full hover:bg-white/10 text-[#E6D7C3] transition-colors"
+                aria-label="Fechar loja de utensílios"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Loadout Backpack Summary Bar */}
+            <div className="px-6 py-3 bg-[#111f15] border-b border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-[#E6D7C3]">
+                  <ShoppingBag className="w-4 h-4 text-[#A8B88A]" />
+                  <span className="font-medium">O Meu Kit de Mochila:</span>
+                  <span className="font-mono text-[#A8B88A] bg-[#1a3122] px-2 py-0.5 rounded border border-white/10">
+                    {myLoadoutItemIds.length} utensílios
+                  </span>
+                </div>
+                <span className="text-white/20">|</span>
+                <div className="flex items-center gap-1.5 text-[#E6D7C3]/80 font-mono">
+                  <Weight className="w-3.5 h-3.5 text-[#C85A3E]" />
+                  <span>
+                    {(
+                      SURVIVAL_GEAR_ITEMS.filter((i) => myLoadoutItemIds.includes(i.id)).reduce(
+                        (acc, c) => acc + c.weightGrams,
+                        0
+                      ) / 1000
+                    ).toFixed(2)}{' '}
+                    kg
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDownloadLoadoutTxt}
+                  disabled={myLoadoutItemIds.length === 0}
+                  className="px-3 py-1.5 rounded-lg bg-[#24422e] hover:bg-[#2e553b] text-[#E6D7C3] disabled:opacity-40 transition-colors flex items-center gap-1.5 font-mono text-xs border border-white/10 cursor-pointer"
+                  title="Descarregar lista em ficheiro de texto"
+                >
+                  <Download className="w-3.5 h-3.5 text-[#A8B88A]" />
+                  <span>Descarregar Lista (.txt)</span>
+                </button>
+                {myLoadoutItemIds.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setMyLoadoutItemIds([]);
+                      try {
+                        localStorage.removeItem('sobrevivente_loadout');
+                      } catch {}
+                    }}
+                    className="p-1.5 rounded-lg hover:bg-white/10 text-[#E6D7C3]/60 hover:text-[#C85A3E] transition-colors"
+                    title="Esvaziar mochila"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Filter and Search Bar */}
+            <div className="p-4 sm:px-6 bg-[#142318] border-b border-white/10 space-y-3">
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                {/* Search */}
+                <div className="relative flex-1 max-w-md">
+                  <Search className="w-4 h-4 text-[#A8B88A] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={gearSearchQuery}
+                    onChange={(e) => setGearSearchQuery(e.target.value)}
+                    placeholder="Pesquisar por utensílio, especificação ou terreno..."
+                    className="w-full pl-9 pr-4 py-2 bg-[#101b13] border border-white/15 rounded-xl text-xs text-[#E6D7C3] placeholder-[#E6D7C3]/40 focus:outline-none focus:border-[#A8B88A]"
+                  />
+                  {gearSearchQuery && (
+                    <button
+                      onClick={() => setGearSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#E6D7C3]/50 hover:text-white"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Info Disclaimer */}
+                <div className="text-[11px] text-[#A8B88A] font-mono flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Sem patrocínios nem links de afiliados. Testes 100% independentes.</span>
+                </div>
+              </div>
+
+              {/* Category Segmented Tabs */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                {GEAR_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedGearCategory(cat.id)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
+                      selectedGearCategory === cat.id
+                        ? 'bg-[#24422e] text-[#E6D7C3] border border-[#A8B88A]/40 shadow-sm'
+                        : 'bg-[#101b13]/60 text-[#E6D7C3]/70 hover:text-white hover:bg-[#101b13]'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Body: Gear Items Grid */}
+            <div className="p-6 overflow-y-auto space-y-4">
+              {(() => {
+                const filteredGear = SURVIVAL_GEAR_ITEMS.filter((item) => {
+                  const matchCategory = selectedGearCategory === 'todas' || item.category === selectedGearCategory;
+                  const q = gearSearchQuery.toLowerCase().trim();
+                  const matchQuery =
+                    !q ||
+                    item.name.toLowerCase().includes(q) ||
+                    item.description.toLowerCase().includes(q) ||
+                    item.specs.toLowerCase().includes(q) ||
+                    item.portugalContext.toLowerCase().includes(q);
+                  return matchCategory && matchQuery;
+                });
+
+                if (filteredGear.length === 0) {
+                  return (
+                    <div className="text-center py-12 space-y-3">
+                      <ShoppingBag className="w-10 h-10 text-[#A8B88A]/40 mx-auto" />
+                      <p className="text-sm text-[#E6D7C3]/70">
+                        Nenhum utensílio encontrado para o termo pesquisado.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setGearSearchQuery('');
+                          setSelectedGearCategory('todas');
+                        }}
+                        className="px-4 py-2 text-xs rounded-full bg-[#24422e] text-[#E6D7C3]"
+                      >
+                        Limpar Filtros
+                      </button>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredGear.map((item) => {
+                      const isInLoadout = myLoadoutItemIds.includes(item.id);
+                      return (
+                        <div
+                          key={item.id}
+                          className={`rounded-2xl p-5 border transition-all duration-200 flex flex-col justify-between ${
+                            isInLoadout
+                              ? 'bg-[#1d3525] border-[#A8B88A]/60 shadow-lg'
+                              : 'bg-[#182c1f]/80 border-white/10 hover:border-white/20'
+                          }`}
+                        >
+                          <div className="space-y-3">
+                            {/* Top row: Category & Score & Weight */}
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-[11px] font-mono text-[#A8B88A]">
+                                {item.categoryLabel}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-xs px-2 py-0.5 rounded bg-white/10 text-[#E6D7C3]">
+                                  {item.weightGrams}g
+                                </span>
+                                <span
+                                  className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded ${
+                                    item.fieldVerdict === 'Indispensável'
+                                      ? 'bg-[#C85A3E]/20 text-[#C85A3E] border border-[#C85A3E]/30'
+                                      : 'bg-[#A8B88A]/20 text-[#A8B88A] border border-[#A8B88A]/30'
+                                  }`}
+                                >
+                                  {item.fieldVerdict}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Item Name */}
+                            <div>
+                              <h4 className="font-display text-base font-semibold text-[#E6D7C3] leading-snug">
+                                {item.name}
+                              </h4>
+                              <p className="text-xs text-[#E6D7C3]/75 mt-1.5 line-clamp-2 leading-relaxed">
+                                {item.description}
+                              </p>
+                            </div>
+
+                            {/* Portugal Context Quote */}
+                            <div className="p-2.5 rounded-xl bg-[#111f15] border border-white/5 text-[11px] text-[#A8B88A] font-mono leading-relaxed">
+                              <span className="text-[#E6D7C3] font-semibold">Uso em PT: </span>
+                              <span>{item.portugalContext}</span>
+                            </div>
+
+                            {/* Specs snippet */}
+                            <div className="text-[11px] text-[#E6D7C3]/60 font-mono">
+                              <span>Specs: {item.specs}</span>
+                            </div>
+                          </div>
+
+                          {/* Card Footer: Add to backpack & Detail view */}
+                          <div className="pt-3 mt-4 border-t border-white/10 flex items-center justify-between gap-2">
+                            <button
+                              onClick={() => setSelectedGearDetail(item)}
+                              className="text-xs text-[#A8B88A] hover:underline flex items-center gap-1 font-mono"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>Ficha Técnica</span>
+                            </button>
+
+                            <button
+                              onClick={() => toggleLoadoutItem(item.id)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center gap-1.5 ${
+                                isInLoadout
+                                  ? 'bg-[#A8B88A] text-[#16271c] hover:bg-white shadow-sm'
+                                  : 'bg-[#24422e] text-[#E6D7C3] hover:bg-[#2f553b] border border-white/10'
+                              }`}
+                            >
+                              {isInLoadout ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Na Mochila</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Plus className="w-3.5 h-3.5" />
+                                  <span>Adicionar</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-white/10 bg-[#132218] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div className="text-[#E6D7C3]/70 text-center sm:text-left">
+                <span>Quer recomendar ou reportar o desgaste de uma ferramenta? </span>
+                <span className="text-[#A8B88A]">Participe na bancada comunitária.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://www.sobrevivente.eu/entrar"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActivePillarModal(null);
+                    setAuthInitialTab('login');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5"
+                >
+                  Entrar
+                </a>
+                <a
+                  href="https://www.sobrevivente.eu/inscrever"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActivePillarModal(null);
+                    setAuthInitialTab('register');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white"
+                >
+                  Inscrever-se
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GEAR ITEM DETAIL DIALOG */}
+      {selectedGearDetail && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="dialog-gear-detail-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setSelectedGearDetail(null)}
+        >
+          <div
+            className="w-full max-w-2xl bg-[#16271c] border border-white/20 rounded-[28px] overflow-hidden flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Dialog Header */}
+            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-[#132218]">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded bg-[#A8B88A]/20 text-[#A8B88A] font-mono text-xs">
+                  {selectedGearDetail.categoryLabel}
+                </span>
+                <span className="text-xs font-mono text-[#E6D7C3]/60">
+                  {selectedGearDetail.weightGrams}g · {selectedGearDetail.priceEstimate}
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedGearDetail(null)}
+                className="p-2 rounded-full hover:bg-white/10 text-[#E6D7C3] transition-colors"
+                aria-label="Fechar detalhe do utensílio"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Dialog Body */}
+            <div className="p-6 overflow-y-auto space-y-5">
+              <div>
+                <h3 id="dialog-gear-detail-title" className="font-display text-2xl font-semibold text-[#E6D7C3]">
+                  {selectedGearDetail.name}
+                </h3>
+                <p className="text-sm text-[#E6D7C3]/80 mt-2 leading-relaxed">
+                  {selectedGearDetail.description}
+                </p>
+              </div>
+
+              {/* Utility Score & Durability strip */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="p-3 rounded-xl bg-[#1d3525] border border-white/10 text-center">
+                  <span className="text-[11px] text-[#A8B88A] font-mono">Índice de Utilidade</span>
+                  <p className="text-lg font-bold text-[#E6D7C3] mt-0.5 font-mono">
+                    {selectedGearDetail.utilityScore} / 10
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-[#1d3525] border border-white/10 text-center">
+                  <span className="text-[11px] text-[#A8B88A] font-mono">Peso de Transporte</span>
+                  <p className="text-lg font-bold text-[#E6D7C3] mt-0.5 font-mono">
+                    {selectedGearDetail.weightGrams} g
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-[#1d3525] border border-white/10 text-center col-span-2 sm:col-span-1">
+                  <span className="text-[11px] text-[#A8B88A] font-mono">Classificação</span>
+                  <p className="text-base font-bold text-[#C85A3E] mt-0.5 font-mono">
+                    {selectedGearDetail.fieldVerdict}
+                  </p>
+                </div>
+              </div>
+
+              {/* Field relevance in Portugal */}
+              <div className="p-4 rounded-xl bg-[#122218] border border-[#A8B88A]/30 space-y-1">
+                <div className="text-xs font-semibold text-[#A8B88A] font-mono flex items-center gap-1.5">
+                  <Compass className="w-3.5 h-3.5" />
+                  <span>Porquê indispensável no território português:</span>
+                </div>
+                <p className="text-xs text-[#E6D7C3]/90 leading-relaxed">
+                  {selectedGearDetail.portugalContext}
+                </p>
+              </div>
+
+              {/* Technical Specifications */}
+              <div className="space-y-2 text-xs">
+                <span className="font-mono text-[#A8B88A] uppercase tracking-wider text-[11px]">
+                  Especificações de Fabrico:
+                </span>
+                <p className="p-3 rounded-xl bg-[#1a3021] border border-white/5 font-mono text-[#E6D7C3]/85 leading-relaxed">
+                  {selectedGearDetail.specs}
+                </p>
+              </div>
+
+              {/* Key Features */}
+              <div className="space-y-2 text-xs">
+                <span className="font-mono text-[#A8B88A] uppercase tracking-wider text-[11px]">
+                  Características Verificadas no Terreno:
+                </span>
+                <ul className="space-y-2">
+                  {selectedGearDetail.keyFeatures.map((feat, i) => (
+                    <li key={i} className="flex items-start gap-2 text-[#E6D7C3]/85">
+                      <Check className="w-4 h-4 text-[#A8B88A] shrink-0 mt-0.5" />
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Field test summary */}
+              <div className="p-3 rounded-xl bg-[#1d271f] border border-white/10 text-xs text-[#E6D7C3]/75 space-y-1">
+                <span className="font-semibold text-[#E6D7C3] font-mono">Relatório de Teste: </span>
+                <span>{selectedGearDetail.fieldTestingSummary}</span>
+              </div>
+            </div>
+
+            {/* Dialog Footer */}
+            <div className="px-6 py-4 border-t border-white/10 bg-[#132218] flex items-center justify-between">
+              <span className="text-xs text-[#E6D7C3]/70 font-mono">
+                {myLoadoutItemIds.includes(selectedGearDetail.id)
+                  ? 'Utensílio incluído na sua lista'
+                  : 'Utensílio fora da sua lista'}
+              </span>
+              <button
+                onClick={() => {
+                  toggleLoadoutItem(selectedGearDetail.id);
+                }}
+                className={`px-5 py-2.5 rounded-full text-xs font-mono font-medium transition-all flex items-center gap-2 ${
+                  myLoadoutItemIds.includes(selectedGearDetail.id)
+                    ? 'bg-[#A8B88A] text-[#16271c] hover:bg-white'
+                    : 'bg-[#C85A3E] text-white hover:bg-[#d8664a]'
+                }`}
+              >
+                {myLoadoutItemIds.includes(selectedGearDetail.id) ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Remover da Mochila</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    <span>Adicionar à Mochila</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
