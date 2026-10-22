@@ -1,66 +1,104 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Compass,
   Droplets,
   Flame,
   Tent,
-  Sprout,
-  HeartPulse,
   Navigation,
-  Lasso,
-  ShieldAlert,
-  Bookmark,
-  Heart,
-  MessageSquare,
-  Share2,
-  MapPin,
-  Clock,
-  SlidersHorizontal,
-  Check,
-  Plus,
-  RotateCcw,
-  Download,
-  ArrowRight,
-  ChevronRight,
-  Search,
-  User,
-  BookOpen,
+  Radio,
   Users,
-  Backpack,
-  Home,
+  MessageSquare,
+  ShieldAlert,
+  MapPin,
+  ArrowRight,
+  BookOpen,
+  Search,
   X,
-  Star,
+  ChevronRight,
+  Download,
+  Check,
   AlertTriangle,
+  Menu,
+  Shield,
+  FileText,
+  Thermometer,
+  Wind,
+  PhoneCall,
+  UserCheck,
   Calendar,
-  ThumbsUp,
-  Send,
   Layers,
-  Award,
 } from 'lucide-react';
 import {
-  CATEGORIES,
   FEATURED_MANUALS,
-  TECHNIQUE_CARDS,
-  INITIAL_FEED_POSTS,
   INITIAL_GROUPS,
   INITIAL_FORUM_QUESTIONS,
-  INITIAL_EVENTS,
-  INITIAL_KIT_72H,
-  TESTIMONIALS,
-  INITIAL_BADGES,
-  CategoryId,
   ManualItem,
-  FeedPost,
-  KitChecklistItem,
-  BadgeItem,
 } from './data/raizData';
 import { BushcraftIllustration } from './components/BotanicalIllustrations';
 import { AuthModal, AuthUser } from './components/AuthModal';
 
+type PillarType = 'manuais' | 'informacoes' | 'grupos' | 'foruns' | 'pessoas';
+
+interface PillarRevealCardProps {
+  id: string;
+  delayMs?: number;
+  className?: string;
+  children: React.ReactNode;
+}
+
+function PillarRevealCard({ id, delayMs = 0, className = '', children }: PillarRevealCardProps) {
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setRevealed(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setRevealed(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px',
+      }
+    );
+
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  return (
+    <div
+      ref={cardRef}
+      id={id}
+      style={{
+        transitionDelay: `${delayMs}ms`,
+      }}
+      className={`pillar-card-anim ${revealed ? 'pillar-revealed' : ''} ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function App() {
-  // Navigation & Modal States
-  const [activeMobileTab, setActiveMobileTab] = useState<'inicio' | 'manuais' | 'comunidade' | 'kit' | 'perfil'>('inicio');
+  // Modal & Navigation States
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authInitialTab, setAuthInitialTab] = useState<'login' | 'register' | 'database'>('register');
   const [loggedUser, setLoggedUser] = useState<AuthUser | null>(() => {
     try {
       const saved = localStorage.getItem('sobrevivente_user');
@@ -70,438 +108,237 @@ export default function App() {
     }
   });
 
-  // Category & Manuals Filtering
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId>('todas');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [onlySavedManuals, setOnlySavedManuals] = useState(false);
-  const [savedManualIds, setSavedManualIds] = useState<string[]>(['filtro-bio-areia', 'abrigo-termico-leanto']);
-  const [activeManualModal, setActiveManualModal] = useState<ManualItem | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activePillarModal, setActivePillarModal] = useState<PillarType | null>(null);
+  const [selectedManualDetail, setSelectedManualDetail] = useState<ManualItem | null>(null);
 
-  // Technique Showcase (Product-style card) State
-  const [activeTechIndex, setActiveTechIndex] = useState(0);
-  const [savedTechIds, setSavedTechIds] = useState<string[]>(['tech-water']);
-  const [techToast, setTechToast] = useState<string | null>(null);
+  // Interactive Live Info State (District Fire Risk Simulator)
+  const [selectedDistrict, setSelectedDistrict] = useState<'Braga' | 'Guarda' | 'Castelo Branco' | 'Santarém' | 'Faro'>('Guarda');
 
-  // Social Network & Badges State
-  const [socialTab, setSocialTab] = useState<'feed' | 'grupos' | 'forum' | 'eventos' | 'conquistas'>('feed');
-  const [badges, setBadges] = useState<BadgeItem[]>(INITIAL_BADGES);
-  const [featuredBadgeIds, setFeaturedBadgeIds] = useState<string[]>([
-    'badge-knots',
-    'badge-100km',
-    'badge-water',
-  ]);
-  const [badgeToast, setBadgeToast] = useState<string | null>(null);
-  const [feedPosts, setFeedPosts] = useState<FeedPost[]>(INITIAL_FEED_POSTS);
-  const [newPostTitle, setNewPostTitle] = useState('');
-  const [newPostContent, setNewPostContent] = useState('');
-  const [newPostRegion, setNewPostRegion] = useState('Serra da Lousã · Coimbra');
-  const [showNewPostForm, setShowNewPostForm] = useState(false);
-  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
-  const [groups, setGroups] = useState(INITIAL_GROUPS);
-  const [forumQuestions, setForumQuestions] = useState(INITIAL_FORUM_QUESTIONS);
-  const [newQuestionText, setNewQuestionText] = useState('');
-  const [events, setEvents] = useState(INITIAL_EVENTS);
+  // Interactive Member Finder Filter
+  const [memberRegionFilter, setMemberRegionFilter] = useState<string>('Todas');
 
-  // Interactive Regional Map State
-  const [selectedBiomeId, setSelectedBiomeId] = useState<string>('grp-norte');
-
-  // 72h Kit Checklist State
-  const [kitItems, setKitItems] = useState<KitChecklistItem[]>(INITIAL_KIT_72H);
-  const [kitFilter, setKitFilter] = useState<'todos' | 'em-falta' | 'prontos'>('todos');
-  const [newItemLabel, setNewItemLabel] = useState('');
-  const [newItemWeight, setNewItemWeight] = useState('150');
-
-  // Final CTA Newsletter State
-  const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [newsletterRegion, setNewsletterRegion] = useState('Norte & Gerês');
-  const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
-  const [newsletterError, setNewsletterError] = useState('');
-
-  // Category Icon Resolver (Thin line icons)
-  const renderCategoryIcon = (id: CategoryId, className = 'w-4 h-4') => {
-    const props = { className, strokeWidth: 1.5 };
-    switch (id) {
-      case 'todas':
-        return <Compass {...props} />;
-      case 'agua':
-        return <Droplets {...props} />;
-      case 'fogo':
-        return <Flame {...props} />;
-      case 'abrigo':
-        return <Tent {...props} />;
-      case 'alimentacao':
-        return <Sprout {...props} />;
-      case 'primeiros-socorros':
-        return <HeartPulse {...props} />;
-      case 'orientacao':
-        return <Navigation {...props} />;
-      case 'nos-e-cordas':
-        return <Lasso {...props} />;
-      case 'preparacao-urbana':
-        return <ShieldAlert {...props} />;
+  // Prevent background scroll when any modal is open
+  useEffect(() => {
+    const isModalActive = authModalOpen || activePillarModal !== null || selectedManualDetail !== null;
+    const prevOverflow = document.body.style.overflow;
+    if (isModalActive) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = prevOverflow;
     }
-  };
-
-  // Filtered Manuals
-  const filteredManuals = useMemo(() => {
-    return FEATURED_MANUALS.filter((manual) => {
-      const matchesCat = selectedCategory === 'todas' || manual.category === selectedCategory;
-      const matchesSaved = !onlySavedManuals || savedManualIds.includes(manual.id);
-      const q = searchQuery.trim().toLowerCase();
-      const matchesSearch =
-        !q ||
-        manual.title.toLowerCase().includes(q) ||
-        manual.subtitle.toLowerCase().includes(q) ||
-        manual.categoryLabel.toLowerCase().includes(q);
-      return matchesCat && matchesSaved && matchesSearch;
-    });
-  }, [selectedCategory, onlySavedManuals, savedManualIds, searchQuery]);
-
-  const toggleSaveManual = (id: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setSavedManualIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
-  };
-
-  // Technique Card Helpers
-  const activeTechnique = TECHNIQUE_CARDS[activeTechIndex];
-  const toggleSaveTech = (id: string) => {
-    const isSaved = savedTechIds.includes(id);
-    setSavedTechIds((prev) => (isSaved ? prev.filter((i) => i !== id) : [...prev, id]));
-    setTechToast(isSaved ? 'Técnica removida da sua mochila.' : 'Técnica guardada na sua mochila de campo.');
-    setTimeout(() => setTechToast(null), 2800);
-  };
-
-  // Social Feed Handlers
-  const togglePostLike = (postId: string) => {
-    setFeedPosts((prev) =>
-      prev.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              likedByMe: !post.likedByMe,
-              likes: post.likedByMe ? post.likes - 1 : post.likes + 1,
-            }
-          : post
-      )
-    );
-  };
-
-  const handleAddComment = (postId: string, e: React.FormEvent) => {
-    e.preventDefault();
-    const text = (commentInputs[postId] || '').trim();
-    if (!text) return;
-    const authorName = loggedUser ? loggedUser.name : 'Explorador Convidado';
-    setFeedPosts((prev) =>
-      prev.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              comments: [
-                ...post.comments,
-                {
-                  id: `c-${Date.now()}`,
-                  author: authorName,
-                  role: 'Comunidade Sobrevivente.eu',
-                  text,
-                  timeAgo: 'Agora mesmo',
-                },
-              ],
-            }
-          : post
-      )
-    );
-    setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
-  };
-
-  // Badge Helpers & XP Calculation
-  const renderBadgeIcon = (iconKey: BadgeItem['iconKey'], className = 'w-5 h-5') => {
-    const props = { className, strokeWidth: 1.5 };
-    switch (iconKey) {
-      case 'knots':
-        return <Lasso {...props} />;
-      case 'explorer100':
-        return <Compass {...props} />;
-      case 'water':
-        return <Droplets {...props} />;
-      case 'fire':
-        return <Flame {...props} />;
-      case 'shelter':
-        return <Tent {...props} />;
-      case 'kit72':
-        return <Backpack {...props} />;
-      case 'botany':
-        return <Sprout {...props} />;
-      case 'polar':
-        return <Navigation {...props} />;
-    }
-  };
-
-  const unlockedBadges = useMemo(() => badges.filter((b) => b.unlocked), [badges]);
-  const featuredBadges = useMemo(
-    () => badges.filter((b) => b.unlocked && featuredBadgeIds.includes(b.id)),
-    [badges, featuredBadgeIds]
-  );
-  const totalExplorerXp = useMemo(
-    () => unlockedBadges.reduce((sum, b) => sum + b.xp, 0),
-    [unlockedBadges]
-  );
-  const explorerRankTitle = useMemo(() => {
-    if (totalExplorerXp >= 1200) return 'Mestre de Campo';
-    if (totalExplorerXp >= 700) return 'Explorador Veterano';
-    return 'Trilheiro Iniciado';
-  }, [totalExplorerXp]);
-
-  const togglePinBadge = (badgeId: string) => {
-    setFeaturedBadgeIds((prev) => {
-      if (prev.includes(badgeId)) {
-        return prev.filter((id) => id !== badgeId);
-      }
-      if (prev.length >= 3) {
-        setBadgeToast('Pode exibir até 3 insígnias em destaque no topo do perfil (substituímos a mais antiga).');
-        setTimeout(() => setBadgeToast(null), 3200);
-        return [...prev.slice(1), badgeId];
-      }
-      return [...prev, badgeId];
-    });
-  };
-
-  const handleUnlockBadge = (badgeId: string) => {
-    const target = badges.find((b) => b.id === badgeId);
-    if (!target || target.unlocked) return;
-    setBadges((prev) =>
-      prev.map((b) =>
-        b.id === badgeId ? { ...b, unlocked: true, progressCurrent: b.progressTarget } : b
-      )
-    );
-    if (featuredBadgeIds.length < 3 && !featuredBadgeIds.includes(badgeId)) {
-      setFeaturedBadgeIds((prev) => [...prev, badgeId]);
-    }
-    setBadgeToast(`Nova conquista desbloqueada: "${target.title}" (+${target.xp} XP)!`);
-    setTimeout(() => setBadgeToast(null), 3500);
-  };
-
-  const handleCreatePost = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPostTitle.trim() || !newPostContent.trim()) return;
-    const authorName = loggedUser ? loggedUser.name : 'Diogo Santarém';
-    const myBadgeTitles = featuredBadges.map((b) => b.title);
-    const newPost: FeedPost = {
-      id: `post-${Date.now()}`,
-      author: authorName,
-      handle: `@${authorName.toLowerCase().replace(/\s+/g, '.')}`,
-      region: newPostRegion,
-      timeAgo: 'Agora mesmo',
-      categoryLabel: 'Relato de Campo',
-      title: newPostTitle.trim(),
-      content: newPostContent.trim(),
-      illustration: 'post-estrela',
-      likes: 1,
-      likedByMe: true,
-      savedByMe: false,
-      coordinates: '40.1125° N, 8.2451° W',
-      authorBadges: myBadgeTitles,
-      comments: [],
+    return () => {
+      document.body.style.overflow = prevOverflow;
     };
-    setFeedPosts((prev) => [newPost, ...prev]);
-    setNewPostTitle('');
-    setNewPostContent('');
-    setShowNewPostForm(false);
-  };
+  }, [authModalOpen, activePillarModal, selectedManualDetail]);
 
-  const toggleGroupJoin = (groupId: string) => {
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.id === groupId
-          ? { ...g, joined: !g.joined, members: g.joined ? g.members - 1 : g.members + 1 }
-          : g
-      )
-    );
-  };
-
-  const toggleQuestionVote = (qId: string) => {
-    setForumQuestions((prev) =>
-      prev.map((q) =>
-        q.id === qId ? { ...q, voted: !q.voted, votes: q.voted ? q.votes - 1 : q.votes + 1 } : q
-      )
-    );
-  };
-
-  const handleAskQuestion = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newQuestionText.trim()) return;
-    setForumQuestions((prev) => [
-      {
-        id: `fq-${Date.now()}`,
-        author: loggedUser ? loggedUser.name : 'Membro da Comunidade',
-        region: 'Portugal',
-        categoryLabel: 'Questão Técnica',
-        question: newQuestionText.trim(),
-        instructorAnswer:
-          'Questão recebida pela equipa de instrutores Sobrevivente.eu. Um especialista em hidrologia ou sobrevivência responderá após validação técnica.',
-        instructorName: 'Conselho Técnico Sobrevivente.eu',
-        votes: 1,
-        voted: true,
-      },
-      ...prev,
-    ]);
-    setNewQuestionText('');
-  };
-
-  const toggleEventEnroll = (evId: string) => {
-    setEvents((prev) =>
-      prev.map((ev) =>
-        ev.id === evId
-          ? {
-              ...ev,
-              enrolled: !ev.enrolled,
-              spotsLeft: ev.enrolled ? ev.spotsLeft + 1 : Math.max(0, ev.spotsLeft - 1),
-            }
-          : ev
-      )
-    );
-  };
-
-  // 72-Hour Kit Calculations & Handlers
-  const kitStats = useMemo(() => {
-    const total = kitItems.length;
-    const completed = kitItems.filter((i) => i.checked).length;
-    const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
-    const currentWeightGrams = kitItems.filter((i) => i.checked).reduce((acc, i) => acc + i.weightGrams, 0);
-    const totalWeightGrams = kitItems.reduce((acc, i) => acc + i.weightGrams, 0);
-    return {
-      total,
-      completed,
-      percentage,
-      currentWeightKg: (currentWeightGrams / 1000).toFixed(2),
-      totalWeightKg: (totalWeightGrams / 1000).toFixed(2),
+  // Handle ESC key to close open modals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (selectedManualDetail) {
+          setSelectedManualDetail(null);
+        } else if (activePillarModal) {
+          setActivePillarModal(null);
+        } else if (authModalOpen) {
+          setAuthModalOpen(false);
+        }
+      }
     };
-  }, [kitItems]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedManualDetail, activePillarModal, authModalOpen]);
 
-  const filteredKitItems = useMemo(() => {
-    if (kitFilter === 'em-falta') return kitItems.filter((i) => !i.checked);
-    if (kitFilter === 'prontos') return kitItems.filter((i) => i.checked);
-    return kitItems;
-  }, [kitItems, kitFilter]);
-
-  const toggleKitItem = (id: string) => {
-    setKitItems((prev) => prev.map((item) => (item.id === id ? { ...item, checked: !item.checked } : item)));
-  };
-
-  const handleAddCustomKitItem = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newItemLabel.trim()) return;
-    const weight = Math.max(10, parseInt(newItemWeight, 10) || 150);
-    setKitItems((prev) => [
-      ...prev,
-      {
-        id: `k-custom-${Date.now()}`,
-        category: 'Luz, Fogo & Ferramentas',
-        label: newItemLabel.trim(),
-        spec: 'Item personalizado adicionado à sua mochila 72h',
-        weightGrams: weight,
-        essential: false,
-        checked: true,
-      },
-    ]);
-    setNewItemLabel('');
-  };
-
-  const handleExportKitTxt = () => {
+  // Export a manual as offline text file
+  const handleDownloadManualTxt = (manual: ManualItem) => {
     const lines = [
-      'SOBREVIVENTE.EU — CHECKLIST KIT DE AUTONOMIA 72 HORAS',
-      `Progresso: ${kitStats.completed}/${kitStats.total} (${kitStats.percentage}%) | Peso atual: ${kitStats.currentWeightKg} kg`,
-      '------------------------------------------------------------',
-      ...kitItems.map(
-        (i) => `[${i.checked ? 'X' : ' '}] ${i.label} (${i.weightGrams}g) — ${i.category}`
-      ),
+      `SOBREVIVENTE.EU — MANUAL DE CAMPO: ${manual.title.toUpperCase()}`,
+      `Subtítulo: ${manual.subtitle}`,
+      `Categoria: ${manual.categoryLabel} | Nível: ${manual.level} | Leitura: ${manual.readTime}`,
+      `Autor / Validador: ${manual.author}`,
+      '----------------------------------------------------------------',
+      'RESUMO:',
+      manual.summary,
+      '',
+      'MATERIAIS E FERRAMENTAS NECESSÁRIAS:',
+      ...manual.materials.map((m) => `• ${m}`),
+      '',
+      'PASSO A PASSO TÉCNICO:',
+      ...manual.steps.map((s, idx) => `${idx + 1}. ${s.title}\n   ${s.detail}\n`),
+      'AVISO DE SEGURANÇA E LEGISLAÇÃO:',
+      manual.fieldNote,
+      '',
+      'Documento fornecido pela comunidade Sobrevivente.eu — Uso cívico e educacional.',
     ];
     const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'kit-72h-sobrevivente-eu.txt';
+    a.download = `manual-${manual.id}-sobrevivente.txt`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
-  // Newsletter Validation
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(newsletterEmail.trim())) {
-      setNewsletterError('Por favor, introduza um endereço de email válido (ex.: nome@dominio.pt).');
-      return;
+  // District Fire Risk Data
+  const districtRiskData: Record<
+    'Braga' | 'Guarda' | 'Castelo Branco' | 'Santarém' | 'Faro',
+    {
+      level: 'Reduzido' | 'Moderado' | 'Elevado' | 'Muito Elevado' | 'Máximo';
+      color: string;
+      temp: string;
+      humidity: string;
+      wind: string;
+      fireAlert: string;
+      icnfNotice: string;
     }
-    setNewsletterError('');
-    setNewsletterSubmitted(true);
+  > = {
+    Braga: {
+      level: 'Moderado',
+      color: '#A8B88A',
+      temp: '18°C',
+      humidity: '68%',
+      wind: '14 km/h NW',
+      fireAlert: 'Vigilância habitual em zonas de mato no PNPG (Gerês).',
+      icnfNotice: 'Queimas autorizadas mediante registo obrigatório na plataforma do ICNF.',
+    },
+    Guarda: {
+      level: 'Muito Elevado',
+      color: '#C85A3E',
+      temp: '29°C',
+      humidity: '24%',
+      wind: '28 km/h E (Rajadas)',
+      fireAlert: 'Aviso Laranja: Proibição total de queimas e fogueiras em toda a Serra da Estrela.',
+      icnfNotice: 'Pernoita restrita a parques de campismo homologados. Acesso a trilhos condicionado.',
+    },
+    'Castelo Branco': {
+      level: 'Máximo',
+      color: '#E0533C',
+      temp: '33°C',
+      humidity: '18%',
+      wind: '32 km/h NE',
+      fireAlert: 'Alerta Vermelho ANEPC: Tolerância zero para equipamentos com fagulhas e fogueiras.',
+      icnfNotice: 'Circulação proibida em caminhos florestais não pavimentados durante o período crítico.',
+    },
+    Santarém: {
+      level: 'Elevado',
+      color: '#D4A359',
+      temp: '27°C',
+      humidity: '38%',
+      wind: '18 km/h W',
+      fireAlert: 'Atenção aos pinhais litorais e lezírias com biomassa seca.',
+      icnfNotice: 'Consulte a junta de freguesia antes de qualquer trabalho rural motorizado.',
+    },
+    Faro: {
+      level: 'Muito Elevado',
+      color: '#C85A3E',
+      temp: '31°C',
+      humidity: '22%',
+      wind: '22 km/h SE',
+      fireAlert: 'Monchique e Serra do Caldeirão em patrulhamento preventivo permanente.',
+      icnfNotice: 'Fontes naturais de montanha com caudal reduzido — garanta filtragem e autonomia hídrica.',
+    },
   };
 
-  const scrollToSection = (id: string, tab: typeof activeMobileTab) => {
-    setActiveMobileTab(tab);
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  // Sample community members for Pillar 5
+  const communityMembers = [
+    {
+      name: 'Gonçalo Tavares',
+      district: 'Braga',
+      focus: 'Bushcraft & Navegação de Montanha',
+      exp: 'Avançado',
+      badge: 'Guia de Campo',
+    },
+    {
+      name: 'Sofia Henriques',
+      district: 'Guarda',
+      focus: 'Botânica Autóctone & Primeiros Socorros',
+      exp: 'Intermédio',
+      badge: 'Fitoterapia Rural',
+    },
+    {
+      name: 'Tiago Resende',
+      district: 'Sintra / Lisboa',
+      focus: 'Comunicações Rádio PMR446 & DIY',
+      exp: 'Avançado',
+      badge: 'Operador Rádio',
+    },
+    {
+      name: 'Duarte Seixas',
+      district: 'Castelo Branco',
+      focus: 'Construção de Abrigos & Tratamento de Água',
+      exp: 'Intermédio',
+      badge: 'Pioneirismo Florestal',
+    },
+    {
+      name: 'Marta Figueira',
+      district: 'Faro',
+      focus: 'Gestão Hídrica & Sobrevivência Costeira',
+      exp: 'Avançado',
+      badge: 'Guia do Litoral',
+    },
+    {
+      name: 'Nuno Carvalheiro',
+      district: 'Porto',
+      focus: 'Logística de Emergência & Mochila 72h',
+      exp: 'Intermédio',
+      badge: 'Resiliência Urbana',
+    },
+  ];
+
+  const filteredMembers =
+    memberRegionFilter === 'Todas'
+      ? communityMembers
+      : communityMembers.filter((m) => m.district.toLowerCase().includes(memberRegionFilter.toLowerCase()));
 
   return (
-    <div className="min-h-screen relative bg-[#1F2E24] text-[#E6D7C3] pb-20 md:pb-0 selection:bg-[#C85A3E]/30">
-      {/* =====================================================================
-          ORGANIC BLURRED FOREST BACKGROUND WITH TEXTURES & FILTERED LIGHT
-         ===================================================================== */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-        {/* Subtle organic botanical & stone reference layer */}
-        <img
-          src="/assets/aistudio/cores_3_667e4b9d.jfif"
-          alt=""
-          referrerPolicy="no-referrer"
-          className="w-full h-full object-cover opacity-[0.13] scale-110 blur-[64px]"
-        />
-        {/* Filtered canopy light & deep teal/olive ambient gradients */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(circle at 18% 12%, rgba(90, 107, 68, 0.34) 0%, transparent 45%),
-              radial-gradient(circle at 84% 22%, rgba(13, 59, 78, 0.48) 0%, transparent 52%),
-              radial-gradient(circle at 50% 62%, rgba(200, 90, 62, 0.11) 0%, transparent 48%),
-              radial-gradient(circle at 20% 85%, rgba(13, 59, 78, 0.42) 0%, transparent 50%),
-              linear-gradient(180deg, rgba(22, 34, 26, 0.86) 0%, rgba(31, 46, 36, 0.92) 50%, rgba(18, 28, 22, 0.97) 100%)
-            `,
-          }}
-        />
-        {/* Subtle botanical leaf vein SVG overlay */}
-        <svg className="absolute top-0 right-0 w-[680px] h-[680px] opacity-[0.06] text-[#A8B88A]" viewBox="0 0 400 400" fill="none">
-          <path d="M380 20 C240 80, 120 200, 20 380" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M300 65 C295 140, 270 190, 220 240" stroke="currentColor" strokeWidth="1" />
-          <path d="M230 120 C220 200, 185 260, 120 310" stroke="currentColor" strokeWidth="1" />
-          <path d="M300 65 C220 65, 160 95, 110 140" stroke="currentColor" strokeWidth="1" />
-          <path d="M230 120 C150 130, 90 165, 45 220" stroke="currentColor" strokeWidth="1" />
-        </svg>
-      </div>
+    <div className="min-h-screen bg-[#16271c] text-[#E6D7C3] antialiased selection:bg-[#C85A3E]/30 selection:text-[#E6D7C3] flex flex-col relative overflow-x-hidden">
+      {/* Background Studio Lighting mimicking reference image */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 75% 55% at 65% 20%, rgba(42, 75, 52, 0.55) 0%, rgba(22, 39, 28, 0.95) 60%, #101c14 100%)',
+        }}
+      />
+
+      {/* Accessible Skip Link */}
+      <a
+        href="#conteudo-principal"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#E6D7C3] focus:text-[#16271c] focus:rounded-md focus:font-semibold focus:shadow-xl"
+      >
+        Saltar para o conteúdo principal
+      </a>
 
       {/* =====================================================================
-          1. NAVBAR TRANSLÚCIDA (3-ZONE TOP BAR CONTRACT)
+          1. HEADER / TOP NAVIGATION (Clean Luxury 3-Zone Contract)
          ===================================================================== */}
-      <header className="sticky top-0 z-40 glass-nav">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-8 h-16 md:h-20 flex items-center justify-between gap-8">
-          {/* Zone 1: Brand Title (Single line wordmark with site medallion logo) */}
+      <header className="sticky top-0 z-40 bg-[#16271c]/90 backdrop-blur-md border-b border-white/10 transition-colors">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-8 h-20 flex items-center justify-between gap-6">
+          {/* Zone 1: Logo & Brand Lockup */}
           <a
             href="#inicio"
-            className="flex items-center gap-3 text-[#E6D7C3] hover:opacity-95 transition-opacity whitespace-nowrap shrink-0 group"
+            className="flex items-center gap-3.5 group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A8B88A] rounded-lg p-1"
+            aria-label="Sobrevivente.eu — Início"
           >
             <img
               src="/assets/aistudio/logo_7a6369a0.png"
-              alt="Sobrevivente.eu Emblema"
-              className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover border border-[#E6D7C3]/30 shadow-md shadow-black/40 group-hover:scale-105 transition-transform"
+              alt="Sobrevivente.eu Logótipo"
+              className="w-10 h-10 sm:w-11 sm:h-11 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-200"
             />
-            <span className="font-display text-xl sm:text-2xl font-semibold tracking-tight text-[#E6D7C3]">
-              Sobrevivente.eu
-            </span>
+            <div className="flex flex-col">
+              <span className="font-display text-xl sm:text-2xl font-semibold text-[#E6D7C3] tracking-wide">
+                Sobrevivente<span className="text-[#A8B88A]">.eu</span>
+              </span>
+            </div>
           </a>
 
-          {/* Zone 2: 4 Clean Single-Line Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#E6D7C3]/85">
+          {/* Zone 2: Navigation Links to Pillars */}
+          <nav
+            aria-label="Navegação da comunidade"
+            className="hidden lg:flex items-center gap-8 text-sm font-medium text-[#E6D7C3]/80"
+          >
             <a
               href="#manuais"
               className="hover:text-[#E6D7C3] underline-offset-8 hover:underline decoration-[#A8B88A] transition-colors whitespace-nowrap shrink-0"
@@ -509,1779 +346,1008 @@ export default function App() {
               Manuais
             </a>
             <a
-              href="#comunidade"
+              href="#informacoes"
               className="hover:text-[#E6D7C3] underline-offset-8 hover:underline decoration-[#A8B88A] transition-colors whitespace-nowrap shrink-0"
             >
-              Comunidade
+              Informações Úteis
             </a>
             <a
-              href="#kits"
+              href="#grupos"
               className="hover:text-[#E6D7C3] underline-offset-8 hover:underline decoration-[#A8B88A] transition-colors whitespace-nowrap shrink-0"
             >
-              Kits
+              Grupos
             </a>
             <a
-              href="#mapa"
+              href="#foruns"
               className="hover:text-[#E6D7C3] underline-offset-8 hover:underline decoration-[#A8B88A] transition-colors whitespace-nowrap shrink-0"
             >
-              Mapa
+              Fóruns
+            </a>
+            <a
+              href="#pessoas"
+              className="hover:text-[#E6D7C3] underline-offset-8 hover:underline decoration-[#A8B88A] transition-colors whitespace-nowrap shrink-0"
+            >
+              Encontrar Pessoas
             </a>
           </nav>
 
-          {/* Zone 3: 1 Primary Action */}
-          <div className="flex items-center shrink-0">
+          {/* Zone 3: Quick Action / Mobile Hamburger */}
+          <div className="flex items-center gap-3 shrink-0">
+            {loggedUser ? (
+              <button
+                onClick={() => {
+                  setAuthInitialTab('database');
+                  setAuthModalOpen(true);
+                }}
+                className="px-4 py-2 text-xs font-medium bg-[#A8B88A]/20 text-[#E6D7C3] border border-[#A8B88A]/40 rounded-full hover:bg-[#A8B88A]/35 transition-colors flex items-center gap-2"
+                aria-label={`Conta de ${loggedUser.name}`}
+              >
+                <span className="w-2 h-2 rounded-full bg-[#A8B88A]" />
+                <span className="truncate max-w-[120px]">{loggedUser.name}</span>
+              </button>
+            ) : (
+              <div className="hidden sm:flex items-center gap-2.5">
+                <a
+                  href="https://www.sobrevivente.eu/entrar"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setAuthInitialTab('login');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 text-xs font-medium text-[#E6D7C3]/90 hover:text-white transition-colors whitespace-nowrap"
+                >
+                  Entrar
+                </a>
+                <a
+                  href="https://www.sobrevivente.eu/inscrever"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setAuthInitialTab('register');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 text-xs font-medium bg-[#E6D7C3] text-[#16271c] rounded-full hover:bg-white transition-colors whitespace-nowrap font-sans font-semibold"
+                >
+                  Inscrever-se
+                </a>
+              </div>
+            )}
+
+            {/* Mobile Hamburger toggle */}
             <button
-              onClick={() => setAuthModalOpen(true)}
-              className="px-5 py-2.5 rounded-full text-sm font-medium bg-[#5A6B44]/40 hover:bg-[#5A6B44]/65 text-[#E6D7C3] border border-white/15 transition-colors whitespace-nowrap shrink-0 cursor-pointer flex items-center gap-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg text-[#E6D7C3] hover:bg-white/5 border border-white/10 transition-colors"
+              aria-label={mobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+              aria-expanded={mobileMenuOpen}
             >
-              <User className="w-4 h-4 text-[#A8B88A]" strokeWidth={1.5} />
-              <span>{loggedUser ? loggedUser.name : 'Entrar / Inscrição'}</span>
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
+
+        {/* Mobile menu dropdown */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-[#132117] border-b border-white/10 px-6 py-5 space-y-4 animate-in slide-in-from-top-2 duration-150">
+            <nav className="flex flex-col space-y-3 text-sm font-medium text-[#E6D7C3]/90">
+              <a
+                href="#manuais"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1.5 hover:text-[#A8B88A] transition-colors"
+              >
+                Manuais Práticos
+              </a>
+              <a
+                href="#informacoes"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1.5 hover:text-[#A8B88A] transition-colors"
+              >
+                Informações Úteis Actualizadas
+              </a>
+              <a
+                href="#grupos"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1.5 hover:text-[#A8B88A] transition-colors"
+              >
+                Grupos & Núcleos
+              </a>
+              <a
+                href="#foruns"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1.5 hover:text-[#A8B88A] transition-colors"
+              >
+                Fóruns de Discussão
+              </a>
+              <a
+                href="#pessoas"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1.5 hover:text-[#A8B88A] transition-colors"
+              >
+                Encontrar Outras Pessoas
+              </a>
+            </nav>
+            <div className="pt-3 border-t border-white/10 flex flex-col gap-2.5">
+              <a
+                href="https://www.sobrevivente.eu/entrar"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  setAuthInitialTab('login');
+                  setAuthModalOpen(true);
+                }}
+                className="w-full text-center py-2.5 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] text-sm font-medium hover:bg-white/5"
+              >
+                Entrar
+              </a>
+              <a
+                href="https://www.sobrevivente.eu/inscrever"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  setAuthInitialTab('register');
+                  setAuthModalOpen(true);
+                }}
+                className="w-full text-center py-2.5 rounded-full bg-[#E6D7C3] text-[#16271c] text-sm font-semibold hover:bg-white"
+              >
+                Inscrever-se
+              </a>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* =====================================================================
-          MAIN CONTENT CONTAINER
+          MAIN CONTENT
          ===================================================================== */}
-      <main className="relative z-10 max-w-[1240px] mx-auto px-4 sm:px-8 pt-6 sm:pt-12 pb-20 space-y-20 sm:space-y-28">
+      <main id="conteudo-principal" tabIndex={-1} className="relative z-10 flex-1 outline-none">
         {/* ===================================================================
-            2. HERO SECTION
+            HERO SECTION: Minimalist Luxury, 3-phrase headline & Pedestal
            =================================================================== */}
-        <section id="inicio" className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
-          {/* Left Column: Value Proposition & Dual CTAs */}
-          <div className="lg:col-span-7 glass-card p-6 sm:p-11 flex flex-col justify-between relative overflow-hidden">
-            {/* Subtle radial highlight */}
+        <section
+          id="inicio"
+          className="max-w-[1280px] mx-auto px-4 sm:px-8 pt-8 sm:pt-16 pb-16 sm:pb-24 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center"
+        >
+          {/* Left Column: Phrasing, Editorial Subtitle, Exact 2 Buttons */}
+          <div className="lg:col-span-6 space-y-8 text-center lg:text-left flex flex-col items-center lg:items-start">
+            <span className="text-xs sm:text-sm tracking-widest uppercase text-[#A8B88A]/90 font-medium">
+              Comunidade de Resiliência & Autonomia · Portugal
+            </span>
+
+            {/* Exact phrases in separate lines, original colors & format */}
+            <h1
+              className="font-display font-semibold tracking-tight leading-[1.08]"
+              style={{ fontSize: 'clamp(2.6rem, 5.2vw, 4.4rem)' }}
+            >
+              <span className="block text-[#E6D7C3]">Prepara-te.</span>
+              <span className="block text-[#A8B88A]">Adapta-te.</span>
+              <span className="block text-[#C85A3E]">Sobrevive.</span>
+            </h1>
+
+            <p className="text-base sm:text-lg text-[#E6D7C3]/80 leading-relaxed max-w-[52ch] font-normal">
+              A comunidade independente em Portugal dedicada à partilha de manuais técnicos de campo, monitorização territorial em tempo real, núcleos regionais e entreajuda de proximidade.
+            </p>
+
+            {/* Exactly two buttons right at the start as requested */}
+            <div className="pt-2 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+              {/* Button 1: Entrar with link www.sobrevivente.eu/entrar */}
+              <a
+                href="https://www.sobrevivente.eu/entrar"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setAuthInitialTab('login');
+                  setAuthModalOpen(true);
+                }}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-full text-sm font-medium border border-[#E6D7C3]/45 text-[#E6D7C3] hover:border-[#E6D7C3] hover:bg-white/5 transition-all duration-200 text-center whitespace-nowrap cursor-pointer shadow-sm"
+              >
+                Entrar
+              </a>
+
+              {/* Button 2: Inscrever-se with link www.sobrevivente.eu/inscrever */}
+              <a
+                href="https://www.sobrevivente.eu/inscrever"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setAuthInitialTab('register');
+                  setAuthModalOpen(true);
+                }}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-full text-sm font-semibold bg-[#E6D7C3] text-[#16271c] hover:bg-white transition-all duration-200 text-center whitespace-nowrap cursor-pointer shadow-lg shadow-black/25"
+              >
+                Inscrever-se
+              </a>
+            </div>
+
+            {/* Subtle editorial trust anchors */}
+            <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-[#E6D7C3]/65">
+              <span>Manuais Práticos</span>
+              <span aria-hidden="true">·</span>
+              <span>Dados em Tempo Real</span>
+              <span aria-hidden="true">·</span>
+              <span>Núcleos Regionais</span>
+              <span aria-hidden="true">·</span>
+              <span>100% Gratuito</span>
+            </div>
+          </div>
+
+          {/* Right Column: Architectural Pedestal Showcase inspired by reference image */}
+          <div className="lg:col-span-6 flex justify-center lg:justify-end">
+            <div className="relative w-full max-w-[460px] aspect-[4/5] rounded-[36px] bg-gradient-to-b from-[#203a29] via-[#1a3123] to-[#122218] p-8 border border-white/10 shadow-2xl flex flex-col justify-between overflow-hidden group">
+              {/* Subtle top spotlight glow */}
+              <div
+                className="absolute top-0 right-0 w-64 h-64 pointer-events-none rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, rgba(168, 184, 138, 0.22) 0%, transparent 70%)',
+                }}
+              />
+
+              {/* Top Card Label */}
+              <div className="relative z-10 flex items-center justify-between text-xs text-[#A8B88A] tracking-wider uppercase">
+                <span>Comunidade Sobrevivente</span>
+                <span>Portugal</span>
+              </div>
+
+              {/* Pedestal Centerpiece with Logo & Botanical Elements */}
+              <div className="relative z-10 flex flex-col items-center my-auto">
+                {/* 3D Geometric Pedestal block */}
+                <div className="relative flex flex-col items-center">
+                  {/* Floating Medallion with light reflection */}
+                  <div className="relative mb-6 transform group-hover:scale-105 transition-transform duration-500">
+                    <img
+                      src="/assets/aistudio/logo_7a6369a0.png"
+                      alt="Emblema Sobrevivente.eu em bronze na coluna arquitetónica"
+                      className="w-36 h-36 sm:w-44 sm:h-44 object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.6)]"
+                    />
+                  </div>
+
+                  {/* The architectural pedestal surface */}
+                  <div className="w-56 sm:w-64 h-12 bg-[#264531] rounded-t-xl border-t border-x border-[#A8B88A]/30 shadow-lg flex items-center justify-center">
+                    <span className="text-[11px] uppercase tracking-widest text-[#E6D7C3]/75 font-mono">
+                      Autonomia · Natureza
+                    </span>
+                  </div>
+                  {/* Pedestal base plinth */}
+                  <div className="w-64 sm:w-72 h-7 bg-[#1c3324] rounded-b-lg border-b border-x border-black/40 shadow-2xl" />
+                </div>
+              </div>
+
+              {/* Bottom Quote & Explorer CTA */}
+              <div className="relative z-10 text-center space-y-2 pt-4 border-t border-white/10">
+                <p className="text-xs text-[#E6D7C3]/75 italic font-display">
+                  «O conhecimento de campo não pesa na mochila.»
+                </p>
+                <div className="flex items-center justify-center gap-2 text-[11px] text-[#A8B88A]">
+                  <span>5 Pilares da Comunidade abaixo</span>
+                  <ArrowRight className="w-3.5 h-3.5 animate-bounce" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ===================================================================
+            SECTION TITLE: O Que Encontra na Comunidade
+           =================================================================== */}
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-8 pt-8 pb-10 text-center">
+          <p className="text-xs sm:text-sm font-medium tracking-widest uppercase text-[#A8B88A]">
+            O que poderá encontrar na comunidade
+          </p>
+          <h2 className="font-display text-3xl sm:text-4xl text-[#E6D7C3] font-medium tracking-tight mt-2">
+            Os 5 Pilares de Autonomia
+          </h2>
+          <p className="text-sm sm:text-base text-[#E6D7C3]/70 max-w-[62ch] mx-auto mt-3">
+            Estrutura pensada para capacitar qualquer pessoa com conhecimento prático, dados reais sobre o território português e uma rede solidária.
+          </p>
+        </section>
+
+        {/* ===================================================================
+            THE 5 PILLARS: Vertical Rounded Showcase Cards (Inspired by Reference)
+           =================================================================== */}
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-8 pb-24">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+            {/* -------------------------------------------------------------
+                PILLAR 1: MANUAIS
+               ------------------------------------------------------------- */}
+            <PillarRevealCard
+              id="manuais"
+              delayMs={0}
+              className="rounded-[32px] bg-gradient-to-b from-[#1d3525] to-[#14261a] p-7 border border-white/10 hover:border-[#A8B88A]/40 transition-all duration-300 shadow-xl flex flex-col justify-between group"
+            >
+              <div className="space-y-6">
+                {/* Visual Pedestal Header */}
+                <div className="w-full aspect-[4/3] rounded-2xl bg-[#142318] border border-white/5 overflow-hidden relative flex items-center justify-center p-3">
+                  <BushcraftIllustration type="water-filter" className="w-full h-full object-cover" />
+                  <div className="absolute bottom-2 right-2 px-2.5 py-1 rounded-md bg-[#16271c]/80 backdrop-blur-sm text-[11px] text-[#A8B88A] border border-white/10 font-mono">
+                    8 Manuais
+                  </div>
+                </div>
+
+                {/* Typography Header */}
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                    Pilar 01
+                  </span>
+                  <h3 className="font-display text-2xl text-[#E6D7C3] font-semibold mt-1">
+                    Manuais Práticos
+                  </h3>
+                  <p className="text-sm text-[#E6D7C3]/75 mt-2 leading-relaxed">
+                    Guias passo a passo testados em condições reais de terreno. Filtragem de água, fogo por fricção, abrigos térmicos, nós táticos e forrageamento seguro.
+                  </p>
+                </div>
+
+                {/* Feature Checklist */}
+                <ul className="space-y-2 text-xs text-[#E6D7C3]/80 pt-2 border-t border-white/10">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Passo a passo com materiais e ferramentas de campo</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Descarregamento offline em ficheiro de texto</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Validação por técnicos de resgate e biólogos</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Card Action */}
+              <div className="pt-6 mt-6 border-t border-white/10">
+                <button
+                  onClick={() => setActivePillarModal('manuais')}
+                  className="w-full py-3 px-5 rounded-full bg-[#24422e] hover:bg-[#2e533b] text-[#E6D7C3] font-medium text-xs tracking-wide transition-colors flex items-center justify-center gap-2 border border-[#A8B88A]/25 cursor-pointer"
+                >
+                  <BookOpen className="w-4 h-4 text-[#A8B88A]" />
+                  <span>Explorar Manuais de Campo</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </PillarRevealCard>
+
+            {/* -------------------------------------------------------------
+                PILLAR 2: INFORMAÇÕES ÚTEIS ACTUALIZADAS
+               ------------------------------------------------------------- */}
+            <PillarRevealCard
+              id="informacoes"
+              delayMs={120}
+              className="rounded-[32px] bg-gradient-to-b from-[#1d3525] to-[#14261a] p-7 border border-white/10 hover:border-[#A8B88A]/40 transition-all duration-300 shadow-xl flex flex-col justify-between group"
+            >
+              <div className="space-y-6">
+                {/* Visual Pedestal Header */}
+                <div className="w-full aspect-[4/3] rounded-2xl bg-[#142318] border border-white/5 overflow-hidden relative flex flex-col justify-between p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono text-[#A8B88A]">IPMA & ANEPC Live</span>
+                    <span className="text-xs px-2 py-0.5 rounded bg-[#C85A3E]/20 text-[#C85A3E] border border-[#C85A3E]/30 font-medium">
+                      Risco Rural
+                    </span>
+                  </div>
+
+                  <div className="space-y-1 my-auto">
+                    <div className="text-2xl font-display font-medium text-[#E6D7C3]">
+                      Perigo de Incêndio
+                    </div>
+                    <div className="text-xs text-[#E6D7C3]/70">
+                      Atualização diária por concelho e fontes de água ativas.
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10 text-[#E6D7C3]/60 font-mono">
+                    <span>Guarda: Muito Elevado</span>
+                    <span>112 / 117</span>
+                  </div>
+                </div>
+
+                {/* Typography Header */}
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                    Pilar 02
+                  </span>
+                  <h3 className="font-display text-2xl text-[#E6D7C3] font-semibold mt-1">
+                    Informações Úteis Actualizadas
+                  </h3>
+                  <p className="text-sm text-[#E6D7C3]/75 mt-2 leading-relaxed">
+                    Acompanhamento contínuo das condições no território português. Risco de incêndio rural diário, avisos de proteção civil, nascentes hídricas e normas ICNF.
+                  </p>
+                </div>
+
+                {/* Feature Checklist */}
+                <ul className="space-y-2 text-xs text-[#E6D7C3]/80 pt-2 border-t border-white/10">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Índice diário de risco florestal por distrito</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Regras legais de pernoita e uso do fogo em vigor</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Cadastro comunitário de pontos de água potável</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Card Action */}
+              <div className="pt-6 mt-6 border-t border-white/10">
+                <button
+                  onClick={() => setActivePillarModal('informacoes')}
+                  className="w-full py-3 px-5 rounded-full bg-[#24422e] hover:bg-[#2e533b] text-[#E6D7C3] font-medium text-xs tracking-wide transition-colors flex items-center justify-center gap-2 border border-[#A8B88A]/25 cursor-pointer"
+                >
+                  <Thermometer className="w-4 h-4 text-[#A8B88A]" />
+                  <span>Consultar Alertas e Risco</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </PillarRevealCard>
+
+            {/* -------------------------------------------------------------
+                PILLAR 3: GRUPOS & NÚCLEOS
+               ------------------------------------------------------------- */}
+            <PillarRevealCard
+              id="grupos"
+              delayMs={240}
+              className="rounded-[32px] bg-gradient-to-b from-[#1d3525] to-[#14261a] p-7 border border-white/10 hover:border-[#A8B88A]/40 transition-all duration-300 shadow-xl flex flex-col justify-between group"
+            >
+              <div className="space-y-6">
+                {/* Visual Pedestal Header */}
+                <div className="w-full aspect-[4/3] rounded-2xl bg-[#142318] border border-white/5 overflow-hidden relative flex flex-col justify-between p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono text-[#A8B88A]">Núcleos Regionais</span>
+                    <span className="text-xs px-2 py-0.5 rounded bg-[#A8B88A]/20 text-[#A8B88A] border border-[#A8B88A]/30">
+                      Norte a Sul
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 my-auto">
+                    <div className="text-sm font-semibold text-[#E6D7C3] flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-[#C85A3E]" />
+                      <span>Gerês · Estrela · Sintra · Alentejo</span>
+                    </div>
+                    <p className="text-xs text-[#E6D7C3]/70">
+                      Equipas autónomas que organizam treinos de campo e apoio mútuo.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10 text-[#E6D7C3]/60 font-mono">
+                    <span>6 Núcleos Ativos</span>
+                    <span>Saídas Presenciais</span>
+                  </div>
+                </div>
+
+                {/* Typography Header */}
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                    Pilar 03
+                  </span>
+                  <h3 className="font-display text-2xl text-[#E6D7C3] font-semibold mt-1">
+                    Grupos & Núcleos
+                  </h3>
+                  <p className="text-sm text-[#E6D7C3]/75 mt-2 leading-relaxed">
+                    A sobrevivência é mais forte em comunidade. Conecte-se a núcleos locais organizados por relevo e clima em Portugal continental e ilhas.
+                  </p>
+                </div>
+
+                {/* Feature Checklist */}
+                <ul className="space-y-2 text-xs text-[#E6D7C3]/80 pt-2 border-t border-white/10">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Equipas regionais com bivaques e treinos práticos</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Círculos temáticos de rádio PMR446 e primeiros socorros</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Protocolos de comunicação em caso de corte de rede</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Card Action */}
+              <div className="pt-6 mt-6 border-t border-white/10">
+                <button
+                  onClick={() => setActivePillarModal('grupos')}
+                  className="w-full py-3 px-5 rounded-full bg-[#24422e] hover:bg-[#2e533b] text-[#E6D7C3] font-medium text-xs tracking-wide transition-colors flex items-center justify-center gap-2 border border-[#A8B88A]/25 cursor-pointer"
+                >
+                  <Users className="w-4 h-4 text-[#A8B88A]" />
+                  <span>Ver Núcleos Regionais</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </PillarRevealCard>
+
+            {/* -------------------------------------------------------------
+                PILLAR 4: FÓRUNS DE DISCUSSÃO
+               ------------------------------------------------------------- */}
+            <PillarRevealCard
+              id="foruns"
+              delayMs={120}
+              className="rounded-[32px] bg-gradient-to-b from-[#1d3525] to-[#14261a] p-7 border border-white/10 hover:border-[#A8B88A]/40 transition-all duration-300 shadow-xl flex flex-col justify-between group"
+            >
+              <div className="space-y-6">
+                {/* Visual Pedestal Header */}
+                <div className="w-full aspect-[4/3] rounded-2xl bg-[#142318] border border-white/5 overflow-hidden relative flex flex-col justify-between p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono text-[#A8B88A]">Bancada de Discussão</span>
+                    <span className="text-xs px-2 py-0.5 rounded bg-white/10 text-[#E6D7C3] font-medium">
+                      Sem Publicidade
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 my-auto">
+                    <div className="text-sm font-semibold text-[#E6D7C3]">
+                      «Testes reais de lâminas, filtros e rádios»
+                    </div>
+                    <p className="text-xs text-[#E6D7C3]/70">
+                      Análises sinceras de membros sem patrocínios nem links afiliados.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10 text-[#E6D7C3]/60 font-mono">
+                    <span>Perguntas Táticas</span>
+                    <span>Bancada DIY</span>
+                  </div>
+                </div>
+
+                {/* Typography Header */}
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                    Pilar 04
+                  </span>
+                  <h3 className="font-display text-2xl text-[#E6D7C3] font-semibold mt-1">
+                    Fóruns da Comunidade
+                  </h3>
+                  <p className="text-sm text-[#E6D7C3]/75 mt-2 leading-relaxed">
+                    Espaço sério e despretensioso para esclarecer dúvidas táticas, partilhar relatórios pós-expedição e construir equipamento na bancada faça-você-mesmo.
+                  </p>
+                </div>
+
+                {/* Feature Checklist */}
+                <ul className="space-y-2 text-xs text-[#E6D7C3]/80 pt-2 border-t border-white/10">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Análises honestas de equipamento testado no terreno</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Respostas detalhadas de praticantes experientes</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Relatórios de travessias e erros para não repetir</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Card Action */}
+              <div className="pt-6 mt-6 border-t border-white/10">
+                <button
+                  onClick={() => setActivePillarModal('foruns')}
+                  className="w-full py-3 px-5 rounded-full bg-[#24422e] hover:bg-[#2e533b] text-[#E6D7C3] font-medium text-xs tracking-wide transition-colors flex items-center justify-center gap-2 border border-[#A8B88A]/25 cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4 text-[#A8B88A]" />
+                  <span>Explorar Fóruns e Tópicos</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </PillarRevealCard>
+
+            {/* -------------------------------------------------------------
+                PILLAR 5: ENCONTRAR OUTRAS PESSOAS
+               ------------------------------------------------------------- */}
+            <PillarRevealCard
+              id="pessoas"
+              delayMs={240}
+              className="rounded-[32px] bg-gradient-to-b from-[#1d3525] to-[#14261a] p-7 border border-white/10 hover:border-[#A8B88A]/40 transition-all duration-300 shadow-xl flex flex-col justify-between group md:col-span-2 lg:col-span-1"
+            >
+              <div className="space-y-6">
+                {/* Visual Pedestal Header */}
+                <div className="w-full aspect-[4/3] rounded-2xl bg-[#142318] border border-white/5 overflow-hidden relative flex flex-col justify-between p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono text-[#A8B88A]">Rede de Proximidade</span>
+                    <span className="text-xs px-2 py-0.5 rounded bg-[#E6D7C3]/15 text-[#E6D7C3] font-medium">
+                      Entreajuda
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 my-auto">
+                    <div className="text-sm font-semibold text-[#E6D7C3] flex items-center gap-2">
+                      <Compass className="w-4 h-4 text-[#A8B88A]" />
+                      <span>Companheiros de Marcha & Bivaque</span>
+                    </div>
+                    <p className="text-xs text-[#E6D7C3]/70">
+                      Encontre pessoas da sua região para praticar com segurança.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10 text-[#E6D7C3]/60 font-mono">
+                    <span>Duplas de Autonomia</span>
+                    <span>Apoio Local</span>
+                  </div>
+                </div>
+
+                {/* Typography Header */}
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                    Pilar 05
+                  </span>
+                  <h3 className="font-display text-2xl text-[#E6D7C3] font-semibold mt-1">
+                    Encontrar Outras Pessoas
+                  </h3>
+                  <p className="text-sm text-[#E6D7C3]/75 mt-2 leading-relaxed">
+                    Não precisa de treinar sozinho. Conheça outros membros no seu concelho, forme duplas de marcha e participe numa rede voluntária de auxílio mútuo em emergências.
+                  </p>
+                </div>
+
+                {/* Feature Checklist */}
+                <ul className="space-y-2 text-xs text-[#E6D7C3]/80 pt-2 border-t border-white/10">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Diretório de exploradores por concelho/distrito</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Companheiros para travessias e caminhadas de autonomia</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#A8B88A] shrink-0" />
+                    <span>Rede solidária para tempestades ou falhas de energia</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Card Action */}
+              <div className="pt-6 mt-6 border-t border-white/10">
+                <button
+                  onClick={() => setActivePillarModal('pessoas')}
+                  className="w-full py-3 px-5 rounded-full bg-[#24422e] hover:bg-[#2e533b] text-[#E6D7C3] font-medium text-xs tracking-wide transition-colors flex items-center justify-center gap-2 border border-[#A8B88A]/25 cursor-pointer"
+                >
+                  <UserCheck className="w-4 h-4 text-[#A8B88A]" />
+                  <span>Encontrar Praticantes Próximos</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </PillarRevealCard>
+          </div>
+        </section>
+
+        {/* ===================================================================
+            COMMUNITY PHILOSOPHY & BOTTOM CONVERSION BLOCK
+           =================================================================== */}
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-8 pb-20">
+          <div className="rounded-[36px] bg-gradient-to-b from-[#1a3324] to-[#122218] border border-white/10 p-8 sm:p-14 text-center relative overflow-hidden shadow-2xl">
+            {/* Ambient subtle glow */}
             <div
-              className="absolute -top-24 -left-24 w-72 h-72 rounded-full pointer-events-none"
-              style={{ background: 'radial-gradient(circle, rgba(168,184,138,0.16) 0%, transparent 70%)' }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 pointer-events-none rounded-full"
+              style={{
+                background: 'radial-gradient(circle, rgba(168, 184, 138, 0.14) 0%, transparent 70%)',
+              }}
             />
 
-            <div className="space-y-6 relative z-10 text-center lg:text-left flex flex-col items-center lg:items-start">
-              <p className="text-xs sm:text-sm tracking-wide text-[#A8B88A] font-medium">
-                Biblioteca de Campo · Rede Social de Autonomia · Portugal
+            <div className="relative z-10 max-w-2xl mx-auto space-y-6">
+              <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                Junte-se a Nós
+              </span>
+              <h2 className="font-display text-3xl sm:text-4xl text-[#E6D7C3] font-semibold">
+                Comece hoje a desenvolver a sua autonomia
+              </h2>
+              <p className="text-sm sm:text-base text-[#E6D7C3]/80 leading-relaxed font-normal">
+                Aceda gratuitamente aos manuais de campo completos, participe nas conversas do fórum, receba alertas de território e conecte-se com pessoas da sua região.
               </p>
 
-              {/* Title in 3 separate lines as requested */}
-              <h1
-                className="font-display font-semibold text-[#E6D7C3] tracking-tight leading-[1.12]"
-                style={{ fontSize: 'clamp(2.4rem, 4.4vw, 4.1rem)' }}
-              >
-                <span className="block">Prepara-te.</span>
-                <span className="block text-[#A8B88A]">Adapta-te.</span>
-                <span className="block text-[#C85A3E]">Sobrevive.</span>
-              </h1>
-
-              <p className="text-base sm:text-lg text-[#E6D7C3]/85 leading-relaxed max-w-[60ch] font-normal mx-auto lg:mx-0">
-                Conhecimento prático partilhado por biólogos, guias de montanha e técnicos de proteção civil. Aprenda a filtrar água, construir abrigos térmicos, orientar-se sem rede e preparar a sua família com serenidade e profundo respeito pela natureza.
-              </p>
-            </div>
-
-            <div className="pt-8 mt-8 border-t border-white/10 space-y-6 relative z-10 w-full flex flex-col items-center lg:items-start">
-              {/* Primary Pill CTA + Secondary Sage Button */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full sm:w-auto">
-                <button
-                  onClick={() => setAuthModalOpen(true)}
-                  className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-[#E6D7C3] font-medium text-sm sm:text-base transition-all shadow-lg shadow-black/25 flex items-center justify-center gap-2.5 whitespace-nowrap shrink-0 cursor-pointer"
-                >
-                  <span>Juntar-me à comunidade</span>
-                  <ArrowRight className="w-4 h-4" strokeWidth={1.75} />
-                </button>
-
+              {/* The Two Action Buttons repeated cleanly at bottom */}
+              <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a
-                  href="#manuais"
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-[#A8B88A]/18 hover:bg-[#A8B88A]/28 text-[#E6D7C3] border border-[#A8B88A]/40 font-medium text-sm sm:text-base transition-colors whitespace-nowrap shrink-0 text-center flex items-center justify-center"
+                  href="https://www.sobrevivente.eu/entrar"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setAuthInitialTab('login');
+                    setAuthModalOpen(true);
+                  }}
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-full text-sm font-medium border border-[#E6D7C3]/45 text-[#E6D7C3] hover:border-[#E6D7C3] hover:bg-white/5 transition-all text-center whitespace-nowrap cursor-pointer"
                 >
-                  Explorar manuais
+                  Entrar
+                </a>
+                <a
+                  href="https://www.sobrevivente.eu/inscrever"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setAuthInitialTab('register');
+                    setAuthModalOpen(true);
+                  }}
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-full text-sm font-semibold bg-[#E6D7C3] text-[#16271c] hover:bg-white transition-all text-center whitespace-nowrap cursor-pointer shadow-lg shadow-black/25"
+                >
+                  Inscrever-se
                 </a>
               </div>
-
-              {/* Quiet unboxed proof summary */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-3 gap-y-1 text-xs sm:text-sm text-[#E6D7C3]/70 tabular-nums text-center lg:text-left">
-                <span>148 manuais revistos por especialistas</span>
-                <span aria-hidden="true">·</span>
-                <span>12.400 membros em Portugal</span>
-                <span aria-hidden="true">·</span>
-                <span>Princípios Leave No Trace</span>
-              </div>
             </div>
-          </div>
-
-          {/* Right Column: Organic Glassmorphism Field Card Showcase */}
-          <div className="lg:col-span-5 glass-card p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 mb-4 text-center sm:text-left">
-              <div>
-                <p className="text-xs text-[#A8B88A]">Caderno de Campo em Destaque</p>
-                <h2 className="font-display text-xl text-[#E6D7C3] mt-0.5">
-                  Autonomia nas Primeiras 72 Horas
-                </h2>
-              </div>
-              <button
-                onClick={() => setActiveManualModal(FEATURED_MANUALS[0])}
-                className="p-2.5 rounded-full glass-pill text-[#E6D7C3]/80 hover:text-[#E6D7C3] transition-colors cursor-pointer shrink-0"
-                title="Abrir Manual Completo"
-              >
-                <BookOpen className="w-4 h-4" strokeWidth={1.5} />
-              </button>
-            </div>
-
-            {/* Atmospheric Illustration Frame */}
-            <div className="relative rounded-[18px] overflow-hidden border border-white/12 aspect-[16/10] mb-5 bg-[#142018]">
-              <BushcraftIllustration type="water-filter" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#142018]/90 via-transparent to-transparent" />
-              <div className="absolute bottom-3.5 left-4 right-4 flex items-end justify-between gap-2">
-                <div>
-                  <p className="text-xs text-[#A8B88A]">Hidrologia de Emergência · Nível Iniciante</p>
-                  <p className="font-display text-base text-[#E6D7C3]">
-                    Tripé Bio-Areia & Carvão Ativo
-                  </p>
-                </div>
-                <span className="text-xs font-mono text-[#E6D7C3]/80 tabular-nums">99,2% limpidez</span>
-              </div>
-            </div>
-
-            {/* 4 Pillars Mini-Grid (Water, Fire, Shelter, Navigation) */}
-            <div className="grid grid-cols-2 gap-3 text-center sm:text-left">
-              <button
-                onClick={() => {
-                  setSelectedCategory('agua');
-                  scrollToSection('manuais', 'manuais');
-                }}
-                className="p-3.5 rounded-[16px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 flex flex-col items-center sm:items-start transition-colors cursor-pointer"
-              >
-                <div className="flex items-center justify-between w-full text-[#A8B88A] mb-1">
-                  <Droplets className="w-4 h-4" strokeWidth={1.5} />
-                  <span className="text-xs font-mono tabular-nums">24 guias</span>
-                </div>
-                <p className="text-sm font-medium text-[#E6D7C3]">Água Potável</p>
-                <p className="text-xs text-[#E6D7C3]/65 mt-0.5">Captação e fervura</p>
-              </button>
-
-              <button
-                onClick={() => {
-                  setSelectedCategory('abrigo');
-                  scrollToSection('manuais', 'manuais');
-                }}
-                className="p-3.5 rounded-[16px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 flex flex-col items-center sm:items-start transition-colors cursor-pointer"
-              >
-                <div className="flex items-center justify-between w-full text-[#A8B88A] mb-1">
-                  <Tent className="w-4 h-4" strokeWidth={1.5} />
-                  <span className="text-xs font-mono tabular-nums">22 guias</span>
-                </div>
-                <p className="text-sm font-medium text-[#E6D7C3]">Abrigo Térmico</p>
-                <p className="text-xs text-[#E6D7C3]/65 mt-0.5">Toldos e cama de solo</p>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* ===================================================================
-            3. CHIPS DE CATEGORIA COM ÍCONES + 4. MANUAIS EM DESTAQUE
-           =================================================================== */}
-        <section id="manuais" className="space-y-8 scroll-mt-24">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 text-center md:text-left items-center md:items-end">
-            <div className="mx-auto md:mx-0">
-              <p className="text-xs sm:text-sm text-[#A8B88A] font-medium mb-1">
-                01. Biblioteca Técnica de Campo
-              </p>
-              <h2 className="font-display text-2xl sm:text-4xl text-[#E6D7C3] font-semibold">
-                Manuais Práticos por Disciplina
-              </h2>
-            </div>
-
-            {/* Search & Saved Filter Controls */}
-            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-end gap-3 w-full md:w-auto">
-              <div className="relative w-full sm:w-64">
-                <Search className="w-4 h-4 text-[#E6D7C3]/50 absolute left-3.5 top-1/2 -translate-y-1/2" strokeWidth={1.5} />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Procurar técnica, planta, nó..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full glass-pill text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/45 focus:outline-none focus:border-[#A8B88A] text-center sm:text-left"
-                />
-              </div>
-
-              <button
-                onClick={() => setOnlySavedManuals(!onlySavedManuals)}
-                className={`w-full sm:w-auto px-4 py-2.5 rounded-full text-sm font-medium flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer border ${
-                  onlySavedManuals
-                    ? 'bg-[#C85A3E] text-[#E6D7C3] border-[#C85A3E]'
-                    : 'glass-pill text-[#E6D7C3]/85 hover:text-[#E6D7C3]'
-                }`}
-              >
-                <Bookmark className="w-4 h-4" strokeWidth={1.5} />
-                <span>Guardados ({savedManualIds.length})</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Interactive Category Filter Chips (8 requested categories + Todos) */}
-          <div
-            className="flex items-center gap-2.5 overflow-x-auto no-scrollbar pb-2"
-            role="tablist"
-            aria-label="Categorias de manuais de sobrevivência"
-          >
-            {CATEGORIES.map((cat) => {
-              const active = selectedCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2.5 rounded-[18px] text-xs sm:text-sm font-medium flex items-center gap-2.5 transition-all whitespace-nowrap shrink-0 cursor-pointer border ${
-                    active
-                      ? 'bg-[#5A6B44]/65 text-[#E6D7C3] border-[#A8B88A]/60 shadow-md shadow-black/20'
-                      : 'bg-white/[0.04] hover:bg-white/[0.09] text-[#E6D7C3]/75 hover:text-[#E6D7C3] border-white/10'
-                  }`}
-                >
-                  <span className={active ? 'text-[#E6D7C3]' : 'text-[#A8B88A]'}>
-                    {renderCategoryIcon(cat.id, 'w-4 h-4')}
-                  </span>
-                  <span>{cat.label}</span>
-                  <span className="text-xs opacity-65 font-mono tabular-nums">{cat.count}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Active Category Context Description */}
-          <div className="flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-[#E6D7C3]/70 border-b border-white/10 pb-3 text-center sm:text-left gap-2">
-            <span>
-              {CATEGORIES.find((c) => c.id === selectedCategory)?.description}
-            </span>
-            <span className="font-mono tabular-nums whitespace-nowrap">
-              {filteredManuals.length} {filteredManuals.length === 1 ? 'manual visível' : 'manuais visíveis'}
-            </span>
-          </div>
-
-          {/* Featured Manuals Grid */}
-          {filteredManuals.length === 0 ? (
-            <div className="glass-card p-10 text-center space-y-3">
-              <p className="font-display text-xl text-[#E6D7C3]">
-                Nenhum manual corresponde aos filtros selecionados.
-              </p>
-              <p className="text-sm text-[#E6D7C3]/70">
-                Experimente limpar a pesquisa ou selecionar "Todos os Manuais".
-              </p>
-              <button
-                onClick={() => {
-                  setSelectedCategory('todas');
-                  setOnlySavedManuals(false);
-                  setSearchQuery('');
-                }}
-                className="mt-2 px-5 py-2.5 rounded-full bg-[#5A6B44]/50 hover:bg-[#5A6B44]/75 text-sm text-[#E6D7C3] border border-white/15 cursor-pointer"
-              >
-                Repor filtros
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredManuals.map((manual) => {
-                const isSaved = savedManualIds.includes(manual.id);
-                return (
-                  <article
-                    key={manual.id}
-                    onClick={() => setActiveManualModal(manual)}
-                    className="glass-card-interactive p-5 flex flex-col justify-between cursor-pointer group"
-                  >
-                    <div>
-                      {/* Card Illustration */}
-                      <div className="relative rounded-[16px] overflow-hidden border border-white/10 aspect-[4/3] mb-4 bg-[#142018]">
-                        <BushcraftIllustration
-                          type={manual.illustration}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <button
-                          type="button"
-                          onClick={(e) => toggleSaveManual(manual.id, e)}
-                          aria-label={isSaved ? 'Remover dos guardados' : 'Guardar manual'}
-                          className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md border transition-colors cursor-pointer ${
-                            isSaved
-                              ? 'bg-[#C85A3E] text-[#E6D7C3] border-[#C85A3E]'
-                              : 'bg-black/45 text-[#E6D7C3]/85 border-white/15 hover:bg-black/65'
-                          }`}
-                        >
-                          <Bookmark className="w-4 h-4" strokeWidth={1.5} fill={isSaved ? 'currentColor' : 'none'} />
-                        </button>
-                      </div>
-
-                      {/* Clean Unboxed Metadata (Zero-Pill Discipline) */}
-                      <div className="flex items-center gap-1.5 text-xs text-[#A8B88A] mb-2">
-                        <span>{manual.categoryLabel}</span>
-                        <span aria-hidden="true">·</span>
-                        <span
-                          className={
-                            manual.level === 'Avançado'
-                              ? 'text-[#C85A3E] font-medium'
-                              : 'text-[#E6D7C3]/80'
-                          }
-                        >
-                          {manual.level}
-                        </span>
-                        <span aria-hidden="true">·</span>
-                        <span className="tabular-nums">{manual.readTime}</span>
-                      </div>
-
-                      {/* Primary Title */}
-                      <h3 className="font-display text-lg text-[#E6D7C3] font-semibold leading-snug group-hover:text-[#A8B88A] transition-colors">
-                        {manual.title}
-                      </h3>
-
-                      <p className="text-xs sm:text-sm text-[#E6D7C3]/75 mt-2 line-clamp-3 leading-relaxed">
-                        {manual.summary}
-                      </p>
-                    </div>
-
-                    <div className="pt-4 mt-4 border-t border-white/10 flex items-center justify-between text-xs text-[#E6D7C3]/70">
-                      <span className="truncate max-w-[180px]">{manual.author.split('·')[0]}</span>
-                      <span className="text-[#A8B88A] font-medium inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform whitespace-nowrap">
-                        Ler guia <ChevronRight className="w-3.5 h-3.5" />
-                      </span>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        {/* ===================================================================
-            6. FICHA-EXEMPLO DE TÉCNICA (ESTILO CARTÃO DE PRODUTO / LEAFORA REF)
-           =================================================================== */}
-        <section className="space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-center sm:text-left items-center sm:items-end">
-            <div className="mx-auto sm:mx-0">
-              <p className="text-xs sm:text-sm text-[#A8B88A] font-medium mb-1">
-                02. Ficha Técnica Interativa
-              </p>
-              <h2 className="font-display text-2xl sm:text-4xl text-[#E6D7C3] font-semibold">
-                Anatomia de uma Técnica de Campo
-              </h2>
-            </div>
-
-            {/* Technique Switcher Tabs */}
-            <div className="flex items-center gap-1.5 p-1.5 rounded-full glass-pill overflow-x-auto max-w-full justify-center mx-auto sm:mx-0">
-              {TECHNIQUE_CARDS.map((t, idx) => (
-                <button
-                  key={t.id}
-                  onClick={() => setActiveTechIndex(idx)}
-                  className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                    activeTechIndex === idx
-                      ? 'bg-[#5A6B44] text-[#E6D7C3] shadow-sm'
-                      : 'text-[#E6D7C3]/70 hover:text-[#E6D7C3]'
-                  }`}
-                >
-                  {t.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Product-Style Technique Card (Directly inspired by reference image 2 bottom-left card) */}
-          <div className="glass-card p-6 sm:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            {/* Left Visual Showcase with Circular Organic Halo */}
-            <div className="lg:col-span-5 relative rounded-[20px] overflow-hidden border border-white/12 bg-[#15221A] flex flex-col justify-between p-6 min-h-[320px]">
-              <div className="flex items-center justify-between relative z-10">
-                <span className="text-xs text-[#A8B88A] font-medium">
-                  {activeTechnique.categoryLabel}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => toggleSaveTech(activeTechnique.id)}
-                    aria-label="Guardar ficha técnica"
-                    className={`w-9 h-9 rounded-full flex items-center justify-center border transition-colors cursor-pointer ${
-                      savedTechIds.includes(activeTechnique.id)
-                        ? 'bg-[#C85A3E] border-[#C85A3E] text-[#E6D7C3]'
-                        : 'glass-pill text-[#E6D7C3]/80 hover:text-[#E6D7C3]'
-                    }`}
-                  >
-                    <Heart
-                      className="w-4 h-4"
-                      strokeWidth={1.5}
-                      fill={savedTechIds.includes(activeTechnique.id) ? 'currentColor' : 'none'}
-                    />
-                  </button>
-                </div>
-              </div>
-
-              <div className="my-auto py-4">
-                <BushcraftIllustration
-                  type={activeTechnique.illustration}
-                  className="w-full h-52 object-contain"
-                />
-              </div>
-
-              {/* Dots indicator */}
-              <div className="flex items-center justify-center gap-2 relative z-10">
-                {TECHNIQUE_CARDS.map((t, i) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setActiveTechIndex(i)}
-                    aria-label={`Ver técnica ${t.name}`}
-                    className={`h-2 rounded-full transition-all cursor-pointer ${
-                      i === activeTechIndex ? 'w-6 bg-[#A8B88A]' : 'w-2 bg-white/25'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Right Specification Sheet with 4 Attribute Columns */}
-            <div className="lg:col-span-7 flex flex-col justify-between space-y-6 text-center sm:text-left">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-display text-2xl sm:text-3xl text-[#E6D7C3] font-semibold">
-                    {activeTechnique.name}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-[#A8B88A] italic mt-1">
-                    {activeTechnique.scientificOrTechSubtitle}
-                  </p>
-                </div>
-
-                {/* Unboxed Rating & Condition Row */}
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs sm:text-sm text-[#E6D7C3]/85 tabular-nums">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Star className="w-4 h-4 text-[#C85A3E]" strokeWidth={1.5} fill="#C85A3E" />
-                    <strong>{activeTechnique.rating}</strong> ({activeTechnique.reviewsCount} validações em campo)
-                  </span>
-                  <span aria-hidden="true">·</span>
-                  <span>Condição ideal: {activeTechnique.lightCondition}</span>
-                </div>
-
-                <p className="text-sm sm:text-base text-[#E6D7C3]/85 leading-relaxed mx-auto sm:mx-0">
-                  {activeTechnique.description}
-                </p>
-
-                {/* 4 Attribute Columns with Thin-Line Icons & Vertical Hairline Dividers */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/12 border-y border-white/12 py-5">
-                  <div className="px-3 py-2 sm:py-0 flex flex-col items-center text-center">
-                    <SlidersHorizontal className="w-5 h-5 text-[#A8B88A] mb-2" strokeWidth={1.5} />
-                    <span className="text-xs text-[#E6D7C3]/60">Dificuldade</span>
-                    <span className="text-sm font-semibold text-[#E6D7C3] mt-0.5">
-                      {activeTechnique.attributes.dificuldade.label}
-                    </span>
-                    <span className="text-[11px] text-[#E6D7C3]/65 mt-0.5">
-                      {activeTechnique.attributes.dificuldade.sub}
-                    </span>
-                  </div>
-
-                  <div className="px-3 py-2 sm:py-0 flex flex-col items-center text-center">
-                    <Layers className="w-5 h-5 text-[#A8B88A] mb-2" strokeWidth={1.5} />
-                    <span className="text-xs text-[#E6D7C3]/60">Material</span>
-                    <span className="text-sm font-semibold text-[#E6D7C3] mt-0.5">
-                      {activeTechnique.attributes.material.label}
-                    </span>
-                    <span className="text-[11px] text-[#E6D7C3]/65 mt-0.5">
-                      {activeTechnique.attributes.material.sub}
-                    </span>
-                  </div>
-
-                  <div className="px-3 py-2 sm:py-0 flex flex-col items-center text-center">
-                    <Clock className="w-5 h-5 text-[#A8B88A] mb-2" strokeWidth={1.5} />
-                    <span className="text-xs text-[#E6D7C3]/60">Tempo</span>
-                    <span className="text-sm font-semibold text-[#E6D7C3] mt-0.5 tabular-nums">
-                      {activeTechnique.attributes.tempo.label}
-                    </span>
-                    <span className="text-[11px] text-[#E6D7C3]/65 mt-0.5">
-                      {activeTechnique.attributes.tempo.sub}
-                    </span>
-                  </div>
-
-                  <div className="px-3 py-2 sm:py-0 flex flex-col items-center text-center">
-                    <ShieldAlert className="w-5 h-5 text-[#C85A3E] mb-2" strokeWidth={1.5} />
-                    <span className="text-xs text-[#E6D7C3]/60">Risco</span>
-                    <span className="text-sm font-semibold text-[#E6D7C3] mt-0.5">
-                      {activeTechnique.attributes.risco.label}
-                    </span>
-                    <span className="text-[11px] text-[#E6D7C3]/65 mt-0.5">
-                      {activeTechnique.attributes.risco.sub}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Quick Steps Summary */}
-                <div className="space-y-2 pt-1 text-left">
-                  <p className="text-xs font-medium text-[#A8B88A]">Resumo de Execução:</p>
-                  <ol className="space-y-1.5 text-xs sm:text-sm text-[#E6D7C3]/80">
-                    {activeTechnique.stepsPreview.map((step, i) => (
-                      <li key={i} className="flex items-start gap-2.5">
-                        <span className="font-mono text-xs text-[#A8B88A] tabular-nums mt-0.5">
-                          0{i + 1}.
-                        </span>
-                        <span>{step}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              </div>
-
-              {/* Action Bar */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 text-center sm:text-left">
-                <div className="text-center sm:text-left">
-                  <span className="text-xs text-[#E6D7C3]/60 block">Acesso Livre na Biblioteca</span>
-                  <span className="font-display text-lg text-[#E6D7C3] font-semibold">
-                    Ficha Verificada #0{activeTechIndex + 1}
-                  </span>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                  <button
-                    onClick={() => toggleSaveTech(activeTechnique.id)}
-                    className="w-full sm:w-auto justify-center px-5 py-3 rounded-full bg-[#5A6B44]/55 hover:bg-[#5A6B44]/80 text-[#E6D7C3] text-sm font-medium border border-[#A8B88A]/40 transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
-                  >
-                    <Backpack className="w-4 h-4" strokeWidth={1.5} />
-                    <span>
-                      {savedTechIds.includes(activeTechnique.id) ? 'Na Mochila ✓' : 'Guardar na Mochila'}
-                    </span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveManualModal(FEATURED_MANUALS[activeTechIndex])}
-                    className="w-full sm:w-auto justify-center px-6 py-3 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-[#E6D7C3] text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
-                  >
-                    <span>Ver Manual Completo</span>
-                    <ArrowRight className="w-4 h-4" strokeWidth={1.5} />
-                  </button>
-                </div>
-              </div>
-
-              {techToast && (
-                <p className="text-xs text-[#A8B88A] font-medium">{techToast}</p>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* ===================================================================
-            5. REDE SOCIAL (FEED, GRUPOS REGIONAIS, FÓRUM, SAÍDAS DE CAMPO)
-           =================================================================== */}
-        <section id="comunidade" className="space-y-8 scroll-mt-24">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 text-center md:text-left items-center md:items-end">
-            <div className="mx-auto md:mx-0">
-              <p className="text-xs sm:text-sm text-[#A8B88A] font-medium mb-1">
-                03. Rede Social & Entreajuda de Campo
-              </p>
-              <h2 className="font-display text-2xl sm:text-4xl text-[#E6D7C3] font-semibold">
-                Comunidade Viva em Todo o Território
-              </h2>
-            </div>
-
-            {/* Interactive Social Sub-Navigation Tabs */}
-            <div className="flex items-center gap-1.5 p-1.5 rounded-full glass-pill overflow-x-auto no-scrollbar max-w-full justify-start sm:justify-center mx-auto md:mx-0">
-              <button
-                onClick={() => setSocialTab('feed')}
-                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  socialTab === 'feed'
-                    ? 'bg-[#C85A3E] text-[#E6D7C3]'
-                    : 'text-[#E6D7C3]/75 hover:text-[#E6D7C3]'
-                }`}
-              >
-                Diário de Campo ({feedPosts.length})
-              </button>
-              <button
-                onClick={() => setSocialTab('grupos')}
-                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  socialTab === 'grupos'
-                    ? 'bg-[#C85A3E] text-[#E6D7C3]'
-                    : 'text-[#E6D7C3]/75 hover:text-[#E6D7C3]'
-                }`}
-              >
-                Grupos Regionais ({groups.length})
-              </button>
-              <button
-                onClick={() => setSocialTab('forum')}
-                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  socialTab === 'forum'
-                    ? 'bg-[#C85A3E] text-[#E6D7C3]'
-                    : 'text-[#E6D7C3]/75 hover:text-[#E6D7C3]'
-                }`}
-              >
-                Fórum de Perguntas ({forumQuestions.length})
-              </button>
-              <button
-                onClick={() => setSocialTab('eventos')}
-                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  socialTab === 'eventos'
-                    ? 'bg-[#C85A3E] text-[#E6D7C3]'
-                    : 'text-[#E6D7C3]/75 hover:text-[#E6D7C3]'
-                }`}
-              >
-                Saídas de Campo ({events.length})
-              </button>
-              <button
-                onClick={() => setSocialTab('conquistas')}
-                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                  socialTab === 'conquistas'
-                    ? 'bg-[#C85A3E] text-[#E6D7C3]'
-                    : 'text-[#E6D7C3]/75 hover:text-[#E6D7C3]'
-                }`}
-              >
-                <Award className="w-3.5 h-3.5" strokeWidth={1.5} />
-                <span>Insígnias & Perfil ({unlockedBadges.length}/{badges.length})</span>
-              </button>
-            </div>
-          </div>
-
-          {/* TAB 1: FEED DE CAMPO */}
-          {socialTab === 'feed' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-                <p className="text-sm text-[#E6D7C3]/75">
-                  Relatos verificados de treino, abrigos, etnobotânica e travessias partilhados pelos membros.
-                </p>
-                <button
-                  onClick={() => setShowNewPostForm(!showNewPostForm)}
-                  className="w-full sm:w-auto justify-center px-4 py-2 rounded-full bg-[#5A6B44]/55 hover:bg-[#5A6B44]/80 text-xs sm:text-sm font-medium text-[#E6D7C3] border border-[#A8B88A]/40 flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" strokeWidth={1.5} />
-                  <span>Partilhar Relato de Campo</span>
-                </button>
-              </div>
-
-              {/* New Post Form */}
-              {showNewPostForm && (
-                <form onSubmit={handleCreatePost} className="glass-card p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-display text-lg text-[#E6D7C3]">Novo Registo no Diário</h3>
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPostForm(false)}
-                      className="text-xs text-[#E6D7C3]/60 hover:text-[#E6D7C3] cursor-pointer"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input
-                      type="text"
-                      required
-                      value={newPostTitle}
-                      onChange={(e) => setNewPostTitle(e.target.value)}
-                      placeholder="Título da experiência (ex.: Filtro de carvão na Serra da Cabreira)"
-                      className="px-4 py-2.5 rounded-[14px] bg-black/25 border border-white/15 text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/40 focus:outline-none focus:border-[#A8B88A]"
-                    />
-                    <input
-                      type="text"
-                      value={newPostRegion}
-                      onChange={(e) => setNewPostRegion(e.target.value)}
-                      placeholder="Localização / Serra"
-                      className="px-4 py-2.5 rounded-[14px] bg-black/25 border border-white/15 text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/40 focus:outline-none focus:border-[#A8B88A]"
-                    />
-                  </div>
-                  <textarea
-                    rows={3}
-                    required
-                    value={newPostContent}
-                    onChange={(e) => setNewPostContent(e.target.value)}
-                    placeholder="Descreva os materiais naturais utilizados, condições meteorológicas e aprendizagens..."
-                    className="w-full px-4 py-2.5 rounded-[14px] bg-black/25 border border-white/15 text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/40 focus:outline-none focus:border-[#A8B88A]"
-                  />
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      className="px-6 py-2.5 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-sm font-medium text-[#E6D7C3] cursor-pointer"
-                    >
-                      Publicar no Feed
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* Feed Posts Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {feedPosts.map((post) => (
-                  <article key={post.id} className="glass-card p-6 flex flex-col justify-between space-y-5">
-                    <div className="space-y-4">
-                      {/* Author Header */}
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-[#5A6B44]/50 border border-white/15 flex items-center justify-center font-display text-base font-semibold text-[#E6D7C3]">
-                            {post.author.charAt(0)}
-                          </div>
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-sm font-semibold text-[#E6D7C3]">{post.author}</span>
-                              <span className="text-xs text-[#E6D7C3]/55">{post.handle}</span>
-                            </div>
-                            {post.authorBadges && post.authorBadges.length > 0 && (
-                              <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-[#C85A3E] font-medium mt-0.5">
-                                <Award className="w-3 h-3 shrink-0" strokeWidth={1.5} />
-                                <span>{post.authorBadges.join(' · ')}</span>
-                              </div>
-                            )}
-                            <div className="flex items-center gap-1.5 text-xs text-[#A8B88A] mt-0.5">
-                              <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />
-                              <span>{post.region}</span>
-                              <span aria-hidden="true">·</span>
-                              <span>{post.timeAgo}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <span className="text-xs font-mono text-[#E6D7C3]/55 tabular-nums hidden sm:inline">
-                          {post.coordinates}
-                        </span>
-                      </div>
-
-                      {/* Post Visual */}
-                      <div className="rounded-[18px] overflow-hidden border border-white/12 aspect-[16/9] bg-[#142018]">
-                        <BushcraftIllustration type={post.illustration} className="w-full h-full object-cover" />
-                      </div>
-
-                      {/* Post Copy */}
-                      <div className="space-y-2">
-                        <p className="text-xs text-[#A8B88A]">{post.categoryLabel}</p>
-                        <h3 className="font-display text-xl text-[#E6D7C3] font-semibold">
-                          {post.title}
-                        </h3>
-                        <p className="text-sm text-[#E6D7C3]/80 leading-relaxed">
-                          {post.content}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Interactions & Comments */}
-                    <div className="pt-4 border-t border-white/10 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-5">
-                          <button
-                            onClick={() => togglePostLike(post.id)}
-                            className={`flex items-center gap-2 text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
-                              post.likedByMe ? 'text-[#C85A3E]' : 'text-[#E6D7C3]/75 hover:text-[#E6D7C3]'
-                            }`}
-                          >
-                            <Heart
-                              className="w-4 h-4"
-                              strokeWidth={1.5}
-                              fill={post.likedByMe ? 'currentColor' : 'none'}
-                            />
-                            <span className="tabular-nums">{post.likes} gostos</span>
-                          </button>
-
-                          <span className="flex items-center gap-2 text-xs sm:text-sm text-[#E6D7C3]/75 tabular-nums">
-                            <MessageSquare className="w-4 h-4" strokeWidth={1.5} />
-                            <span>{post.comments.length} comentários</span>
-                          </span>
-                        </div>
-
-                        <span className="text-xs text-[#A8B88A] flex items-center gap-1">
-                          <Share2 className="w-3.5 h-3.5" strokeWidth={1.5} />
-                          Relato Verificado
-                        </span>
-                      </div>
-
-                      {/* Existing Comments */}
-                      <div className="space-y-2.5 bg-black/20 rounded-[16px] p-3.5 border border-white/8">
-                        {post.comments.map((c) => (
-                          <div key={c.id} className="text-xs space-y-0.5">
-                            <div className="flex items-center gap-1.5 text-[#E6D7C3]">
-                              <span className="font-semibold">{c.author}</span>
-                              <span aria-hidden="true">·</span>
-                              <span className="text-[#A8B88A]">{c.role}</span>
-                              <span aria-hidden="true">·</span>
-                              <span className="text-[#E6D7C3]/50">{c.timeAgo}</span>
-                            </div>
-                            <p className="text-[#E6D7C3]/80 leading-relaxed">{c.text}</p>
-                          </div>
-                        ))}
-
-                        {/* Add Comment Input */}
-                        <form onSubmit={(e) => handleAddComment(post.id, e)} className="pt-2 flex gap-2">
-                          <input
-                            type="text"
-                            value={commentInputs[post.id] || ''}
-                            onChange={(e) =>
-                              setCommentInputs((prev) => ({ ...prev, [post.id]: e.target.value }))
-                            }
-                            placeholder="Escrever comentário técnico..."
-                            className="flex-1 bg-white/[0.05] border border-white/12 rounded-full px-3.5 py-1.5 text-xs text-[#E6D7C3] placeholder:text-[#E6D7C3]/45 focus:outline-none focus:border-[#A8B88A]"
-                          />
-                          <button
-                            type="submit"
-                            className="px-3.5 py-1.5 rounded-full bg-[#5A6B44]/60 hover:bg-[#5A6B44] text-xs text-[#E6D7C3] font-medium cursor-pointer"
-                          >
-                            Enviar
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: GRUPOS REGIONAIS */}
-          {socialTab === 'grupos' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {groups.map((grp) => (
-                <div key={grp.id} className="glass-card p-6 flex flex-col justify-between space-y-5">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs text-[#A8B88A]">
-                      <span>{grp.biome}</span>
-                      <span className="font-mono tabular-nums">{grp.members} membros</span>
-                    </div>
-                    <h3 className="font-display text-2xl text-[#E6D7C3] font-semibold">
-                      {grp.name}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-[#E6D7C3]/75">
-                      Coordenação de campo: <strong className="text-[#E6D7C3]">{grp.coordinator}</strong>
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-[16px] bg-white/[0.04] border border-white/10 text-xs sm:text-sm text-[#E6D7C3]/85 flex items-center gap-2.5">
-                    <Calendar className="w-4 h-4 text-[#C85A3E] shrink-0" strokeWidth={1.5} />
-                    <span>Próxima saída: {grp.nextMeetup}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="text-xs text-[#E6D7C3]/65">
-                      Canal rádio regional: PMR446 Canal 8
-                    </span>
-                    <button
-                      onClick={() => toggleGroupJoin(grp.id)}
-                      className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
-                        grp.joined
-                          ? 'bg-[#5A6B44]/40 text-[#A8B88A] border border-[#A8B88A]/40'
-                          : 'bg-[#C85A3E] hover:bg-[#b54d32] text-[#E6D7C3]'
-                      }`}
-                    >
-                      {grp.joined ? 'Membro do Grupo ✓' : 'Aderir ao Grupo Regional'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* TAB 3: FÓRUM DE PERGUNTAS */}
-          {socialTab === 'forum' && (
-            <div className="space-y-6">
-              <form onSubmit={handleAskQuestion} className="glass-card p-5 flex flex-col sm:flex-row gap-3">
-                <input
-                  type="text"
-                  value={newQuestionText}
-                  onChange={(e) => setNewQuestionText(e.target.value)}
-                  placeholder="Coloque uma dúvida técnica aos instrutores (ex.: conservação de água, nós, botânica)..."
-                  className="flex-1 px-4 py-3 rounded-full bg-black/25 border border-white/15 text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/45 focus:outline-none focus:border-[#A8B88A]"
-                />
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-sm font-medium text-[#E6D7C3] whitespace-nowrap shrink-0 cursor-pointer"
-                >
-                  Publicar Pergunta
-                </button>
-              </form>
-
-              <div className="space-y-4">
-                {forumQuestions.map((fq) => (
-                  <div key={fq.id} className="glass-card p-6 space-y-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-xs text-[#A8B88A]">
-                          <span>{fq.categoryLabel}</span>
-                          <span aria-hidden="true">·</span>
-                          <span>Perguntado por {fq.author} ({fq.region})</span>
-                        </div>
-                        <h3 className="font-display text-lg sm:text-xl text-[#E6D7C3] font-semibold">
-                          {fq.question}
-                        </h3>
-                      </div>
-
-                      <button
-                        onClick={() => toggleQuestionVote(fq.id)}
-                        className={`px-3.5 py-2 rounded-full text-xs font-mono tabular-nums flex items-center gap-1.5 border transition-colors shrink-0 cursor-pointer ${
-                          fq.voted
-                            ? 'bg-[#5A6B44]/60 text-[#E6D7C3] border-[#A8B88A]'
-                            : 'glass-pill text-[#E6D7C3]/75 hover:text-[#E6D7C3]'
-                        }`}
-                      >
-                        <ThumbsUp className="w-3.5 h-3.5" strokeWidth={1.5} />
-                        <span>{fq.votes}</span>
-                      </button>
-                    </div>
-
-                    <div className="p-4 rounded-[16px] bg-white/[0.04] border border-white/10 space-y-1.5">
-                      <p className="text-xs font-medium text-[#A8B88A]">
-                        Resposta Técnica Verificada · {fq.instructorName}
-                      </p>
-                      <p className="text-sm text-[#E6D7C3]/85 leading-relaxed">
-                        {fq.instructorAnswer}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: EVENTOS E SAÍDAS DE CAMPO */}
-          {socialTab === 'eventos' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {events.map((ev) => (
-                <div key={ev.id} className="glass-card p-6 flex flex-col justify-between space-y-5">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-xs text-[#A8B88A]">
-                      <span>{ev.date}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>Nível {ev.level}</span>
-                    </div>
-                    <h3 className="font-display text-xl text-[#E6D7C3] font-semibold leading-snug">
-                      {ev.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-[#E6D7C3]/75 flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-[#C85A3E] shrink-0" strokeWidth={1.5} />
-                      <span>{ev.location}</span>
-                    </p>
-                    <p className="text-xs text-[#E6D7C3]/65">
-                      Orientação: {ev.instructor}
-                    </p>
-                  </div>
-
-                  <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-3">
-                    <span className="text-xs font-mono text-[#E6D7C3]/75 tabular-nums">
-                      {ev.spotsLeft} de {ev.totalSpots} vagas livres
-                    </span>
-                    <button
-                      onClick={() => toggleEventEnroll(ev.id)}
-                      className={`px-4 py-2 rounded-full text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                        ev.enrolled
-                          ? 'bg-[#5A6B44]/50 text-[#A8B88A] border border-[#A8B88A]/40'
-                          : 'bg-[#C85A3E] hover:bg-[#b54d32] text-[#E6D7C3]'
-                      }`}
-                    >
-                      {ev.enrolled ? 'Vaga Reservada ✓' : 'Reservar Vaga'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* TAB 5: INSÍGNIAS & PERFIL DE UTILIZADOR (SISTEMA DE CONQUISTAS) */}
-          {socialTab === 'conquistas' && (
-            <div className="space-y-8">
-              {/* User Public Profile Showcase Card with Featured Badges */}
-              <div className="glass-card p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-center sm:text-left">
-                <div className="lg:col-span-5 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-                  <div className="w-16 h-16 rounded-full bg-[#5A6B44]/55 border border-[#A8B88A]/50 flex items-center justify-center font-display text-2xl font-semibold text-[#E6D7C3] shrink-0 mx-auto sm:mx-0">
-                    {(loggedUser ? loggedUser.name : 'Diogo Santarém').charAt(0)}
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-[#A8B88A]">
-                      <span>{explorerRankTitle}</span>
-                      <span aria-hidden="true">·</span>
-                      <span className="font-mono tabular-nums">{totalExplorerXp} XP</span>
-                    </div>
-                    <h3 className="font-display text-2xl text-[#E6D7C3] font-semibold">
-                      {loggedUser ? loggedUser.name : 'Diogo Santarém'}
-                    </h3>
-                    <p className="text-xs text-[#E6D7C3]/70">
-                      Núcleo Serra da Lousã · {unlockedBadges.length} de {badges.length} insígnias conquistadas
-                    </p>
-                  </div>
-                </div>
-
-                {/* Featured Badges Displayed on Profile */}
-                <div className="lg:col-span-7 space-y-3">
-                  <div className="flex flex-col sm:flex-row items-center justify-between text-xs gap-1 text-center sm:text-left">
-                    <span className="text-[#A8B88A] font-medium">
-                      Insígnias em Exibição no Perfil ({featuredBadges.length}/3):
-                    </span>
-                    <button
-                      onClick={() => setAuthModalOpen(true)}
-                      className="text-[#E6D7C3]/75 hover:text-[#E6D7C3] underline underline-offset-4 cursor-pointer"
-                    >
-                      Abrir Passaporte Completo
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {featuredBadges.map((b) => (
-                      <div
-                        key={b.id}
-                        className="p-3.5 rounded-[16px] bg-white/[0.05] border border-[#A8B88A]/40 flex items-center gap-3 text-left"
-                      >
-                        <div className="w-9 h-9 rounded-full bg-[#5A6B44]/50 border border-white/15 flex items-center justify-center text-[#E6D7C3] shrink-0">
-                          {renderBadgeIcon(b.iconKey, 'w-4 h-4')}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold text-[#E6D7C3] truncate">{b.title}</p>
-                          <p className="text-[11px] text-[#A8B88A] font-mono tabular-nums">+{b.xp} XP</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {badgeToast && (
-                <div className="p-4 rounded-[16px] bg-[#5A6B44]/45 border border-[#A8B88A]/60 text-xs sm:text-sm text-[#E6D7C3] flex items-center justify-between">
-                  <span>{badgeToast}</span>
-                  <button onClick={() => setBadgeToast(null)} className="text-xs opacity-75 hover:opacity-100 cursor-pointer">
-                    Fechar
-                  </button>
-                </div>
-              )}
-
-              {/* All Community Badges Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {badges.map((badge) => {
-                  const isPinned = featuredBadgeIds.includes(badge.id);
-                  const pct = Math.min(100, Math.round((badge.progressCurrent / badge.progressTarget) * 100));
-                  return (
-                    <div
-                      key={badge.id}
-                      className={`glass-card p-6 flex flex-col justify-between space-y-5 transition-all ${
-                        badge.unlocked ? 'border-[#A8B88A]/35' : 'opacity-80'
-                      }`}
-                    >
-                      <div className="space-y-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div
-                            className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${
-                              badge.unlocked
-                                ? 'bg-[#5A6B44]/55 border-[#A8B88A]/50 text-[#E6D7C3]'
-                                : 'bg-black/30 border-white/10 text-[#E6D7C3]/45'
-                            }`}
-                          >
-                            {renderBadgeIcon(badge.iconKey, 'w-6 h-6')}
-                          </div>
-
-                          <div className="text-right text-xs text-[#A8B88A] font-mono tabular-nums">
-                            <span>{badge.rarity}</span>
-                            <span aria-hidden="true"> · </span>
-                            <span>{badge.xp} XP</span>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <div className="text-xs text-[#A8B88A]">
-                            <span>{badge.category}</span>
-                            <span aria-hidden="true"> · </span>
-                            <span>{badge.unlocked ? 'Conquistada ✓' : 'Em progresso'}</span>
-                          </div>
-                          <h4 className="font-display text-xl text-[#E6D7C3] font-semibold">
-                            {badge.title}
-                          </h4>
-                          <p className="text-xs sm:text-sm text-[#E6D7C3]/75 leading-relaxed">
-                            {badge.description}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 border-t border-white/10 space-y-3">
-                        {/* Progress bar */}
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-xs text-[#E6D7C3]/70 font-mono tabular-nums">
-                            <span>Progresso de campo</span>
-                            <span>
-                              {badge.progressCurrent}/{badge.progressTarget} {badge.unit}
-                            </span>
-                          </div>
-                          <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
-                            <div
-                              className="h-full rounded-full transition-all duration-300"
-                              style={{
-                                width: `${pct}%`,
-                                background: badge.unlocked ? '#A8B88A' : '#C85A3E',
-                              }}
-                            />
-                          </div>
-                        </div>
-
-                        {badge.unlocked ? (
-                          <button
-                            onClick={() => togglePinBadge(badge.id)}
-                            className={`w-full py-2.5 rounded-full text-xs font-medium transition-colors cursor-pointer border ${
-                              isPinned
-                                ? 'bg-[#5A6B44]/60 text-[#E6D7C3] border-[#A8B88A]'
-                                : 'glass-pill text-[#E6D7C3]/80 hover:text-[#E6D7C3]'
-                            }`}
-                          >
-                            {isPinned ? 'Exibida no Perfil ✓' : 'Exibir no Perfil'}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleUnlockBadge(badge.id)}
-                            className="w-full py-2.5 rounded-full bg-[#C85A3E]/85 hover:bg-[#C85A3E] text-xs font-medium text-[#E6D7C3] transition-colors cursor-pointer"
-                          >
-                            Validar Conquista em Campo →
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* ===================================================================
-            7. CHECKLIST INTERATIVA "KIT DE 72 HORAS" COM BARRA DE PROGRESSO
-           =================================================================== */}
-        <section id="kits" className="space-y-8 scroll-mt-24">
-          <div className="glass-card p-6 sm:p-10 space-y-8">
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 text-center lg:text-left items-center lg:items-end">
-              <div className="space-y-2 mx-auto lg:mx-0">
-                <p className="text-xs sm:text-sm text-[#A8B88A] font-medium">
-                  04. Ferramenta de Prontidão Familiar & Individual
-                </p>
-                <h2 className="font-display text-2xl sm:text-4xl text-[#E6D7C3] font-semibold">
-                  Checklist Interativa: Kit de 72 Horas
-                </h2>
-                <p className="text-sm sm:text-base text-[#E6D7C3]/75 max-w-[65ch] mx-auto lg:mx-0">
-                  Configure e audite a sua mochila de autonomia para 3 dias. O peso total é calculado em tempo real para garantir mobilidade confortável em terreno variado.
-                </p>
-              </div>
-
-              {/* Filter & Export Actions */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-end gap-2.5 mx-auto lg:mx-0">
-                <div className="flex items-center gap-1 p-1 rounded-full glass-pill overflow-x-auto max-w-full justify-center">
-                  <button
-                    onClick={() => setKitFilter('todos')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                      kitFilter === 'todos' ? 'bg-[#5A6B44] text-[#E6D7C3]' : 'text-[#E6D7C3]/70'
-                    }`}
-                  >
-                    Todos ({kitStats.total})
-                  </button>
-                  <button
-                    onClick={() => setKitFilter('em-falta')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                      kitFilter === 'em-falta' ? 'bg-[#C85A3E] text-[#E6D7C3]' : 'text-[#E6D7C3]/70'
-                    }`}
-                  >
-                    Em falta ({kitStats.total - kitStats.completed})
-                  </button>
-                  <button
-                    onClick={() => setKitFilter('prontos')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
-                      kitFilter === 'prontos' ? 'bg-[#5A6B44] text-[#E6D7C3]' : 'text-[#E6D7C3]/70'
-                    }`}
-                  >
-                    Prontos ({kitStats.completed})
-                  </button>
-                </div>
-
-                <button
-                  onClick={handleExportKitTxt}
-                  className="px-4 py-2 rounded-full glass-pill text-xs font-medium text-[#E6D7C3] hover:border-[#A8B88A] flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
-                >
-                  <Download className="w-3.5 h-3.5" strokeWidth={1.5} />
-                  <span>Exportar TXT</span>
-                </button>
-
-                <button
-                  onClick={() => setKitItems(INITIAL_KIT_72H)}
-                  className="p-2 rounded-full glass-pill text-[#E6D7C3]/70 hover:text-[#E6D7C3] cursor-pointer shrink-0"
-                  title="Repor estado padrão"
-                >
-                  <RotateCcw className="w-4 h-4" strokeWidth={1.5} />
-                </button>
-              </div>
-            </div>
-
-            {/* Progress Bar & Telemetry Strip */}
-            <div className="p-5 rounded-[20px] bg-black/25 border border-white/12 space-y-3">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-center sm:text-left">
-                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
-                  <span className="font-display text-xl sm:text-2xl font-semibold text-[#E6D7C3] tabular-nums">
-                    {kitStats.percentage}% concluído
-                  </span>
-                  <span className="text-[#E6D7C3]/65 tabular-nums">
-                    ({kitStats.completed} de {kitStats.total} equipamentos verificados)
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-1 font-mono text-xs tabular-nums text-[#A8B88A]">
-                  <span>Peso na mochila: <strong>{kitStats.currentWeightKg} kg</strong></span>
-                  <span aria-hidden="true">·</span>
-                  <span>Peso total previsto: {kitStats.totalWeightKg} kg</span>
-                </div>
-              </div>
-
-              <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden p-0.5">
-                <div
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{
-                    width: `${kitStats.percentage}%`,
-                    background: 'linear-gradient(90deg, #5A6B44 0%, #A8B88A 60%, #C85A3E 100%)',
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Checklist Items Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-              {filteredKitItems.map((item) => (
-                <label
-                  key={item.id}
-                  onClick={() => toggleKitItem(item.id)}
-                  className={`p-4 rounded-[18px] border transition-all flex items-start justify-between gap-4 cursor-pointer select-none ${
-                    item.checked
-                      ? 'bg-[#5A6B44]/22 border-[#A8B88A]/35 text-[#E6D7C3]'
-                      : 'bg-white/[0.03] border-white/10 text-[#E6D7C3]/85 hover:bg-white/[0.06]'
-                  }`}
-                >
-                  <div className="flex items-start gap-3.5">
-                    <div
-                      className={`w-5 h-5 rounded-md mt-0.5 flex items-center justify-center border transition-colors shrink-0 ${
-                        item.checked
-                          ? 'bg-[#C85A3E] border-[#C85A3E] text-[#E6D7C3]'
-                          : 'border-white/30 bg-black/20'
-                      }`}
-                    >
-                      {item.checked && <Check className="w-3.5 h-3.5" strokeWidth={2.2} />}
-                    </div>
-
-                    <div className="space-y-1">
-                      <p
-                        className={`text-sm font-medium leading-snug ${
-                          item.checked ? 'line-through decoration-[#A8B88A]/60 text-[#E6D7C3]/75' : 'text-[#E6D7C3]'
-                        }`}
-                      >
-                        {item.label}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-1.5 text-xs text-[#E6D7C3]/60">
-                        <span className="text-[#A8B88A]">{item.category}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>{item.spec}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <span className="text-xs font-mono text-[#E6D7C3]/65 tabular-nums whitespace-nowrap shrink-0">
-                    {item.weightGrams} g
-                  </span>
-                </label>
-              ))}
-            </div>
-
-            {/* Add Custom Item to Kit */}
-            <form onSubmit={handleAddCustomKitItem} className="pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-3 items-stretch justify-center">
-              <input
-                type="text"
-                value={newItemLabel}
-                onChange={(e) => setNewItemLabel(e.target.value)}
-                placeholder="Adicionar equipamento personalizado ao seu Kit (ex.: Filtro Sawyer Mini, Medicação)..."
-                className="flex-1 px-4 py-2.5 rounded-full bg-black/25 border border-white/15 text-xs sm:text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/45 focus:outline-none focus:border-[#A8B88A] text-center sm:text-left"
-              />
-              <div className="flex items-center justify-center gap-2">
-                <input
-                  type="number"
-                  min={10}
-                  max={5000}
-                  value={newItemWeight}
-                  onChange={(e) => setNewItemWeight(e.target.value)}
-                  className="w-24 px-3.5 py-2.5 rounded-full bg-black/25 border border-white/15 text-xs sm:text-sm font-mono tabular-nums text-[#E6D7C3] focus:outline-none text-center"
-                  title="Peso em gramas"
-                />
-                <span className="text-xs text-[#E6D7C3]/60">g</span>
-                <button
-                  type="submit"
-                  className="flex-1 sm:flex-initial px-5 py-2.5 rounded-full bg-[#5A6B44]/60 hover:bg-[#5A6B44] text-xs sm:text-sm font-medium text-[#E6D7C3] whitespace-nowrap cursor-pointer text-center"
-                >
-                  + Adicionar Item
-                </button>
-              </div>
-            </form>
-          </div>
-        </section>
-
-        {/* ===================================================================
-            MAPA DE BIOMAS E ZONAS DE TREINO EM PORTUGAL (NAV LINK #MAPA)
-           =================================================================== */}
-        <section id="mapa" className="space-y-8 scroll-mt-24">
-          <div className="text-center sm:text-left">
-            <p className="text-xs sm:text-sm text-[#A8B88A] font-medium mb-1">
-              05. Cartografia & Biomas Portugueses
-            </p>
-            <h2 className="font-display text-2xl sm:text-4xl text-[#E6D7C3] font-semibold">
-              Mapa de Núcleos Regionais e Ecossistemas
-            </h2>
-          </div>
-
-          <div className="glass-card p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-5 space-y-3">
-              {groups.map((g) => {
-                const isSelected = selectedBiomeId === g.id;
-                return (
-                  <button
-                    key={g.id}
-                    onClick={() => setSelectedBiomeId(g.id)}
-                    className={`w-full text-left p-4 rounded-[18px] border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-[#5A6B44]/45 border-[#A8B88A]/60'
-                        : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.07]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-xs text-[#A8B88A]">
-                      <span>{g.biome}</span>
-                      <span className="font-mono tabular-nums">{g.members} membros</span>
-                    </div>
-                    <p className="font-display text-lg text-[#E6D7C3] font-semibold mt-1">
-                      {g.name}
-                    </p>
-                    <p className="text-xs text-[#E6D7C3]/75 mt-1">{g.nextMeetup}</p>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="lg:col-span-7 rounded-[20px] bg-[#142018] border border-white/12 p-6 space-y-5">
-              {(() => {
-                const activeGroup = groups.find((g) => g.id === selectedBiomeId) || groups[0];
-                return (
-                  <>
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-white/10 pb-4 text-center sm:text-left">
-                      <div>
-                        <span className="text-xs text-[#A8B88A]">Bioma Selecionado</span>
-                        <h3 className="font-display text-2xl text-[#E6D7C3] font-semibold">
-                          {activeGroup.name}
-                        </h3>
-                      </div>
-                      <button
-                        onClick={() => toggleGroupJoin(activeGroup.id)}
-                        className="w-full sm:w-auto px-4 py-2 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-xs font-medium text-[#E6D7C3] cursor-pointer text-center"
-                      >
-                        {activeGroup.joined ? 'Inscrito neste Núcleo ✓' : 'Juntar-me a este Núcleo'}
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs sm:text-sm text-center sm:text-left">
-                      <div className="p-3.5 rounded-[14px] bg-white/[0.04] border border-white/8">
-                        <span className="text-[#E6D7C3]/60 block text-xs">Flora Dominante</span>
-                        <strong className="text-[#E6D7C3] mt-1 block">
-                          {activeGroup.id === 'grp-norte'
-                            ? 'Carvalho-alvarinho, Azevinho, Vidoeiro'
-                            : activeGroup.id === 'grp-beiras'
-                            ? 'Pinheiro-silvestre, Zimbro, Urze'
-                            : activeGroup.id === 'grp-alentejo'
-                            ? 'Azinheira, Sobreiro, Esteva'
-                            : 'Pinheiro-manso, Sabina, Carrasco'}
-                        </strong>
-                      </div>
-                      <div className="p-3.5 rounded-[14px] bg-white/[0.04] border border-white/8">
-                        <span className="text-[#E6D7C3]/60 block text-xs">Disponibilidade Hídrica</span>
-                        <strong className="text-[#E6D7C3] mt-1 block">
-                          {activeGroup.id === 'grp-alentejo'
-                            ? 'Sazonal · Requer captação de orvalho'
-                            : 'Abundante · Linhas de água graníticas'}
-                        </strong>
-                      </div>
-                      <div className="p-3.5 rounded-[14px] bg-white/[0.04] border border-white/8">
-                        <span className="text-[#E6D7C3]/60 block text-xs">Coordenador Regional</span>
-                        <strong className="text-[#E6D7C3] mt-1 block">{activeGroup.coordinator}</strong>
-                      </div>
-                    </div>
-
-                    <p className="text-xs sm:text-sm text-[#E6D7C3]/75 leading-relaxed text-center sm:text-left">
-                      Cada núcleo regional organiza treinos mensais gratuitos de orientação cartográfica, identificação botânica e revisão de equipamento de emergência em parceria com associações florestais locais.
-                    </p>
-                  </>
-                );
-              })()}
-            </div>
-          </div>
-        </section>
-
-        {/* ===================================================================
-            8. TESTEMUNHOS + NÚMEROS DA COMUNIDADE
-           =================================================================== */}
-        <section className="space-y-10">
-          <div className="text-center sm:text-left">
-            <p className="text-xs sm:text-sm text-[#A8B88A] font-medium mb-1">
-              06. Impacto Real & Prova Comunitária
-            </p>
-            <h2 className="font-display text-2xl sm:text-4xl text-[#E6D7C3] font-semibold">
-              Vozes da Comunidade Sobrevivente.eu
-            </h2>
-          </div>
-
-          {/* Community Quantitative Metrics Bar (Tabular Numerals) */}
-          <div className="glass-card p-6 sm:p-8 grid grid-cols-2 lg:grid-cols-4 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-white/12 text-center">
-            <div className="pt-3 sm:pt-0 sm:px-4 first:pl-0 flex flex-col items-center">
-              <p className="font-display text-3xl sm:text-4xl font-semibold text-[#E6D7C3] tabular-nums">
-                12.480
-              </p>
-              <p className="text-xs sm:text-sm text-[#A8B88A] mt-1">
-                Membros ativos em Portugal
-              </p>
-              <p className="text-xs text-[#E6D7C3]/60 mt-0.5">
-                Continente, Açores e Madeira
-              </p>
-            </div>
-
-            <div className="pt-3 sm:pt-0 sm:px-4 flex flex-col items-center">
-              <p className="font-display text-3xl sm:text-4xl font-semibold text-[#E6D7C3] tabular-nums">
-                148
-              </p>
-              <p className="text-xs sm:text-sm text-[#A8B88A] mt-1">
-                Manuais técnicos ilustrados
-              </p>
-              <p className="text-xs text-[#E6D7C3]/60 mt-0.5">
-                Revistos por especialistas de campo
-              </p>
-            </div>
-
-            <div className="pt-3 sm:pt-0 sm:px-4 flex flex-col items-center">
-              <p className="font-display text-3xl sm:text-4xl font-semibold text-[#E6D7C3] tabular-nums">
-                18
-              </p>
-              <p className="text-xs sm:text-sm text-[#A8B88A] mt-1">
-                Núcleos regionais autónomos
-              </p>
-              <p className="text-xs text-[#E6D7C3]/60 mt-0.5">
-                Com rede de rádio PMR446 local
-              </p>
-            </div>
-
-            <div className="pt-3 sm:pt-0 sm:px-4 flex flex-col items-center">
-              <p className="font-display text-3xl sm:text-4xl font-semibold text-[#E6D7C3] tabular-nums">
-                310+
-              </p>
-              <p className="text-xs sm:text-sm text-[#A8B88A] mt-1">
-                Saídas de campo realizadas
-              </p>
-              <p className="text-xs text-[#E6D7C3]/60 mt-0.5">
-                Zero incidentes · Ética ecológica
-              </p>
-            </div>
-          </div>
-
-          {/* Attributable Testimonials Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t) => (
-              <blockquote
-                key={t.id}
-                className="glass-card p-6 sm:p-7 flex flex-col justify-between space-y-6 text-center sm:text-left"
-              >
-                <p className="text-sm sm:text-base text-[#E6D7C3]/90 leading-relaxed italic font-display">
-                  “{t.quote}”
-                </p>
-
-                <footer className="pt-4 border-t border-white/10 space-y-1 flex flex-col items-center sm:items-start text-center sm:text-left">
-                  <div className="font-semibold text-sm text-[#E6D7C3]">{t.name}</div>
-                  <div className="text-xs text-[#A8B88A]">
-                    {t.role} · {t.region}
-                  </div>
-                  <div className="text-xs text-[#E6D7C3]/60 pt-1 flex items-center justify-center sm:justify-start gap-1.5">
-                    <Award className="w-3.5 h-3.5 text-[#C85A3E] shrink-0" strokeWidth={1.5} />
-                    <span>{t.outcome}</span>
-                  </div>
-                </footer>
-              </blockquote>
-            ))}
-          </div>
-        </section>
-
-        {/* ===================================================================
-            9. CTA FINAL: REGISTO POR EMAIL
-           =================================================================== */}
-        <section className="glass-card p-6 sm:p-12 relative overflow-hidden">
-          <div
-            className="absolute -right-20 -bottom-20 w-80 h-80 rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(circle, rgba(200,90,62,0.18) 0%, transparent 70%)' }}
-          />
-
-          <div className="max-w-2xl space-y-6 relative z-10 text-center sm:text-left mx-auto sm:mx-0">
-            <p className="text-xs sm:text-sm text-[#A8B88A] font-medium">
-              Comece Hoje a Sua Jornada de Autonomia
-            </p>
-            <h2 className="font-display text-2xl sm:text-4xl text-[#E6D7C3] font-semibold leading-tight">
-              Receba o Caderno PDF “Kit 72h & Flora Ibérica” e junte-se ao seu grupo regional.
-            </h2>
-            <p className="text-sm sm:text-base text-[#E6D7C3]/80 leading-relaxed mx-auto sm:mx-0">
-              Sem spam nem alarmismo. Apenas um boletim quinzenal com novos manuais práticos, calendário de saídas de campo na sua região e alertas sazonais de segurança florestal.
-            </p>
-
-            {newsletterSubmitted ? (
-              <div className="p-5 rounded-[18px] bg-[#5A6B44]/40 border border-[#A8B88A]/50 space-y-1 text-center sm:text-left">
-                <p className="font-display text-lg text-[#E6D7C3] font-semibold">
-                  Bem-vindo ao Sobrevivente.eu!
-                </p>
-                <p className="text-xs sm:text-sm text-[#E6D7C3]/85">
-                  Enviámos o manual inicial e o convite do núcleo <strong>{newsletterRegion}</strong> para{' '}
-                  <span className="underline">{newsletterEmail}</span>.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleNewsletterSubmit} noValidate className="space-y-3">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="email"
-                    required
-                    value={newsletterEmail}
-                    onChange={(e) => setNewsletterEmail(e.target.value)}
-                    placeholder="O seu melhor email (ex.: tiago@dominio.pt)"
-                    className="flex-1 px-5 py-3.5 rounded-full bg-black/30 border border-white/15 text-sm text-[#E6D7C3] placeholder:text-[#E6D7C3]/45 focus:outline-none focus:border-[#A8B88A] text-center sm:text-left"
-                  />
-
-                  <select
-                    value={newsletterRegion}
-                    onChange={(e) => setNewsletterRegion(e.target.value)}
-                    aria-label="Selecione a sua região"
-                    className="px-4 py-3.5 rounded-full bg-black/30 border border-white/15 text-sm text-[#E6D7C3] focus:outline-none focus:border-[#A8B88A] text-center sm:text-left"
-                  >
-                    <option value="Norte & Gerês" className="bg-[#1F2E24]">Norte & Gerês</option>
-                    <option value="Beiras & Serra da Estrela" className="bg-[#1F2E24]">Beiras & Serra da Estrela</option>
-                    <option value="Lisboa, Sintra & Oeste" className="bg-[#1F2E24]">Lisboa, Sintra & Oeste</option>
-                    <option value="Alentejo & Costa Vicentina" className="bg-[#1F2E24]">Alentejo & Costa Vicentina</option>
-                    <option value="Algarve & Serra de Monchique" className="bg-[#1F2E24]">Algarve & Monchique</option>
-                    <option value="Açores & Madeira" className="bg-[#1F2E24]">Açores & Madeira</option>
-                  </select>
-
-                  <button
-                    type="submit"
-                    className="px-7 py-3.5 rounded-full bg-[#C85A3E] hover:bg-[#b54d32] text-[#E6D7C3] font-medium text-sm transition-colors flex items-center justify-center gap-2 whitespace-nowrap shrink-0 cursor-pointer w-full sm:w-auto"
-                  >
-                    <span>Criar Conta Gratuita</span>
-                    <Send className="w-4 h-4" strokeWidth={1.5} />
-                  </button>
-                </div>
-                {newsletterError && (
-                  <p className="text-xs text-[#C85A3E] text-center sm:text-left pl-2">{newsletterError}</p>
-                )}
-              </form>
-            )}
           </div>
         </section>
       </main>
 
       {/* =====================================================================
-          RODAPÉ COM LINKS, REDES E AVISO DE SEGURANÇA
+          FOOTER (Quiet, Compliant, Respectful)
          ===================================================================== */}
-      <footer className="relative z-10 border-t border-white/12 bg-[#142018]/90 backdrop-blur-xl pb-24 md:pb-12 pt-12">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-8 space-y-10">
-          {/* Safety Notice Box (Aviso de Segurança e Ética Florestal) */}
-          <div className="p-5 rounded-[20px] bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-            <AlertTriangle className="w-5 h-5 text-[#C85A3E] shrink-0 mt-0.5 mx-auto sm:mx-0" strokeWidth={1.5} />
-            <div className="space-y-1 text-xs text-[#E6D7C3]/75 leading-relaxed">
-              <p className="font-semibold text-[#E6D7C3]">
-                Aviso de Segurança, Ética Florestal e Responsabilidade Legal
-              </p>
-              <p>
-                Os manuais do Sobrevivente.eu têm carácter estritamente educativo e formativo. Em Portugal, a realização de fogueiras, queimas ou uso de fogareiros em espaço florestal está sujeita às normas do ICNF e ao Índice de Perigo de Incêndio Rural (IPMA). Nunca colha plantas ou cogumelos silvestres sem confirmação taxonómica absoluta nem substitua cuidados médicos profissionais em situações de emergência (ligue 112).
-              </p>
+      <footer className="border-t border-white/10 bg-[#121f16] py-12 text-xs text-[#E6D7C3]/70">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-8 space-y-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pb-6 border-b border-white/10">
+            {/* Brand Logo & Name */}
+            <div className="flex items-center gap-3">
+              <img
+                src="/assets/aistudio/logo_7a6369a0.png"
+                alt="Logótipo Sobrevivente.eu"
+                className="w-8 h-8 object-contain"
+              />
+              <span className="font-display text-base font-semibold text-[#E6D7C3]">
+                Sobrevivente.eu
+              </span>
+            </div>
+
+            {/* Quick Links */}
+            <div className="flex flex-wrap items-center justify-center gap-6 text-[#E6D7C3]/80">
+              <a href="#manuais" className="hover:text-white transition-colors">
+                Manuais
+              </a>
+              <a href="#informacoes" className="hover:text-white transition-colors">
+                Informações Úteis
+              </a>
+              <a href="#grupos" className="hover:text-white transition-colors">
+                Grupos
+              </a>
+              <a href="#foruns" className="hover:text-white transition-colors">
+                Fóruns
+              </a>
+              <a href="#pessoas" className="hover:text-white transition-colors">
+                Encontrar Pessoas
+              </a>
+              <a
+                href="https://www.sobrevivente.eu/entrar"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setAuthInitialTab('login');
+                  setAuthModalOpen(true);
+                }}
+                className="hover:text-white transition-colors"
+              >
+                Entrar
+              </a>
+              <a
+                href="https://www.sobrevivente.eu/inscrever"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setAuthInitialTab('register');
+                  setAuthModalOpen(true);
+                }}
+                className="hover:text-white transition-colors"
+              >
+                Inscrever-se
+              </a>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm text-center md:text-left">
-            <div className="space-y-3 flex flex-col items-center md:items-start">
-              <div className="flex items-center gap-3 justify-center md:justify-start">
-                <img
-                  src="/assets/aistudio/logo_7a6369a0.png"
-                  alt="Sobrevivente.eu Emblema"
-                  className="w-8 h-8 rounded-full object-cover border border-[#E6D7C3]/25"
-                />
-                <span className="font-display text-xl font-semibold text-[#E6D7C3]">
-                  Sobrevivente.eu
-                </span>
-              </div>
-              <p className="text-xs text-[#E6D7C3]/65 leading-relaxed max-w-xs md:max-w-none">
-                Plataforma de sobrevivencialismo sereno, bushcraft ético e resiliência comunitária.
-              </p>
-            </div>
-
-            <div className="space-y-2 flex flex-col items-center md:items-start">
-              <p className="text-xs font-semibold text-[#A8B88A]">Biblioteca de Manuais</p>
-              <ul className="space-y-1.5 text-xs text-[#E6D7C3]/70">
-                <li><a href="#manuais" onClick={() => setSelectedCategory('agua')} className="hover:text-[#E6D7C3]">Purificação de Água</a></li>
-                <li><a href="#manuais" onClick={() => setSelectedCategory('fogo')} className="hover:text-[#E6D7C3]">Ignição e Fogo Primitivo</a></li>
-                <li><a href="#manuais" onClick={() => setSelectedCategory('abrigo')} className="hover:text-[#E6D7C3]">Abrigos Naturais & Tarp</a></li>
-                <li><a href="#manuais" onClick={() => setSelectedCategory('orientacao')} className="hover:text-[#E6D7C3]">Cartografia Militar 1:25.000</a></li>
-              </ul>
-            </div>
-
-            <div className="space-y-2 flex flex-col items-center md:items-start">
-              <p className="text-xs font-semibold text-[#A8B88A]">Comunidade & Campo</p>
-              <ul className="space-y-1.5 text-xs text-[#E6D7C3]/70">
-                <li><a href="#comunidade" onClick={() => setSocialTab('grupos')} className="hover:text-[#E6D7C3]">Núcleos Regionais</a></li>
-                <li><a href="#comunidade" onClick={() => setSocialTab('eventos')} className="hover:text-[#E6D7C3]">Calendário de Saídas</a></li>
-                <li><a href="#kits" className="hover:text-[#E6D7C3]">Configurador Kit 72 Horas</a></li>
-                <li><a href="#mapa" className="hover:text-[#E6D7C3]">Código Leave No Trace</a></li>
-              </ul>
-            </div>
-
-            <div className="space-y-2 flex flex-col items-center md:items-start">
-              <p className="text-xs font-semibold text-[#A8B88A]">Ligações & Redes</p>
-              <ul className="space-y-1.5 text-xs text-[#E6D7C3]/70">
-                <li>Canal Rádio Comunitário: PMR446 C8/S12</li>
-                <li>Instagram · YouTube · Mastodon PT</li>
-                <li>Contacto: campo@sobrevivente.eu</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#E6D7C3]/55 text-center sm:text-left">
-            <span>© 2026 Sobrevivente.eu · Todos os direitos reservados.</span>
-            <span>Desenhado em comunhão com a floresta autóctone portuguesa.</span>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left text-[#E6D7C3]/50">
+            <p>
+              © {new Date().getFullYear()} Sobrevivente.eu — Plataforma cívica e educativa de sobrevivencialismo ético em Portugal.
+            </p>
+            <p className="flex items-center gap-2">
+              <Shield className="w-3.5 h-3.5 text-[#A8B88A]" />
+              <span>Em caso de emergência real ligue sempre 112 (Emergência) ou 117 (Incêndios Florestais).</span>
+            </p>
           </div>
         </div>
       </footer>
 
       {/* =====================================================================
-          MOBILE: NAVEGAÇÃO INFERIOR FIXA (INÍCIO, MANUAIS, COMUNIDADE, KIT, PERFIL)
-          Respects <=15% viewport height cap (h-14 = 56px)
+          INTERACTIVE PILLAR PREVIEW MODALS
+          (Provides instant interactive access to verified data without clutter)
          ===================================================================== */}
-      <nav
-        aria-label="Navegação móvel inferior"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 h-14 bg-[#16231B]/90 backdrop-blur-xl border-t border-white/15 px-2 flex items-center justify-around"
-      >
-        <button
-          onClick={() => scrollToSection('inicio', 'inicio')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-medium transition-colors cursor-pointer ${
-            activeMobileTab === 'inicio' ? 'text-[#C85A3E]' : 'text-[#E6D7C3]/70'
-          }`}
-        >
-          <Home className="w-4 h-4 mb-0.5" strokeWidth={1.6} />
-          <span>Início</span>
-        </button>
 
-        <button
-          onClick={() => scrollToSection('manuais', 'manuais')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-medium transition-colors cursor-pointer ${
-            activeMobileTab === 'manuais' ? 'text-[#C85A3E]' : 'text-[#E6D7C3]/70'
-          }`}
-        >
-          <BookOpen className="w-4 h-4 mb-0.5" strokeWidth={1.6} />
-          <span>Manuais</span>
-        </button>
-
-        <button
-          onClick={() => scrollToSection('comunidade', 'comunidade')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-medium transition-colors cursor-pointer ${
-            activeMobileTab === 'comunidade' ? 'text-[#C85A3E]' : 'text-[#E6D7C3]/70'
-          }`}
-        >
-          <Users className="w-4 h-4 mb-0.5" strokeWidth={1.6} />
-          <span>Comunidade</span>
-        </button>
-
-        <button
-          onClick={() => scrollToSection('kits', 'kit')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-medium transition-colors cursor-pointer ${
-            activeMobileTab === 'kit' ? 'text-[#C85A3E]' : 'text-[#E6D7C3]/70'
-          }`}
-        >
-          <Backpack className="w-4 h-4 mb-0.5" strokeWidth={1.6} />
-          <span>Kit</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveMobileTab('perfil');
-            setAuthModalOpen(true);
-          }}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-[11px] font-medium transition-colors cursor-pointer ${
-            activeMobileTab === 'perfil' ? 'text-[#C85A3E]' : 'text-[#E6D7C3]/70'
-          }`}
-        >
-          <User className="w-4 h-4 mb-0.5" strokeWidth={1.6} />
-          <span>Perfil</span>
-        </button>
-      </nav>
-
-      {/* =====================================================================
-          MODAL 1: LEITOR DE MANUAL COMPLETO
-         ===================================================================== */}
-      {activeManualModal && (
+      {/* MODAL 1: MANUAIS */}
+      {activePillarModal === 'manuais' && (
         <div
-          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
-          onClick={() => setActiveManualModal(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-manuais-titulo"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setActivePillarModal(null)}
         >
           <div
-            className="glass-card max-w-2xl w-full p-6 sm:p-8 space-y-6 my-8 max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-4xl max-h-[90vh] bg-[#16271c] border border-white/15 rounded-[28px] overflow-hidden flex flex-col shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-xs text-[#A8B88A]">
-                  <span>{activeManualModal.categoryLabel}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>Nível {activeManualModal.level}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>{activeManualModal.readTime}</span>
-                </div>
-                <h2 className="font-display text-2xl sm:text-3xl text-[#E6D7C3] font-semibold">
-                  {activeManualModal.title}
-                </h2>
-                <p className="text-xs text-[#E6D7C3]/70">{activeManualModal.author}</p>
+            {/* Modal Header */}
+            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-[#132218]">
+              <div>
+                <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                  Pilar 01 · Biblioteca de Campo
+                </span>
+                <h3 id="modal-manuais-titulo" className="font-display text-2xl text-[#E6D7C3] font-semibold">
+                  Manuais Práticos de Campo
+                </h3>
               </div>
-
               <button
-                onClick={() => setActiveManualModal(null)}
-                className="p-2 rounded-full glass-pill text-[#E6D7C3]/75 hover:text-[#E6D7C3] cursor-pointer"
+                onClick={() => setActivePillarModal(null)}
+                className="p-2 rounded-full hover:bg-white/10 text-[#E6D7C3] transition-colors"
+                aria-label="Fechar janela de manuais"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body: Manuals Grid */}
+            <div className="p-6 overflow-y-auto space-y-4">
+              <p className="text-sm text-[#E6D7C3]/80">
+                Estes são os manuais práticos disponíveis na comunidade. Selecione um manual para consultar o passo a passo ou descarregá-lo para leitura offline:
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                {FEATURED_MANUALS.map((manual) => (
+                  <div
+                    key={manual.id}
+                    onClick={() => setSelectedManualDetail(manual)}
+                    className="p-4 rounded-2xl bg-[#1d3525]/70 hover:bg-[#1d3525] border border-white/10 hover:border-[#A8B88A]/50 transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between text-xs text-[#A8B88A] font-mono">
+                        <span>{manual.categoryLabel}</span>
+                        <span>{manual.readTime}</span>
+                      </div>
+                      <h4 className="font-display text-lg text-[#E6D7C3] font-semibold mt-1 group-hover:text-white transition-colors">
+                        {manual.title}
+                      </h4>
+                      <p className="text-xs text-[#E6D7C3]/75 mt-1 line-clamp-2">
+                        {manual.subtitle}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-[#E6D7C3]/60 pt-2 border-t border-white/5">
+                      <span>Nível: {manual.level}</span>
+                      <span className="text-[#A8B88A] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        Ler passos <ChevronRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Footer with Direct CTAs */}
+            <div className="px-6 py-4 border-t border-white/10 bg-[#132218] flex items-center justify-between text-xs">
+              <span className="text-[#E6D7C3]/70">
+                Quer guardar manuais na sua mochila pessoal?
+              </span>
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://www.sobrevivente.eu/entrar"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActivePillarModal(null);
+                    setAuthInitialTab('login');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5"
+                >
+                  Entrar
+                </a>
+                <a
+                  href="https://www.sobrevivente.eu/inscrever"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActivePillarModal(null);
+                    setAuthInitialTab('register');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white"
+                >
+                  Inscrever-se
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DETAIL MODAL: READ SPECIFIC MANUAL */}
+      {selectedManualDetail && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="manual-detalhe-titulo"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setSelectedManualDetail(null)}
+        >
+          <div
+            className="w-full max-w-3xl max-h-[92vh] bg-[#16271c] border border-white/20 rounded-[28px] overflow-hidden flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-[#132218]">
+              <div>
+                <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                  {selectedManualDetail.categoryLabel} · {selectedManualDetail.level}
+                </span>
+                <h3 id="manual-detalhe-titulo" className="font-display text-2xl text-[#E6D7C3] font-semibold">
+                  {selectedManualDetail.title}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedManualDetail(null)}
+                className="p-2 rounded-full hover:bg-white/10 text-[#E6D7C3] transition-colors"
                 aria-label="Fechar manual"
               >
-                <X className="w-5 h-5" strokeWidth={1.5} />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="rounded-[18px] overflow-hidden border border-white/12 aspect-[16/9] bg-[#142018]">
-              <BushcraftIllustration
-                type={activeManualModal.illustration}
-                className="w-full h-full object-cover"
-              />
-            </div>
+            {/* Content */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              <p className="text-sm text-[#E6D7C3]/90 leading-relaxed font-normal">
+                {selectedManualDetail.summary}
+              </p>
 
-            <p className="text-sm sm:text-base text-[#E6D7C3]/85 leading-relaxed">
-              {activeManualModal.summary}
-            </p>
-
-            {/* Materials Needed */}
-            <div className="p-4 rounded-[18px] bg-white/[0.04] border border-white/10 space-y-2">
-              <h3 className="font-display text-base text-[#A8B88A] font-semibold">
-                Recursos e Materiais Necessários
-              </h3>
-              <ul className="space-y-1.5 text-xs sm:text-sm text-[#E6D7C3]/85">
-                {activeManualModal.materials.map((m, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="text-[#C85A3E]">•</span>
-                    <span>{m}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Step-by-Step Instructions */}
-            <div className="space-y-4">
-              <h3 className="font-display text-lg text-[#E6D7C3] font-semibold">
-                Protocolo Passo a Passo
-              </h3>
-              {activeManualModal.steps.map((st, i) => (
-                <div key={i} className="p-4 rounded-[16px] bg-black/25 border border-white/10 space-y-1">
-                  <p className="text-sm font-semibold text-[#E6D7C3]">{st.title}</p>
-                  <p className="text-xs sm:text-sm text-[#E6D7C3]/80 leading-relaxed">{st.detail}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Safety / Field Note */}
-            <div className="p-4 rounded-[16px] bg-[#C85A3E]/15 border border-[#C85A3E]/40 text-xs sm:text-sm text-[#E6D7C3] space-y-1">
-              <p className="font-semibold text-[#C85A3E]">Nota de Segurança de Campo:</p>
-              <p>{activeManualModal.fieldNote}</p>
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <button
-                onClick={() => toggleSaveManual(activeManualModal.id)}
-                className="px-5 py-2.5 rounded-full bg-[#5A6B44]/60 hover:bg-[#5A6B44] text-xs sm:text-sm font-medium text-[#E6D7C3] flex items-center gap-2 cursor-pointer"
-              >
-                <Bookmark className="w-4 h-4" strokeWidth={1.5} />
-                <span>
-                  {savedManualIds.includes(activeManualModal.id)
-                    ? 'Guardado nos Favoritos ✓'
-                    : 'Guardar Manual'}
+              {/* Materials */}
+              <div className="p-4 rounded-xl bg-[#142318] border border-white/10 space-y-2">
+                <span className="text-xs uppercase tracking-wider text-[#A8B88A] font-mono font-medium">
+                  Materiais e Ferramentas Necessárias:
                 </span>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {selectedManualDetail.materials.map((mat, i) => (
+                    <span
+                      key={i}
+                      className="px-3 py-1 rounded-md bg-[#1d3525] text-xs text-[#E6D7C3] border border-white/10"
+                    >
+                      {mat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Steps */}
+              <div className="space-y-4">
+                <span className="text-xs uppercase tracking-wider text-[#A8B88A] font-mono font-medium">
+                  Passo a Passo Técnico:
+                </span>
+                <div className="space-y-3">
+                  {selectedManualDetail.steps.map((st, i) => (
+                    <div
+                      key={i}
+                      className="p-4 rounded-xl bg-[#1c3324] border border-white/5 space-y-1"
+                    >
+                      <div className="text-sm font-semibold text-[#E6D7C3] flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-[#A8B88A]/20 text-[#A8B88A] text-xs flex items-center justify-center font-mono">
+                          {i + 1}
+                        </span>
+                        <span>{st.title}</span>
+                      </div>
+                      <p className="text-xs text-[#E6D7C3]/75 leading-relaxed pl-7">
+                        {st.detail}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Field Note / Disclaimer */}
+              <div className="p-4 rounded-xl bg-[#2a1e1b] border border-[#C85A3E]/30 text-xs text-[#E6D7C3]/80 space-y-1">
+                <span className="text-[#C85A3E] font-medium flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4" />
+                  Regulamento Florestal e Segurança:
+                </span>
+                <p>{selectedManualDetail.fieldNote}</p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-white/10 bg-[#132218] flex items-center justify-between">
+              <button
+                onClick={() => handleDownloadManualTxt(selectedManualDetail)}
+                className="px-4 py-2 rounded-full border border-[#A8B88A]/40 text-[#E6D7C3] text-xs font-medium hover:bg-[#A8B88A]/10 transition-colors flex items-center gap-2 cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5 text-[#A8B88A]" />
+                <span>Descarregar TXT Offline</span>
               </button>
 
               <button
-                onClick={() => setActiveManualModal(null)}
-                className="px-6 py-2.5 rounded-full bg-[#C85A3E] text-xs sm:text-sm font-medium text-[#E6D7C3] cursor-pointer"
+                onClick={() => setSelectedManualDetail(null)}
+                className="px-5 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] text-xs font-semibold hover:bg-white transition-colors"
               >
                 Concluir Leitura
               </button>
@@ -2290,22 +1356,533 @@ export default function App() {
         </div>
       )}
 
+      {/* MODAL 2: INFORMAÇÕES ÚTEIS */}
+      {activePillarModal === 'informacoes' && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-info-titulo"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setActivePillarModal(null)}
+        >
+          <div
+            className="w-full max-w-4xl max-h-[90vh] bg-[#16271c] border border-white/15 rounded-[28px] overflow-hidden flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-[#132218]">
+              <div>
+                <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                  Pilar 02 · Monitorização Territorial
+                </span>
+                <h3 id="modal-info-titulo" className="font-display text-2xl text-[#E6D7C3] font-semibold">
+                  Informações Úteis em Tempo Real
+                </h3>
+              </div>
+              <button
+                onClick={() => setActivePillarModal(null)}
+                className="p-2 rounded-full hover:bg-white/10 text-[#E6D7C3] transition-colors"
+                aria-label="Fechar informações úteis"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body: District Risk Inspector */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              <div>
+                <span className="text-xs uppercase tracking-wider text-[#A8B88A] font-mono font-medium">
+                  Selecione o Distrito para Consultar o Perigo Rural IPMA:
+                </span>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {(['Braga', 'Guarda', 'Castelo Branco', 'Santarém', 'Faro'] as const).map((dist) => (
+                    <button
+                      key={dist}
+                      onClick={() => setSelectedDistrict(dist)}
+                      className={`px-4 py-2 rounded-full text-xs font-medium transition-all cursor-pointer ${
+                        selectedDistrict === dist
+                          ? 'bg-[#E6D7C3] text-[#16271c] font-semibold shadow-md'
+                          : 'bg-[#1c3324] text-[#E6D7C3]/80 hover:bg-[#23422f] border border-white/10'
+                      }`}
+                    >
+                      {dist}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Active District Dashboard Card */}
+              {districtRiskData[selectedDistrict] && (
+                <div className="p-6 rounded-2xl bg-[#142318] border border-white/10 space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                    <div>
+                      <span className="text-xs font-mono text-[#A8B88A]">Boletim Territorial</span>
+                      <h4 className="font-display text-xl text-[#E6D7C3] font-semibold">
+                        Distrito de {selectedDistrict}
+                      </h4>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-[#E6D7C3]/70">Nível de Perigo:</span>
+                      <span
+                        className="px-3 py-1 rounded-full text-xs font-semibold"
+                        style={{
+                          backgroundColor: `${districtRiskData[selectedDistrict].color}25`,
+                          color: districtRiskData[selectedDistrict].color,
+                          border: `1px solid ${districtRiskData[selectedDistrict].color}40`,
+                        }}
+                      >
+                        {districtRiskData[selectedDistrict].level}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Weather Parameters */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 rounded-xl bg-[#1c3324] border border-white/5 text-center">
+                      <span className="text-[11px] text-[#A8B88A] font-mono">Temperatura</span>
+                      <p className="text-base font-semibold text-[#E6D7C3] mt-0.5">
+                        {districtRiskData[selectedDistrict].temp}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[#1c3324] border border-white/5 text-center">
+                      <span className="text-[11px] text-[#A8B88A] font-mono">Humidade Relativa</span>
+                      <p className="text-base font-semibold text-[#E6D7C3] mt-0.5">
+                        {districtRiskData[selectedDistrict].humidity}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-[#1c3324] border border-white/5 text-center">
+                      <span className="text-[11px] text-[#A8B88A] font-mono">Vento / Rajadas</span>
+                      <p className="text-base font-semibold text-[#E6D7C3] mt-0.5">
+                        {districtRiskData[selectedDistrict].wind}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Directives */}
+                  <div className="space-y-2 text-xs">
+                    <div className="p-3 rounded-xl bg-[#1f2821] border border-white/5 flex items-start gap-3">
+                      <AlertTriangle className="w-4 h-4 text-[#C85A3E] shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold text-[#E6D7C3]">Alerta ANEPC: </span>
+                        <span className="text-[#E6D7C3]/80">{districtRiskData[selectedDistrict].fireAlert}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#1f2821] border border-white/5 flex items-start gap-3">
+                      <Shield className="w-4 h-4 text-[#A8B88A] shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold text-[#E6D7C3]">Normas ICNF: </span>
+                        <span className="text-[#E6D7C3]/80">{districtRiskData[selectedDistrict].icnfNotice}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Water sources reminder */}
+              <div className="p-4 rounded-xl bg-[#102319] border border-[#A8B88A]/30 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-3">
+                  <Droplets className="w-5 h-5 text-[#A8B88A]" />
+                  <span>
+                    No Sobrevivente.eu mantemos um mapa colaborativo com mais de 140 fontes e nascentes catalogadas em Portugal.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-white/10 bg-[#132218] flex items-center justify-between text-xs">
+              <span className="text-[#E6D7C3]/70">
+                Receba alertas meteorológicos no seu telemóvel:
+              </span>
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://www.sobrevivente.eu/entrar"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActivePillarModal(null);
+                    setAuthInitialTab('login');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5"
+                >
+                  Entrar
+                </a>
+                <a
+                  href="https://www.sobrevivente.eu/inscrever"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActivePillarModal(null);
+                    setAuthInitialTab('register');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white"
+                >
+                  Inscrever-se
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: GRUPOS & NÚCLEOS */}
+      {activePillarModal === 'grupos' && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-grupos-titulo"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setActivePillarModal(null)}
+        >
+          <div
+            className="w-full max-w-4xl max-h-[90vh] bg-[#16271c] border border-white/15 rounded-[28px] overflow-hidden flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-[#132218]">
+              <div>
+                <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                  Pilar 03 · Organização Regional
+                </span>
+                <h3 id="modal-grupos-titulo" className="font-display text-2xl text-[#E6D7C3] font-semibold">
+                  Grupos & Núcleos Regionais
+                </h3>
+              </div>
+              <button
+                onClick={() => setActivePillarModal(null)}
+                className="p-2 rounded-full hover:bg-white/10 text-[#E6D7C3] transition-colors"
+                aria-label="Fechar grupos"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-4">
+              <p className="text-sm text-[#E6D7C3]/80">
+                Os núcleos são círculos territoriais independentes que organizam saídas práticas de campo, testes de rádio e entreajuda:
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {INITIAL_GROUPS.map((group) => (
+                  <div
+                    key={group.id}
+                    className="p-5 rounded-2xl bg-[#1d3525]/70 border border-white/10 space-y-3 flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between text-xs text-[#A8B88A] font-mono">
+                        <span>{group.biome}</span>
+                        <span>{group.members} Praticantes</span>
+                      </div>
+                      <h4 className="font-display text-lg text-[#E6D7C3] font-semibold mt-1">
+                        {group.name}
+                      </h4>
+                      <p className="text-xs text-[#E6D7C3]/75 mt-1 leading-relaxed">
+                        Coordenação local: {group.coordinator}
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs">
+                      <span className="text-[#E6D7C3]/60">{group.nextMeetup}</span>
+                      <a
+                        href="https://www.sobrevivente.eu/inscrever"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setActivePillarModal(null);
+                          setAuthInitialTab('register');
+                          setAuthModalOpen(true);
+                        }}
+                        className="text-[#A8B88A] hover:underline font-medium flex items-center gap-1"
+                      >
+                        Aderir ao Núcleo <ChevronRight className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-white/10 bg-[#132218] flex items-center justify-between text-xs">
+              <span className="text-[#E6D7C3]/70">
+                Pretende fundar um núcleo no seu concelho?
+              </span>
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://www.sobrevivente.eu/inscrever"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActivePillarModal(null);
+                    setAuthInitialTab('register');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white"
+                >
+                  Registar-se na Comunidade
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: FÓRUNS */}
+      {activePillarModal === 'foruns' && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-foruns-titulo"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setActivePillarModal(null)}
+        >
+          <div
+            className="w-full max-w-4xl max-h-[90vh] bg-[#16271c] border border-white/15 rounded-[28px] overflow-hidden flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-[#132218]">
+              <div>
+                <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                  Pilar 04 · Troca de Experiências
+                </span>
+                <h3 id="modal-foruns-titulo" className="font-display text-2xl text-[#E6D7C3] font-semibold">
+                  Fóruns de Discussão & Partilha
+                </h3>
+              </div>
+              <button
+                onClick={() => setActivePillarModal(null)}
+                className="p-2 rounded-full hover:bg-white/10 text-[#E6D7C3] transition-colors"
+                aria-label="Fechar fóruns"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body: Active Forum Topics */}
+            <div className="p-6 overflow-y-auto space-y-4">
+              <p className="text-sm text-[#E6D7C3]/80">
+                Discussões técnicas em curso entre membros da comunidade. Sem patrocínios, focado na prática:
+              </p>
+
+              <div className="space-y-3">
+                {INITIAL_FORUM_QUESTIONS.map((faq) => (
+                  <div
+                    key={faq.id}
+                    className="p-4 rounded-xl bg-[#1d3525]/70 border border-white/10 space-y-2 hover:bg-[#1d3525] transition-colors"
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="px-2 py-0.5 rounded bg-[#A8B88A]/20 text-[#A8B88A] font-mono">
+                        {faq.categoryLabel}
+                      </span>
+                      <span className="text-[#E6D7C3]/60">{faq.votes} votos de membros</span>
+                    </div>
+
+                    <h4 className="font-display text-base font-semibold text-[#E6D7C3]">
+                      {faq.question}
+                    </h4>
+
+                    <p className="text-xs text-[#E6D7C3]/75 leading-relaxed">
+                      {faq.instructorAnswer}
+                    </p>
+
+                    <div className="flex items-center justify-between text-[11px] text-[#E6D7C3]/50 pt-1 border-t border-white/5 font-mono">
+                      <span>Iniciado por: {faq.author} ({faq.region})</span>
+                      <span>Resposta: {faq.instructorName}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-white/10 bg-[#132218] flex items-center justify-between text-xs">
+              <span className="text-[#E6D7C3]/70">
+                Participe nas discussões e publique as suas questões:
+              </span>
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://www.sobrevivente.eu/entrar"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActivePillarModal(null);
+                    setAuthInitialTab('login');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5"
+                >
+                  Entrar
+                </a>
+                <a
+                  href="https://www.sobrevivente.eu/inscrever"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActivePillarModal(null);
+                    setAuthInitialTab('register');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white"
+                >
+                  Inscrever-se
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: ENCONTRAR OUTRAS PESSOAS */}
+      {activePillarModal === 'pessoas' && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-pessoas-titulo"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setActivePillarModal(null)}
+        >
+          <div
+            className="w-full max-w-4xl max-h-[90vh] bg-[#16271c] border border-white/15 rounded-[28px] overflow-hidden flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between bg-[#132218]">
+              <div>
+                <span className="text-xs uppercase tracking-widest text-[#A8B88A] font-mono">
+                  Pilar 05 · Rede de Proximidade
+                </span>
+                <h3 id="modal-pessoas-titulo" className="font-display text-2xl text-[#E6D7C3] font-semibold">
+                  Encontrar Outras Pessoas
+                </h3>
+              </div>
+              <button
+                onClick={() => setActivePillarModal(null)}
+                className="p-2 rounded-full hover:bg-white/10 text-[#E6D7C3] transition-colors"
+                aria-label="Fechar encontrar pessoas"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <p className="text-sm text-[#E6D7C3]/80">
+                  Praticantes registados disponíveis para travessias e duplas de campo:
+                </p>
+
+                {/* Filter */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#E6D7C3]/60 font-mono">Filtrar:</span>
+                  <select
+                    value={memberRegionFilter}
+                    onChange={(e) => setMemberRegionFilter(e.target.value)}
+                    className="px-3 py-1.5 rounded-lg bg-[#142318] border border-white/15 text-xs text-[#E6D7C3] focus:outline-none focus:border-[#A8B88A]"
+                  >
+                    <option value="Todas">Todos os Distritos</option>
+                    <option value="Braga">Braga</option>
+                    <option value="Guarda">Guarda</option>
+                    <option value="Sintra">Lisboa / Sintra</option>
+                    <option value="Castelo Branco">Castelo Branco</option>
+                    <option value="Faro">Faro</option>
+                    <option value="Porto">Porto</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Members Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {filteredMembers.map((member, i) => (
+                  <div
+                    key={i}
+                    className="p-4 rounded-2xl bg-[#1d3525]/70 border border-white/10 space-y-3 flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between text-xs text-[#A8B88A] font-mono">
+                        <span>{member.district}</span>
+                        <span className="px-2 py-0.5 rounded bg-[#A8B88A]/15 text-[10px]">
+                          {member.exp}
+                        </span>
+                      </div>
+                      <h4 className="font-display text-base font-semibold text-[#E6D7C3] mt-1.5">
+                        {member.name}
+                      </h4>
+                      <p className="text-xs text-[#E6D7C3]/75 mt-1">
+                        {member.focus}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-[#A8B88A]">
+                      <span>{member.badge}</span>
+                      <a
+                        href="https://www.sobrevivente.eu/inscrever"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setActivePillarModal(null);
+                          setAuthInitialTab('register');
+                          setAuthModalOpen(true);
+                        }}
+                        className="underline hover:text-white"
+                      >
+                        Conectar
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-white/10 bg-[#132218] flex items-center justify-between text-xs">
+              <span className="text-[#E6D7C3]/70">
+                Registe o seu perfil para aparecer no mapa comunitário:
+              </span>
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://www.sobrevivente.eu/entrar"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActivePillarModal(null);
+                    setAuthInitialTab('login');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5"
+                >
+                  Entrar
+                </a>
+                <a
+                  href="https://www.sobrevivente.eu/inscrever"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActivePillarModal(null);
+                    setAuthInitialTab('register');
+                    setAuthModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white"
+                >
+                  Inscrever-se
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* =====================================================================
-          MODAL 2: POPUP DE LOGIN & INSCRIÇÃO COM BASE DE DADOS DO SERVIDOR
+          AUTHENTICATION & DATABASE MODAL (Entrar / Inscrever-se / Servidor DB)
          ===================================================================== */}
       <AuthModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
         currentUser={loggedUser}
-        onLoginSuccess={(u) => {
-          setLoggedUser(u);
-          setBadgeToast(`Bem-vindo, ${u.name}! Inscrição verificada na base de dados.`);
-          setTimeout(() => setBadgeToast(null), 3500);
+        initialTab={authInitialTab}
+        onLoginSuccess={(user) => {
+          setLoggedUser(user);
+          localStorage.setItem('sobrevivente_user', JSON.stringify(user));
         }}
         onLogout={() => {
           setLoggedUser(null);
-          setBadgeToast('Sessão terminada.');
-          setTimeout(() => setBadgeToast(null), 2500);
+          localStorage.removeItem('sobrevivente_user');
         }}
       />
     </div>

@@ -87,3 +87,62 @@
   scrollbar-width: none;
 }
 
+/* Accessible High-Contrast Focus Visible Outline across interactive controls */
+:focus-visible {
+  outline: 2px solid #A8B88A !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px rgba(31, 46, 36, 0.8) !important;
+}
+
+/* Screen reader utility helper */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.focus\:not-sr-only:focus {
+  position: fixed;
+  width: auto;
+  height: auto;
+  padding: 0.75rem 1.25rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* ==========================================================================
+   Smooth Fade-In-Up Scroll Animation for 5 Pillar Cards
+   ========================================================================== */
+.pillar-card-anim {
+  opacity: 0;
+  transform: translateY(34px);
+  transition-property: opacity, transform, border-color, box-shadow;
+  transition-duration: 750ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.pillar-card-anim.pillar-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pillar-card-anim.pillar-revealed:hover {
+  transform: translateY(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pillar-card-anim {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

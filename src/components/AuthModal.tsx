@@ -35,6 +35,7 @@ interface AuthModalProps {
   onLoginSuccess: (user: AuthUser) => void;
   onLogout: () => void;
   featuredBadgesCount?: number;
+  initialTab?: 'login' | 'register' | 'database';
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -43,8 +44,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   currentUser,
   onLoginSuccess,
   onLogout,
+  initialTab = 'register',
 }) => {
-  const [tab, setTab] = useState<'login' | 'register' | 'database'>('register');
+  const [tab, setTab] = useState<'login' | 'register' | 'database'>(initialTab);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setTab(initialTab);
+      setErrorMessage(null);
+      setSuccessMessage(null);
+    }
+  }, [isOpen, initialTab]);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -61,6 +71,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Database inspector state
   const [dbUsers, setDbUsers] = useState<any[]>([]);
   const [loadingDb, setLoadingDb] = useState(false);
+
+  // Close modal on Escape key for keyboard accessibility
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -235,6 +255,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="auth-modal-title"
       className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
@@ -246,6 +269,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div
           className="absolute -top-20 -left-20 w-64 h-64 rounded-full pointer-events-none"
           style={{ background: 'radial-gradient(circle, rgba(200,90,62,0.18) 0%, transparent 70%)' }}
+          aria-hidden="true"
         />
 
         {/* Header */}
@@ -257,7 +281,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               className="w-10 h-10 rounded-full object-cover border border-[#E6D7C3]/30 shadow-sm shrink-0"
             />
             <div>
-              <h2 className="font-display text-xl sm:text-2xl font-semibold text-[#E6D7C3]">
+              <h2 id="auth-modal-title" className="font-display text-xl sm:text-2xl font-semibold text-[#E6D7C3]">
                 {currentUser ? 'Passaporte de Campo' : tab === 'register' ? 'Criar Conta de Membro' : tab === 'login' ? 'Iniciar Sessão' : 'Base de Dados'}
               </h2>
               <p className="text-xs text-[#A8B88A]">
@@ -269,9 +293,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             onClick={onClose}
             className="p-2 rounded-full glass-pill text-[#E6D7C3]/75 hover:text-[#E6D7C3] transition-colors cursor-pointer"
-            aria-label="Fechar janela"
+            aria-label="Fechar janela de autenticação"
           >
-            <X className="w-4 h-4" strokeWidth={1.5} />
+            <X className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
           </button>
         </div>
 
@@ -287,7 +311,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <p className="font-display text-lg text-[#E6D7C3] font-semibold">{currentUser.name}</p>
                   <p className="text-xs text-[#E6D7C3]/65">{currentUser.email}</p>
                   <div className="flex items-center gap-2 text-xs text-[#A8B88A] pt-1">
-                    <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />
+                    <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
                     <span>{currentUser.region}</span>
                     <span aria-hidden="true">·</span>
                     <span>Nível {currentUser.experienceLevel}</span>
@@ -317,7 +341,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 }}
                 className="px-5 py-3 rounded-full glass-pill text-xs sm:text-sm text-[#C85A3E] hover:border-[#C85A3E] transition-colors flex items-center gap-2 cursor-pointer"
               >
-                <LogOut className="w-4 h-4" strokeWidth={1.5} />
+                <LogOut className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
                 <span>Terminar Sessão</span>
               </button>
             </div>
@@ -326,8 +350,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           /* Authentication Forms */
           <div className="space-y-5 relative z-10">
             {/* Tab Switcher Pills */}
-            <div className="flex p-1 rounded-full glass-pill gap-1">
+            <div className="flex p-1 rounded-full glass-pill gap-1" role="tablist" aria-label="Opções de autenticação">
               <button
+                id="tab-auth-register"
+                role="tab"
+                aria-selected={tab === 'register'}
+                aria-controls="panel-auth-register"
                 type="button"
                 onClick={() => {
                   setTab('register');
@@ -341,6 +369,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 Inscrição (Nova Conta)
               </button>
               <button
+                id="tab-auth-login"
+                role="tab"
+                aria-selected={tab === 'login'}
+                aria-controls="panel-auth-login"
                 type="button"
                 onClick={() => {
                   setTab('login');
@@ -354,6 +386,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 Iniciar Sessão
               </button>
               <button
+                id="tab-auth-database"
+                role="tab"
+                aria-selected={tab === 'database'}
+                aria-controls="panel-auth-database"
+                aria-label="Visualizador da base de dados"
                 type="button"
                 onClick={() => {
                   setTab('database');
@@ -364,36 +401,51 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 }`}
                 title="Ver tabela da base de dados"
               >
-                <Database className="w-3.5 h-3.5" strokeWidth={1.5} />
+                <Database className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
                 <span className="hidden sm:inline">BD</span>
               </button>
             </div>
 
             {/* Success / Error Banners */}
             {successMessage && (
-              <div className="p-3.5 rounded-[16px] bg-[#5A6B44]/40 border border-[#A8B88A]/60 flex items-center gap-2.5 text-xs sm:text-sm text-[#E6D7C3]">
-                <CheckCircle2 className="w-4 h-4 text-[#A8B88A] shrink-0" strokeWidth={1.5} />
+              <div
+                role="status"
+                aria-live="polite"
+                className="p-3.5 rounded-[16px] bg-[#5A6B44]/40 border border-[#A8B88A]/60 flex items-center gap-2.5 text-xs sm:text-sm text-[#E6D7C3]"
+              >
+                <CheckCircle2 className="w-4 h-4 text-[#A8B88A] shrink-0" strokeWidth={1.5} aria-hidden="true" />
                 <span>{successMessage}</span>
               </div>
             )}
 
             {errorMessage && (
-              <div className="p-3.5 rounded-[16px] bg-[#C85A3E]/20 border border-[#C85A3E]/50 flex items-center gap-2.5 text-xs sm:text-sm text-[#E6D7C3]">
-                <AlertCircle className="w-4 h-4 text-[#C85A3E] shrink-0" strokeWidth={1.5} />
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="p-3.5 rounded-[16px] bg-[#C85A3E]/20 border border-[#C85A3E]/50 flex items-center gap-2.5 text-xs sm:text-sm text-[#E6D7C3]"
+              >
+                <AlertCircle className="w-4 h-4 text-[#C85A3E] shrink-0" strokeWidth={1.5} aria-hidden="true" />
                 <span>{errorMessage}</span>
               </div>
             )}
 
             {/* TAB: INSCRIÇÃO / REGISTO */}
             {tab === 'register' && (
-              <form onSubmit={handleRegister} className="space-y-4">
+              <form
+                id="panel-auth-register"
+                role="tabpanel"
+                aria-labelledby="tab-auth-register"
+                onSubmit={handleRegister}
+                className="space-y-4"
+              >
                 <div>
-                  <label className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
+                  <label htmlFor="auth-register-name" className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
                     Nome Completo ou Nome de Campo
                   </label>
                   <div className="relative">
-                    <User className="w-4 h-4 text-[#E6D7C3]/45 absolute left-3.5 top-1/2 -translate-y-1/2" strokeWidth={1.5} />
+                    <User className="w-4 h-4 text-[#E6D7C3]/45 absolute left-3.5 top-1/2 -translate-y-1/2" strokeWidth={1.5} aria-hidden="true" />
                     <input
+                      id="auth-register-name"
                       type="text"
                       required
                       value={name}
@@ -405,12 +457,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
+                  <label htmlFor="auth-register-email" className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
                     Endereço de Email
                   </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-[#E6D7C3]/45 absolute left-3.5 top-1/2 -translate-y-1/2" strokeWidth={1.5} />
+                    <Mail className="w-4 h-4 text-[#E6D7C3]/45 absolute left-3.5 top-1/2 -translate-y-1/2" strokeWidth={1.5} aria-hidden="true" />
                     <input
+                      id="auth-register-email"
                       type="email"
                       required
                       value={email}
@@ -422,12 +475,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
+                  <label htmlFor="auth-register-password" className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
                     Palavra-passe (mínimo 6 caracteres)
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-[#E6D7C3]/45 absolute left-3.5 top-1/2 -translate-y-1/2" strokeWidth={1.5} />
+                    <Lock className="w-4 h-4 text-[#E6D7C3]/45 absolute left-3.5 top-1/2 -translate-y-1/2" strokeWidth={1.5} aria-hidden="true" />
                     <input
+                      id="auth-register-password"
                       type={showPassword ? 'text' : 'password'}
                       required
                       minLength={6}
@@ -439,19 +493,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Ocultar palavra-passe' : 'Mostrar palavra-passe'}
+                      aria-pressed={showPassword}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#E6D7C3]/50 hover:text-[#E6D7C3] cursor-pointer"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
                     </button>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
+                    <label htmlFor="auth-register-region" className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
                       Região / Núcleo
                     </label>
                     <select
+                      id="auth-register-region"
                       value={region}
                       onChange={(e) => setRegion(e.target.value)}
                       className="w-full px-3 py-2.5 rounded-[14px] bg-[#1B2A20] border border-white/15 text-xs sm:text-sm text-[#E6D7C3] focus:outline-none focus:border-[#A8B88A]"
@@ -466,10 +523,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
+                    <label htmlFor="auth-register-level" className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
                       Nível de Experiência
                     </label>
                     <select
+                      id="auth-register-level"
                       value={experienceLevel}
                       onChange={(e) => setExperienceLevel(e.target.value as any)}
                       className="w-full px-3 py-2.5 rounded-[14px] bg-[#1B2A20] border border-white/15 text-xs sm:text-sm text-[#E6D7C3] focus:outline-none focus:border-[#A8B88A]"
@@ -481,17 +539,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </div>
                 </div>
 
-                <label className="flex items-start gap-2.5 text-xs text-[#E6D7C3]/75 pt-1 cursor-pointer select-none">
+                <div className="flex items-start gap-2.5 text-xs text-[#E6D7C3]/75 pt-1">
                   <input
+                    id="auth-register-terms"
                     type="checkbox"
                     checked={agreedTerms}
                     onChange={(e) => setAgreedTerms(e.target.checked)}
-                    className="mt-0.5 accent-[#C85A3E]"
+                    className="mt-0.5 accent-[#C85A3E] cursor-pointer"
                   />
-                  <span>
+                  <label htmlFor="auth-register-terms" className="cursor-pointer select-none">
                     Concordo com a prática ética <strong className="text-[#E6D7C3]">Leave No Trace</strong> e as normas de segurança florestal da comunidade.
-                  </span>
-                </label>
+                  </label>
+                </div>
 
                 <button
                   type="submit"
@@ -500,13 +559,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                       <span>A registar na base de dados...</span>
                     </>
                   ) : (
                     <>
                       <span>Concluir Inscrição no Servidor</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-4 h-4" aria-hidden="true" />
                     </>
                   )}
                 </button>
@@ -515,14 +574,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             {/* TAB: INICIAR SESSÃO */}
             {tab === 'login' && (
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form
+                id="panel-auth-login"
+                role="tabpanel"
+                aria-labelledby="tab-auth-login"
+                onSubmit={handleLogin}
+                className="space-y-4"
+              >
                 <div>
-                  <label className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
+                  <label htmlFor="auth-login-email" className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
                     Endereço de Email
                   </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-[#E6D7C3]/45 absolute left-3.5 top-1/2 -translate-y-1/2" strokeWidth={1.5} />
+                    <Mail className="w-4 h-4 text-[#E6D7C3]/45 absolute left-3.5 top-1/2 -translate-y-1/2" strokeWidth={1.5} aria-hidden="true" />
                     <input
+                      id="auth-login-email"
                       type="email"
                       required
                       value={email}
@@ -534,12 +600,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
+                  <label htmlFor="auth-login-password" className="block text-xs text-[#E6D7C3]/80 mb-1.5 font-medium">
                     Palavra-passe
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-[#E6D7C3]/45 absolute left-3.5 top-1/2 -translate-y-1/2" strokeWidth={1.5} />
+                    <Lock className="w-4 h-4 text-[#E6D7C3]/45 absolute left-3.5 top-1/2 -translate-y-1/2" strokeWidth={1.5} aria-hidden="true" />
                     <input
+                      id="auth-login-password"
                       type={showPassword ? 'text' : 'password'}
                       required
                       value={password}
@@ -550,9 +617,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Ocultar palavra-passe' : 'Mostrar palavra-passe'}
+                      aria-pressed={showPassword}
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#E6D7C3]/50 hover:text-[#E6D7C3] cursor-pointer"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
                     </button>
                   </div>
                 </div>
@@ -569,13 +638,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                       <span>A validar credenciais...</span>
                     </>
                   ) : (
                     <>
                       <span>Entrar no Acampamento</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-4 h-4" aria-hidden="true" />
                     </>
                   )}
                 </button>
@@ -584,7 +653,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             {/* TAB: VISUALIZADOR DA BASE DE DADOS DO SERVIDOR */}
             {tab === 'database' && (
-              <div className="space-y-4">
+              <div
+                id="panel-auth-database"
+                role="tabpanel"
+                aria-labelledby="tab-auth-database"
+                className="space-y-4"
+              >
                 <div className="p-4 rounded-[16px] bg-black/35 border border-white/10 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-[#A8B88A] flex items-center gap-1.5">
