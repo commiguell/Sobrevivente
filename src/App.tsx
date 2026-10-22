@@ -50,7 +50,6 @@ import {
 } from './data/gearData';
 import { PortugalReliefMap, PORTUGAL_PEAKS } from './components/PortugalReliefMap';
 import { BushcraftIllustration } from './components/BotanicalIllustrations';
-import { AuthModal, AuthUser } from './components/AuthModal';
 
 type PillarType = 'manuais' | 'informacoes' | 'grupos' | 'foruns' | 'pessoas' | 'loja';
 
@@ -148,18 +147,7 @@ function PillarRevealCard({ id, delayMs = 0, className = '', children }: PillarR
 }
 
 export default function App() {
-  // Modal & Navigation States
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authInitialTab, setAuthInitialTab] = useState<'login' | 'register' | 'database'>('register');
-  const [loggedUser, setLoggedUser] = useState<AuthUser | null>(() => {
-    try {
-      const saved = localStorage.getItem('sobrevivente_user');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
-
+  // Navigation & Pillar Modal States
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activePillarModal, setActivePillarModal] = useState<PillarType | null>(null);
   const [selectedManualDetail, setSelectedManualDetail] = useState<ManualItem | null>(null);
@@ -228,10 +216,10 @@ export default function App() {
   // Interactive Member Finder Filter
   const [memberRegionFilter, setMemberRegionFilter] = useState<string>('Todas');
 
-  // Prevent background scroll when any modal is open
+  // Prevent background scroll when any pillar modal is open
   useEffect(() => {
     const isModalActive =
-      authModalOpen || activePillarModal !== null || selectedManualDetail !== null || selectedGearDetail !== null;
+      activePillarModal !== null || selectedManualDetail !== null || selectedGearDetail !== null;
     const prevOverflow = document.body.style.overflow;
     if (isModalActive) {
       document.body.style.overflow = 'hidden';
@@ -241,7 +229,7 @@ export default function App() {
     return () => {
       document.body.style.overflow = prevOverflow;
     };
-  }, [authModalOpen, activePillarModal, selectedManualDetail, selectedGearDetail]);
+  }, [activePillarModal, selectedManualDetail, selectedGearDetail]);
 
   // Handle ESC key to close open modals
   useEffect(() => {
@@ -253,14 +241,12 @@ export default function App() {
           setSelectedManualDetail(null);
         } else if (activePillarModal) {
           setActivePillarModal(null);
-        } else if (authModalOpen) {
-          setAuthModalOpen(false);
         }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedGearDetail, selectedManualDetail, activePillarModal, authModalOpen]);
+  }, [selectedGearDetail, selectedManualDetail, activePillarModal]);
 
   // Export a manual as offline text file
   const handleDownloadManualTxt = (manual: ManualItem) => {
@@ -759,44 +745,20 @@ export default function App() {
 
           {/* Zone 3: Quick Action / Mobile Hamburger */}
           <div className="flex items-center gap-3 shrink-0">
-            {loggedUser ? (
-              <button
-                onClick={() => {
-                  setAuthInitialTab('database');
-                  setAuthModalOpen(true);
-                }}
-                className="px-4 py-2 text-xs font-medium bg-[#A8B88A]/20 text-[#E6D7C3] border border-[#A8B88A]/40 rounded-full hover:bg-[#A8B88A]/35 transition-colors flex items-center gap-2"
-                aria-label={`Conta de ${loggedUser.name}`}
+            <div className="hidden sm:flex items-center gap-2.5">
+              <a
+                href="https://www.sobrevivente.eu/entrar"
+                className="px-4 py-2 text-xs font-medium text-[#E6D7C3]/90 hover:text-white transition-colors whitespace-nowrap cursor-pointer"
               >
-                <span className="w-2 h-2 rounded-full bg-[#A8B88A]" />
-                <span className="truncate max-w-[120px]">{loggedUser.name}</span>
-              </button>
-            ) : (
-              <div className="hidden sm:flex items-center gap-2.5">
-                <a
-                  href="https://www.sobrevivente.eu/entrar"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setAuthInitialTab('login');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 text-xs font-medium text-[#E6D7C3]/90 hover:text-white transition-colors whitespace-nowrap"
-                >
-                  Entrar
-                </a>
-                <a
-                  href="https://www.sobrevivente.eu/inscrever"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setAuthInitialTab('register');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 text-xs font-medium bg-[#E6D7C3] text-[#16271c] rounded-full hover:bg-white transition-colors whitespace-nowrap font-sans font-semibold"
-                >
-                  Inscrever-se
-                </a>
-              </div>
-            )}
+                Entrar
+              </a>
+              <a
+                href="https://www.sobrevivente.eu/inscrever"
+                className="px-4 py-2 text-xs font-medium bg-[#E6D7C3] text-[#16271c] rounded-full hover:bg-white transition-colors whitespace-nowrap font-sans font-semibold cursor-pointer shadow-sm"
+              >
+                Inscrever-se
+              </a>
+            </div>
 
             {/* Mobile Hamburger toggle */}
             <button
@@ -861,25 +823,15 @@ export default function App() {
             <div className="pt-3 border-t border-white/10 flex flex-col gap-2.5">
               <a
                 href="https://www.sobrevivente.eu/entrar"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMobileMenuOpen(false);
-                  setAuthInitialTab('login');
-                  setAuthModalOpen(true);
-                }}
-                className="w-full text-center py-2.5 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] text-sm font-medium hover:bg-white/5"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center py-2.5 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] text-sm font-medium hover:bg-white/5 cursor-pointer"
               >
                 Entrar
               </a>
               <a
                 href="https://www.sobrevivente.eu/inscrever"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setMobileMenuOpen(false);
-                  setAuthInitialTab('register');
-                  setAuthModalOpen(true);
-                }}
-                className="w-full text-center py-2.5 rounded-full bg-[#E6D7C3] text-[#16271c] text-sm font-semibold hover:bg-white"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center py-2.5 rounded-full bg-[#E6D7C3] text-[#16271c] text-sm font-semibold hover:bg-white cursor-pointer shadow-md"
               >
                 Inscrever-se
               </a>
@@ -924,11 +876,6 @@ export default function App() {
               {/* Button 1: Entrar with link www.sobrevivente.eu/entrar */}
               <a
                 href="https://www.sobrevivente.eu/entrar"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setAuthInitialTab('login');
-                  setAuthModalOpen(true);
-                }}
                 className="w-full sm:w-auto px-8 py-3.5 rounded-full text-sm font-medium border border-[#E6D7C3]/45 text-[#E6D7C3] hover:border-[#E6D7C3] hover:bg-white/5 transition-all duration-200 text-center whitespace-nowrap cursor-pointer shadow-sm"
               >
                 Entrar
@@ -937,11 +884,6 @@ export default function App() {
               {/* Button 2: Inscrever-se with link www.sobrevivente.eu/inscrever */}
               <a
                 href="https://www.sobrevivente.eu/inscrever"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setAuthInitialTab('register');
-                  setAuthModalOpen(true);
-                }}
                 className="w-full sm:w-auto px-8 py-3.5 rounded-full text-sm font-semibold bg-[#E6D7C3] text-[#16271c] hover:bg-white transition-all duration-200 text-center whitespace-nowrap cursor-pointer shadow-lg shadow-black/25"
               >
                 Inscrever-se
@@ -1648,22 +1590,12 @@ export default function App() {
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a
                   href="https://www.sobrevivente.eu/entrar"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setAuthInitialTab('login');
-                    setAuthModalOpen(true);
-                  }}
                   className="w-full sm:w-auto px-8 py-3.5 rounded-full text-sm font-medium border border-[#E6D7C3]/45 text-[#E6D7C3] hover:border-[#E6D7C3] hover:bg-white/5 transition-all text-center whitespace-nowrap cursor-pointer"
                 >
                   Entrar
                 </a>
                 <a
                   href="https://www.sobrevivente.eu/inscrever"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setAuthInitialTab('register');
-                    setAuthModalOpen(true);
-                  }}
                   className="w-full sm:w-auto px-8 py-3.5 rounded-full text-sm font-semibold bg-[#E6D7C3] text-[#16271c] hover:bg-white transition-all text-center whitespace-nowrap cursor-pointer shadow-lg shadow-black/25"
                 >
                   Inscrever-se
@@ -1711,23 +1643,13 @@ export default function App() {
               </a>
               <a
                 href="https://www.sobrevivente.eu/entrar"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setAuthInitialTab('login');
-                  setAuthModalOpen(true);
-                }}
-                className="hover:text-white transition-colors"
+                className="hover:text-white transition-colors cursor-pointer"
               >
                 Entrar
               </a>
               <a
                 href="https://www.sobrevivente.eu/inscrever"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setAuthInitialTab('register');
-                  setAuthModalOpen(true);
-                }}
-                className="hover:text-white transition-colors"
+                className="hover:text-white transition-colors cursor-pointer"
               >
                 Inscrever-se
               </a>
@@ -1828,25 +1750,13 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <a
                   href="https://www.sobrevivente.eu/entrar"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActivePillarModal(null);
-                    setAuthInitialTab('login');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5"
+                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5 cursor-pointer"
                 >
                   Entrar
                 </a>
                 <a
                   href="https://www.sobrevivente.eu/inscrever"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActivePillarModal(null);
-                    setAuthInitialTab('register');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white"
+                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white cursor-pointer"
                 >
                   Inscrever-se
                 </a>
@@ -2244,25 +2154,13 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <a
                   href="https://www.sobrevivente.eu/entrar"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActivePillarModal(null);
-                    setAuthInitialTab('login');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5"
+                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5 cursor-pointer"
                 >
                   Entrar
                 </a>
                 <a
                   href="https://www.sobrevivente.eu/inscrever"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActivePillarModal(null);
-                    setAuthInitialTab('register');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white"
+                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white cursor-pointer"
                 >
                   Inscrever-se
                 </a>
@@ -2333,13 +2231,7 @@ export default function App() {
                       <span className="text-[#E6D7C3]/60">{group.nextMeetup}</span>
                       <a
                         href="https://www.sobrevivente.eu/inscrever"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActivePillarModal(null);
-                          setAuthInitialTab('register');
-                          setAuthModalOpen(true);
-                        }}
-                        className="text-[#A8B88A] hover:underline font-medium flex items-center gap-1"
+                        className="text-[#A8B88A] hover:underline font-medium flex items-center gap-1 cursor-pointer"
                       >
                         Aderir ao Núcleo <ChevronRight className="w-3.5 h-3.5" />
                       </a>
@@ -2357,13 +2249,7 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <a
                   href="https://www.sobrevivente.eu/inscrever"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActivePillarModal(null);
-                    setAuthInitialTab('register');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white"
+                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white cursor-pointer"
                 >
                   Registar-se na Comunidade
                 </a>
@@ -2449,25 +2335,13 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <a
                   href="https://www.sobrevivente.eu/entrar"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActivePillarModal(null);
-                    setAuthInitialTab('login');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5"
+                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5 cursor-pointer"
                 >
                   Entrar
                 </a>
                 <a
                   href="https://www.sobrevivente.eu/inscrever"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActivePillarModal(null);
-                    setAuthInitialTab('register');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white"
+                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white cursor-pointer"
                 >
                   Inscrever-se
                 </a>
@@ -2561,13 +2435,7 @@ export default function App() {
                       <span>{member.badge}</span>
                       <a
                         href="https://www.sobrevivente.eu/inscrever"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setActivePillarModal(null);
-                          setAuthInitialTab('register');
-                          setAuthModalOpen(true);
-                        }}
-                        className="underline hover:text-white"
+                        className="underline hover:text-white cursor-pointer"
                       >
                         Conectar
                       </a>
@@ -2585,25 +2453,13 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <a
                   href="https://www.sobrevivente.eu/entrar"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActivePillarModal(null);
-                    setAuthInitialTab('login');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5"
+                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5 cursor-pointer"
                 >
                   Entrar
                 </a>
                 <a
                   href="https://www.sobrevivente.eu/inscrever"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActivePillarModal(null);
-                    setAuthInitialTab('register');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white"
+                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white cursor-pointer"
                 >
                   Inscrever-se
                 </a>
@@ -2885,25 +2741,13 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <a
                   href="https://www.sobrevivente.eu/entrar"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActivePillarModal(null);
-                    setAuthInitialTab('login');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5"
+                  className="px-4 py-2 rounded-full border border-[#E6D7C3]/30 text-[#E6D7C3] hover:bg-white/5 cursor-pointer"
                 >
                   Entrar
                 </a>
                 <a
                   href="https://www.sobrevivente.eu/inscrever"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActivePillarModal(null);
-                    setAuthInitialTab('register');
-                    setAuthModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white"
+                  className="px-4 py-2 rounded-full bg-[#E6D7C3] text-[#16271c] font-semibold hover:bg-white cursor-pointer"
                 >
                   Inscrever-se
                 </a>
@@ -3055,23 +2899,6 @@ export default function App() {
         </div>
       )}
 
-      {/* =====================================================================
-          AUTHENTICATION & DATABASE MODAL (Entrar / Inscrever-se / Servidor DB)
-         ===================================================================== */}
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-        currentUser={loggedUser}
-        initialTab={authInitialTab}
-        onLoginSuccess={(user) => {
-          setLoggedUser(user);
-          localStorage.setItem('sobrevivente_user', JSON.stringify(user));
-        }}
-        onLogout={() => {
-          setLoggedUser(null);
-          localStorage.removeItem('sobrevivente_user');
-        }}
-      />
     </div>
   );
 }

@@ -1,0 +1,22 @@
+# ==============================================================================
+# SOBREVIVENTE.EU — CONFIGURAÇÃO DE SEGURANÇA APACHE / LITESPEED (HOSTINGER)
+# ==============================================================================
+
+# 1. Bloquear acesso a ficheiros sensíveis (.env, .git, .sql, .log)
+<FilesMatch "^\.|\.env|\.sql|\.log|\.json$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# 2. Desativar listagem de diretórios
+Options -Indexes
+
+# 3. Forçar codificação UTF-8
+AddDefaultCharset UTF-8
+
+# 4. Cabeçalhos de Segurança HTTP
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "DENY"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>

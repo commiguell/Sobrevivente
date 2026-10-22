@@ -2,6 +2,11 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { db } from './server/db.ts';
+import {
+  isMySqlConfigured,
+  testMySqlConnection,
+  registerUserInHostingerMySql,
+} from './server/mysql.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,9 +30,21 @@ app.use((req, res, next) => {
 });
 
 // ==========================================
-// 1. API: Registo de Novo Utilizador
+// 0. API: Verificação de Estado MySQL Hostinger
 // ==========================================
-app.post('/api/auth/register', (req, res) => {
+app.get('/api/database/status', async (req, res) => {
+  const status = await testMySqlConnection();
+  return res.json({
+    isMySqlConfigured,
+    ...status,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// ==========================================
+// 1. API: Registo de Novo Utilizador (MySQL Hostinger / Fallback)
+// ==========================================
+app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password, region, experienceLevel } = req.body;
 
@@ -53,6 +70,37 @@ app.post('/api/auth/register', (req, res) => {
       });
     }
 
+    // Se a base de dados MySQL da Hostinger estiver configurada no .env:
+    if (isMySqlConfigured) {
+      const mysqlUser = await registerUserInHostingerMySql({
+        nome: name,
+        email,
+        password,
+        regiao: region,
+        nivelExperiencia: experienceLevel,
+      });
+
+      console.log(
+        `[AUTH-MYSQL-HOSTINGER] Novo utilizador registado na BD: ${mysqlUser.nome} (${mysqlUser.email})`
+      );
+
+      return res.status(201).json({
+        ok: true,
+        message: 'Inscrição realizada com sucesso no servidor Hostinger (MySQL)!',
+        user: {
+          id: `mysql_${mysqlUser.id}`,
+          name: mysqlUser.nome,
+          email: mysqlUser.email,
+          region: mysqlUser.regiao,
+          experienceLevel: mysqlUser.nivelExperiencia,
+          createdAt: mysqlUser.dataRegisto,
+          badges: ['Membro Fundador'],
+          xp: 100,
+        },
+      });
+    }
+
+    // Fallback para ambiente local de desenvolvimento sem MySQL Hostinger ativo:
     const user = db.createUser({
       name,
       email,
@@ -61,7 +109,7 @@ app.post('/api/auth/register', (req, res) => {
       experienceLevel,
     });
 
-    console.log(`[AUTH] Novo utilizador registado: ${user.name} (${user.email}) - Região: ${user.region}`);
+    console.log(`[AUTH-LOCAL] Novo utilizador registado: ${user.name} (${user.email}) - Região: ${user.region}`);
 
     return res.status(201).json({
       ok: true,
