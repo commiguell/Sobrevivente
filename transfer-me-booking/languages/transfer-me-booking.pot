@@ -1,0 +1,577 @@
+# Copyright (C) 2026 Transfer.me
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Transfer.me Booking 1.1.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-11-08 16:47+0000\n"
+"Language: \n"
+"X-Domain: transfer-me-booking\n"
+
+#: includes/Driver.php:19
+msgid "Motorista de transfers"
+msgstr ""
+
+#: includes/Bookings.php:54
+msgid "Pendente"
+msgstr ""
+
+#: includes/Bookings.php:55
+msgid "Confirmada"
+msgstr ""
+
+#: includes/Bookings.php:56
+msgid "Em curso"
+msgstr ""
+
+#: includes/Bookings.php:57
+msgid "Concluída"
+msgstr ""
+
+#: includes/Bookings.php:58
+msgid "Cancelada"
+msgstr ""
+
+#: includes/Bookings.php:70
+msgid "Cartão (terminal a bordo)"
+msgstr ""
+
+#: includes/Bookings.php:71
+msgid "Numerário"
+msgstr ""
+
+#: includes/Bookings.php:87 includes/Admin.php:144
+msgid "Reservas"
+msgstr ""
+
+#: includes/Bookings.php:88 includes/Bookings.php:89 includes/Bookings.php:545
+msgid "Reserva"
+msgstr ""
+
+#: includes/Bookings.php:90
+msgid "Pesquisar reservas"
+msgstr ""
+
+#: includes/Bookings.php:91
+msgid "Sem reservas."
+msgstr ""
+
+#: includes/Bookings.php:132
+msgid "Data ou hora inválida."
+msgstr ""
+
+#: includes/Bookings.php:136
+msgid "A data ou hora não cumpre a antecedência mínima."
+msgstr ""
+
+#: includes/Bookings.php:276
+msgid "A confirmar"
+msgstr ""
+
+#: includes/Bookings.php:316
+msgid "Esta reserva já não pode ser cancelada online. Contacte-nos."
+msgstr ""
+
+#. translators: %s: booking code
+#: includes/Bookings.php:325
+msgid "Reserva %s cancelada pelo cliente"
+msgstr ""
+
+#: includes/Bookings.php:342
+msgid "Transição de estado não permitida."
+msgstr ""
+
+#. translators: %s: booking code
+#: includes/Bookings.php:439 includes/Frontend.php:378
+msgid "Reserva %s"
+msgstr ""
+
+#. translators: %s: date and time
+#: includes/Bookings.php:441
+msgid "Data: %s"
+msgstr ""
+
+#. translators: %s: pickup address
+#: includes/Bookings.php:443
+msgid "Recolha: %s"
+msgstr ""
+
+#. translators: %s: drop-off address
+#: includes/Bookings.php:445
+msgid "Destino: %s"
+msgstr ""
+
+#. translators: 1: passengers, 2: bags
+#: includes/Bookings.php:447
+msgid "Passageiros: %1$d · Malas: %2$d"
+msgstr ""
+
+#. translators: %s: total price
+#: includes/Bookings.php:449
+msgid "Total: %s"
+msgstr ""
+
+#. translators: %s: payment method
+#: includes/Bookings.php:451
+msgid "Pagamento: %s"
+msgstr ""
+
+#. translators: %s: licence number
+#: includes/Bookings.php:455 includes/Frontend.php:292
+msgid "Número de licença: %s"
+msgstr ""
+
+#. translators: 1: customer name, 2: customer phone
+#: includes/Bookings.php:476
+msgid "Cliente: %1$s · %2$s"
+msgstr ""
+
+#. translators: %s: customer notes
+#: includes/Bookings.php:479
+msgid "Notas: %s"
+msgstr ""
+
+#: includes/Bookings.php:482
+msgid "Preço por confirmar: contacte o cliente."
+msgstr ""
+
+#. translators: %s: booking code
+#: includes/Bookings.php:487
+msgid "Nova reserva %s"
+msgstr ""
+
+#: includes/Bookings.php:494
+msgid "O preço será confirmado em breve."
+msgstr ""
+
+#: includes/Bookings.php:496
+msgid "Acompanhe ou cancele a sua reserva aqui:"
+msgstr ""
+
+#. translators: %s: booking code
+#: includes/Bookings.php:500
+msgid "A sua reserva %s"
+msgstr ""
+
+#: includes/Bookings.php:546 includes/Bookings.php:598 includes/Bookings.php:681 includes/Frontend.php:383
+msgid "Data e hora"
+msgstr ""
+
+#: includes/Bookings.php:547
+msgid "Percurso"
+msgstr ""
+
+#: includes/Bookings.php:548 includes/Bookings.php:597 includes/Frontend.php:382
+msgid "Estado"
+msgstr ""
+
+#: includes/Bookings.php:549 includes/Bookings.php:607 includes/Frontend.php:126 includes/Frontend.php:388
+msgid "Total"
+msgstr ""
+
+#: includes/Bookings.php:585
+msgid "Detalhes da reserva"
+msgstr ""
+
+#: includes/Bookings.php:596 includes/Bookings.php:680
+msgid "Código"
+msgstr ""
+
+#: includes/Bookings.php:599
+msgid "Cliente"
+msgstr ""
+
+#: includes/Bookings.php:600 includes/Bookings.php:683 includes/Frontend.php:218 includes/Frontend.php:266
+msgid "Telefone"
+msgstr ""
+
+#: includes/Bookings.php:601 includes/Bookings.php:684
+msgid "Email"
+msgstr ""
+
+#: includes/Bookings.php:602 includes/Bookings.php:685 includes/Frontend.php:128 includes/Frontend.php:158 includes/Frontend.php:384
+msgid "Recolha"
+msgstr ""
+
+#: includes/Bookings.php:603 includes/Bookings.php:686 includes/Frontend.php:169 includes/Frontend.php:385
+msgid "Destino"
+msgstr ""
+
+#: includes/Bookings.php:604 includes/Frontend.php:189
+msgid "Passageiros"
+msgstr ""
+
+#: includes/Bookings.php:605 includes/Frontend.php:197
+msgid "Malas"
+msgstr ""
+
+#: includes/Bookings.php:606 includes/Frontend.php:207 includes/Frontend.php:387
+msgid "Pagamento"
+msgstr ""
+
+#: includes/Bookings.php:608 includes/Bookings.php:687 includes/Frontend.php:134
+msgid "Notas"
+msgstr ""
+
+#: includes/Bookings.php:628 includes/Bookings.php:641 includes/Bookings.php:700
+msgid "Reservas de transfers"
+msgstr ""
+
+#: includes/Bookings.php:682 includes/Frontend.php:213
+msgid "Nome"
+msgstr ""
+
+#: includes/Bookings.php:688
+msgid "Versão da política aceite"
+msgstr ""
+
+#: includes/Admin.php:34 includes/Admin.php:35
+msgid "Transfer.me"
+msgstr ""
+
+#: includes/Admin.php:44 includes/Admin.php:45
+msgid "Definições"
+msgstr ""
+
+#: includes/Admin.php:110
+msgid "Transfer.me — Definições"
+msgstr ""
+
+#: includes/Admin.php:113
+msgid "Preços"
+msgstr ""
+
+#: includes/Admin.php:116
+msgid "Viagem (€ por km)"
+msgstr ""
+
+#: includes/Admin.php:117
+msgid "Recolha gratuita (km)"
+msgstr ""
+
+#: includes/Admin.php:118
+msgid "Recolha (€ por km após o limite gratuito)"
+msgstr ""
+
+#: includes/Admin.php:119
+msgid "Mínimo por reserva (€)"
+msgstr ""
+
+#: includes/Admin.php:120
+msgid "Distância máxima da viagem (km, 0 = sem limite)"
+msgstr ""
+
+#: includes/Admin.php:124
+msgid "Google"
+msgstr ""
+
+#: includes/Admin.php:129
+msgid "Chave de servidor Google"
+msgstr ""
+
+#: includes/Admin.php:134
+msgid "Chave guardada — deixe vazio para manter"
+msgstr ""
+
+#: includes/Admin.php:136
+msgid "Usada para Places (New), Routes e Geocoding. Restrinja-a ao IP do servidor e a estas três APIs."
+msgstr ""
+
+#: includes/Admin.php:139
+msgid "Apagar a chave guardada"
+msgstr ""
+
+#: includes/Admin.php:147
+msgid "Antecedência mínima (minutos)"
+msgstr ""
+
+#: includes/Admin.php:148
+msgid "Cancelamento permitido até (horas antes)"
+msgstr ""
+
+#: includes/Admin.php:149
+msgid "Apagar reservas após (dias, mínimo 30)"
+msgstr ""
+
+#: includes/Admin.php:150
+msgid "Número de licença"
+msgstr ""
+
+#: includes/Admin.php:151
+msgid "Nota de IVA (opcional)"
+msgstr ""
+
+#: includes/Admin.php:151
+msgid "Ex.: \"IVA incluído à taxa legal em vigor\". Aparece junto ao preço e nos emails."
+msgstr ""
+
+#: includes/Admin.php:152
+msgid "Email de notificação"
+msgstr ""
+
+#: includes/Admin.php:153
+msgid "WhatsApp de contacto (com indicativo, só dígitos)"
+msgstr ""
+
+#: includes/Admin.php:153
+msgid "Mostrado aos clientes como link de contacto."
+msgstr ""
+
+#: includes/Rest.php:181
+msgid "Sem acesso ao painel do motorista."
+msgstr ""
+
+#: includes/Rest.php:197
+msgid "Demasiados pedidos. Tente mais tarde."
+msgstr ""
+
+#: includes/Rest.php:245
+msgid "Indique recolha e destino válidos."
+msgstr ""
+
+#: includes/Rest.php:338
+msgid "Verifique os campos assinalados."
+msgstr ""
+
+#: includes/Rest.php:351
+msgid "A cotação expirou ou já foi usada. Calcule novamente o preço."
+msgstr ""
+
+#: includes/Rest.php:388 includes/Rest.php:405 includes/Rest.php:504
+msgid "Reserva não encontrada."
+msgstr ""
+
+#: includes/Rest.php:428
+msgid "Não encontrámos uma reserva com esses dados."
+msgstr ""
+
+#: includes/Rest.php:478
+msgid "Coordenadas inválidas."
+msgstr ""
+
+#: includes/Rest.php:481
+msgid "Entre em serviço antes de partilhar a posição."
+msgstr ""
+
+#: includes/Frontend.php:109
+msgid "Escolha uma morada da lista."
+msgstr ""
+
+#: includes/Frontend.php:110
+msgid "A calcular o preço…"
+msgstr ""
+
+#: includes/Frontend.php:111
+msgid "Preço a confirmar. Envie o pedido e confirmaremos o valor."
+msgstr ""
+
+#: includes/Frontend.php:112
+msgid "Só fazemos transfers na Madeira e no Porto Santo. Verifique as moradas."
+msgstr ""
+
+#: includes/Frontend.php:113
+msgid "A distância excede o máximo para reserva online. Contacte-nos."
+msgstr ""
+
+#: includes/Frontend.php:114
+msgid "A cotação expirou. A recalcular…"
+msgstr ""
+
+#: includes/Frontend.php:115
+msgid "Ocorreu um erro. Tente novamente."
+msgstr ""
+
+#: includes/Frontend.php:116
+msgid "Não foi possível obter a localização. Escreva a morada."
+msgstr ""
+
+#: includes/Frontend.php:117
+msgid "A enviar…"
+msgstr ""
+
+#: includes/Frontend.php:118
+msgid "Reserva criada. Guarde o código:"
+msgstr ""
+
+#: includes/Frontend.php:119
+msgid "Pedido enviado. Vamos confirmar o preço consigo. Código:"
+msgstr ""
+
+#: includes/Frontend.php:120
+msgid "Reserva cancelada."
+msgstr ""
+
+#: includes/Frontend.php:121 includes/Frontend.php:324
+msgid "Em serviço"
+msgstr ""
+
+#: includes/Frontend.php:122
+msgid "Fora de serviço"
+msgstr ""
+
+#: includes/Frontend.php:123 includes/Frontend.php:324
+msgid "Entrar em serviço"
+msgstr ""
+
+#: includes/Frontend.php:124
+msgid "Sem reservas nos próximos dias."
+msgstr ""
+
+#: includes/Frontend.php:125
+msgid "Cancelar esta reserva?"
+msgstr ""
+
+#: includes/Frontend.php:127
+msgid "Viagem"
+msgstr ""
+
+#: includes/Frontend.php:129
+msgid "km cobráveis"
+msgstr ""
+
+#: includes/Frontend.php:130
+msgid "De"
+msgstr ""
+
+#: includes/Frontend.php:131
+msgid "Para"
+msgstr ""
+
+#: includes/Frontend.php:132
+msgid "pax"
+msgstr ""
+
+#: includes/Frontend.php:133
+msgid "malas"
+msgstr ""
+
+#: includes/Frontend.php:135
+msgid "Navegar"
+msgstr ""
+
+#: includes/Frontend.php:136
+msgid "Ligar"
+msgstr ""
+
+#: includes/Frontend.php:137
+msgid "Confirmar"
+msgstr ""
+
+#: includes/Frontend.php:138
+msgid "Iniciar viagem"
+msgstr ""
+
+#: includes/Frontend.php:139
+msgid "Concluir"
+msgstr ""
+
+#: includes/Frontend.php:155
+msgid "Reserve o seu transfer"
+msgstr ""
+
+#: includes/Frontend.php:159
+msgid "Morada de recolha"
+msgstr ""
+
+#: includes/Frontend.php:162
+msgid "Usar a minha localização"
+msgstr ""
+
+#: includes/Frontend.php:170
+msgid "Morada de destino"
+msgstr ""
+
+#: includes/Frontend.php:178
+msgid "Data"
+msgstr ""
+
+#: includes/Frontend.php:182
+msgid "Hora"
+msgstr ""
+
+#: includes/Frontend.php:222
+msgid "Email (opcional)"
+msgstr ""
+
+#: includes/Frontend.php:227
+msgid "Notas (opcional)"
+msgstr ""
+
+#. translators: %s: link to privacy policy
+#: includes/Frontend.php:238
+msgid "Li e aceito a <a href=\"%s\">política de privacidade</a>."
+msgstr ""
+
+#: includes/Frontend.php:248
+msgid "Confirmar pedido"
+msgstr ""
+
+#: includes/Frontend.php:253
+msgid "As minhas reservas"
+msgstr ""
+
+#: includes/Frontend.php:258
+msgid "Consultar uma reserva"
+msgstr ""
+
+#: includes/Frontend.php:262
+msgid "Código da reserva"
+msgstr ""
+
+#: includes/Frontend.php:270
+msgid "Consultar"
+msgstr ""
+
+#: includes/Frontend.php:271
+msgid "Ao consultar, o link anterior da reserva deixa de funcionar. Use sempre o link mais recente."
+msgstr ""
+
+#: includes/Frontend.php:295
+msgid "Falar connosco por WhatsApp"
+msgstr ""
+
+#: includes/Frontend.php:308
+msgid "Área do motorista"
+msgstr ""
+
+#: includes/Frontend.php:316
+msgid "Esta conta não tem acesso ao painel do motorista."
+msgstr ""
+
+#: includes/Frontend.php:317
+msgid "Sair"
+msgstr ""
+
+#: includes/Frontend.php:321
+msgid "Painel do motorista"
+msgstr ""
+
+#: includes/Frontend.php:322
+msgid "Mantenha o ecrã ligado enquanto estiver em serviço, para que a posição seja atualizada."
+msgstr ""
+
+#: includes/Frontend.php:327
+msgid "Próximas reservas"
+msgstr ""
+
+#: includes/Frontend.php:369
+msgid "Reserva não encontrada"
+msgstr ""
+
+#: includes/Frontend.php:370
+msgid "O link pode ter sido substituído por um mais recente. Consulte a reserva com o código e o telefone."
+msgstr ""
+
+#: includes/Frontend.php:386
+msgid "Passageiros e malas"
+msgstr ""
+
+#: includes/Frontend.php:388
+msgid "Total (preço fixo)"
+msgstr ""
+
+#: includes/Frontend.php:392
+msgid "Cancelar reserva"
+msgstr ""

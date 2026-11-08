@@ -1,0 +1,39 @@
+/* Transfer.me Booking — estilos base. O tema pode sobrescrever estas classes. */
+.tmb { max-width: 640px; margin: 0 auto; font-size: 1rem; line-height: 1.5; }
+.tmb h2, .tmb h3 { margin: 1.5rem 0 0.75rem; }
+.tmb-form .tmb-field { margin-bottom: 1rem; position: relative; }
+.tmb-form fieldset { border: 0; padding: 0; margin: 0 0 1rem; }
+.tmb-form legend { font-weight: 600; margin-bottom: 0.25rem; }
+.tmb-form label { display: block; margin-bottom: 0.25rem; }
+.tmb-form input[type="text"],
+.tmb-form input[type="tel"],
+.tmb-form input[type="email"],
+.tmb-form input[type="date"],
+.tmb-form input[type="time"],
+.tmb-form select,
+.tmb-form textarea { width: 100%; box-sizing: border-box; min-height: 44px; padding: 0.5rem; font: inherit; }
+.tmb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+@media (max-width: 480px) { .tmb-row { grid-template-columns: 1fr; } }
+.tmb-suggestions { list-style: none; margin: 0; padding: 0; border: 1px solid #8884; position: absolute; left: 0; right: 0; z-index: 10; background: #fff; color: #111; max-height: 240px; overflow: auto; }
+.tmb-suggestions li { padding: 0.6rem 0.75rem; cursor: pointer; min-height: 44px; box-sizing: border-box; }
+.tmb-suggestions li:hover, .tmb-suggestions li:focus { background: #0001; }
+.tmb-button { display: inline-block; min-height: 44px; padding: 0.6rem 1.2rem; font: inherit; font-weight: 600; cursor: pointer; border: 0; border-radius: 6px; background: #0b5ed7; color: #fff; }
+.tmb-button:disabled { opacity: 0.5; cursor: not-allowed; }
+.tmb-button-secondary { background: #444; }
+.tmb-link { background: none; border: 0; padding: 0.25rem 0; color: #0b5ed7; text-decoration: underline; cursor: pointer; font: inherit; min-height: 44px; }
+.tmb-quote { margin: 1rem 0; padding: 0.75rem; border-radius: 6px; background: #0b5ed71a; }
+.tmb-total { font-size: 1.25rem; font-weight: 700; margin: 0; }
+.tmb-note { font-size: 0.875rem; opacity: 0.8; }
+.tmb-result { margin-top: 1rem; }
+.tmb-card { border: 1px solid #8884; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem; }
+.tmb-card h4 { margin: 0 0 0.5rem; }
+.tmb-summary dt { font-weight: 600; margin-top: 0.5rem; }
+.tmb-summary dd { margin: 0 0 0.25rem; }
+.tmb :focus-visible { outline: 3px solid #0b5ed7; outline-offset: 2px; }
+.tmb-quote:empty { display: none; }
+.tmb [aria-invalid="true"] { outline: 2px solid #b02a37; outline-offset: 1px; }
+a.tmb-link { display: inline-flex; align-items: center; margin-right: 1rem; }
+.tmb-card.tmb-status-cancelled { opacity: 0.6; }
+.tmb-card.tmb-status-pending { border-color: #b8860b; }
+.tmb-mine ul { padding-left: 1.25rem; }
+.tmb-result a, .tmb-mine a { overflow-wrap: anywhere; }

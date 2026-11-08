@@ -1,0 +1,5 @@
+tests
+phpunit.xml.dist
+.distignore
+.gitignore
+.phpunit.result.cache
