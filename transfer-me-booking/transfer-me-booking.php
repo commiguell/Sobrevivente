@@ -3,7 +3,7 @@
  * Plugin Name:       Transfer.me Booking
  * Plugin URI:        https://madeiratransfer.me
  * Description:       Reservas de transfers privados com cotação por distância, painel do cliente sem conta e painel do motorista.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Author:            Transfer.me
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'TRANSFERME_VERSION', '1.1.0' );
+define( 'TRANSFERME_VERSION', '1.2.0' );
 define( 'TRANSFERME_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TRANSFERME_URL', plugin_dir_url( __FILE__ ) );
 
@@ -51,6 +51,24 @@ add_action(
 );
 
 add_action( 'init', array( Bookings::class, 'register_cpt' ) );
+
+/**
+ * Dados públicos do plugin para temas e outros plugins. Nunca inclui a chave Google nem emails.
+ *
+ * @return array{licence_number:string,whatsapp_number:string,whatsapp_url:string,vat_label:string,booking_url:string}
+ */
+function transferme_booking_public_info(): array {
+	$s       = \TransferMe\Booking\Util::settings();
+	$page_id = (int) get_option( 'tmb_customer_page_id' );
+	$wa      = (string) $s['whatsapp_number'];
+	return array(
+		'licence_number'  => (string) $s['licence_number'],
+		'whatsapp_number' => $wa,
+		'whatsapp_url'    => $wa ? 'https://wa.me/' . $wa : '',
+		'vat_label'       => (string) $s['vat_label'],
+		'booking_url'     => $page_id && 'publish' === get_post_status( $page_id ) ? (string) get_permalink( $page_id ) : '',
+	);
+}
 
 /*
  * O plugin não é distribuído pelo WordPress.org, por isso as traduções vêm da pasta /languages

@@ -24,6 +24,7 @@ final class Frontend {
 		add_shortcode( 'transfer_me_driver', array( __CLASS__, 'render_driver' ) );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue' ) );
 		add_action( 'init', array( __CLASS__, 'rewrites' ) );
+		add_action( 'init', array( __CLASS__, 'register_block' ) );
 		add_filter( 'query_vars', array( __CLASS__, 'query_vars' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'no_cache_private_pages' ), 1 );
 		add_action( 'template_redirect', array( __CLASS__, 'maybe_render_booking_page' ) );
@@ -81,10 +82,31 @@ final class Frontend {
 	}
 
 	/**
-	 * Recursos CSS e JS, só nas páginas do plugin.
+	 * Bloco "Formulário de reserva" (transfer-me/booking-form). Mostra o mesmo formulário do shortcode,
+	 * mas permite ao tema estilizá-lo em theme.json (styles.blocks) e colocá-lo em templates.
+	 */
+	public static function register_block(): void {
+		register_block_type( TRANSFERME_DIR . 'blocks/booking-form' );
+	}
+
+	/**
+	 * Recursos CSS e JS nas páginas que já se sabe que usam o plugin (no head, sem salto visual).
+	 * Os blocos e shortcodes noutros sítios (por exemplo, templates do tema) chamam enqueue_assets() ao renderizar.
 	 */
 	public static function enqueue(): void {
-		if ( ! self::page_has( 'transfer_me_booking' ) && ! self::page_has( 'transfer_me_driver' ) && ! get_query_var( 'tmb_token' ) ) {
+		$post = get_queried_object();
+		$has  = self::page_has( 'transfer_me_booking' ) || self::page_has( 'transfer_me_driver' ) || get_query_var( 'tmb_token' )
+			|| ( $post instanceof \WP_Post && has_block( 'transfer-me/booking-form', $post ) );
+		if ( $has ) {
+			self::enqueue_assets();
+		}
+	}
+
+	/**
+	 * Regista e coloca em fila o CSS e o JS do plugin (uma vez por pedido).
+	 */
+	public static function enqueue_assets(): void {
+		if ( wp_script_is( 'transfer-me', 'enqueued' ) ) {
 			return;
 		}
 		wp_enqueue_style( 'transfer-me', TRANSFERME_URL . 'assets/css/transfer-me.css', array(), TRANSFERME_VERSION );
@@ -137,6 +159,19 @@ final class Frontend {
 					'actConfirm'    => __( 'Confirmar', 'transfer-me-booking' ),
 					'actStart'      => __( 'Iniciar viagem', 'transfer-me-booking' ),
 					'actComplete'   => __( 'Concluir', 'transfer-me-booking' ),
+					'errors'        => array(
+						'pickup'     => __( 'Escolha a morada de recolha na lista ou use a sua localização.', 'transfer-me-booking' ),
+						'dropoff'    => __( 'Escolha a morada de destino na lista.', 'transfer-me-booking' ),
+						'datetime'   => __( 'Indique uma data e hora válidas, com a antecedência mínima.', 'transfer-me-booking' ),
+						'name'       => __( 'Indique o seu nome (2 a 100 caracteres).', 'transfer-me-booking' ),
+						'phone'      => __( 'Indique um telefone válido, com 9 a 15 dígitos.', 'transfer-me-booking' ),
+						'email'      => __( 'O email não é válido.', 'transfer-me-booking' ),
+						'passengers' => __( 'Escolha entre 1 e 4 passageiros.', 'transfer-me-booking' ),
+						'bags'       => __( 'Escolha entre 0 e 10 malas.', 'transfer-me-booking' ),
+						'payment'    => __( 'Escolha o método de pagamento.', 'transfer-me-booking' ),
+						'notes'      => __( 'As notas são demasiado longas.', 'transfer-me-booking' ),
+						'consent'    => __( 'Tem de aceitar a política de privacidade.', 'transfer-me-booking' ),
+					),
 				),
 			)
 		);
@@ -146,6 +181,7 @@ final class Frontend {
 	 * Formulário de reserva do cliente.
 	 */
 	public static function render_customer(): string {
+		self::enqueue_assets();
 		$s   = Util::settings();
 		$min = wp_date( 'Y-m-d' );
 
@@ -157,8 +193,9 @@ final class Frontend {
 				<fieldset class="tmb-field">
 					<legend><?php esc_html_e( 'Recolha', 'transfer-me-booking' ); ?></legend>
 					<label for="tmb-pickup-text"><?php esc_html_e( 'Morada de recolha', 'transfer-me-booking' ); ?></label>
-					<input type="text" id="tmb-pickup-text" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="tmb-pickup-list" aria-autocomplete="list">
+					<input type="text" id="tmb-pickup-text" aria-describedby="tmb-pickup-error" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="tmb-pickup-list" aria-autocomplete="list">
 					<ul id="tmb-pickup-list" class="tmb-suggestions" role="listbox" hidden></ul>
+					<p class="tmb-error" id="tmb-pickup-error" hidden></p>
 					<button type="button" id="tmb-gps" class="tmb-link"><?php esc_html_e( 'Usar a minha localização', 'transfer-me-booking' ); ?></button>
 					<input type="hidden" name="pickup_place_id" id="tmb-pickup-place">
 					<input type="hidden" name="pickup_lat" id="tmb-pickup-lat">
@@ -168,21 +205,23 @@ final class Frontend {
 				<fieldset class="tmb-field">
 					<legend><?php esc_html_e( 'Destino', 'transfer-me-booking' ); ?></legend>
 					<label for="tmb-dropoff-text"><?php esc_html_e( 'Morada de destino', 'transfer-me-booking' ); ?></label>
-					<input type="text" id="tmb-dropoff-text" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="tmb-dropoff-list" aria-autocomplete="list">
+					<input type="text" id="tmb-dropoff-text" aria-describedby="tmb-dropoff-error" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="tmb-dropoff-list" aria-autocomplete="list">
 					<ul id="tmb-dropoff-list" class="tmb-suggestions" role="listbox" hidden></ul>
+					<p class="tmb-error" id="tmb-dropoff-error" hidden></p>
 					<input type="hidden" name="dropoff_place_id" id="tmb-dropoff-place">
 				</fieldset>
 
 				<div class="tmb-row">
 					<div class="tmb-field">
 						<label for="tmb-date"><?php esc_html_e( 'Data', 'transfer-me-booking' ); ?></label>
-						<input type="date" id="tmb-date" name="date" min="<?php echo esc_attr( $min ); ?>" required>
+						<input type="date" id="tmb-date" aria-describedby="tmb-datetime-error" name="date" min="<?php echo esc_attr( $min ); ?>" required>
 					</div>
 					<div class="tmb-field">
 						<label for="tmb-time"><?php esc_html_e( 'Hora', 'transfer-me-booking' ); ?></label>
-						<input type="time" id="tmb-time" name="time" step="900" required>
+						<input type="time" id="tmb-time" aria-describedby="tmb-datetime-error" name="time" step="900" required>
 					</div>
 				</div>
+				<p class="tmb-error" id="tmb-datetime-error" hidden></p>
 
 				<div class="tmb-row">
 					<div class="tmb-field">
@@ -211,25 +250,29 @@ final class Frontend {
 
 				<div class="tmb-field">
 					<label for="tmb-name"><?php esc_html_e( 'Nome', 'transfer-me-booking' ); ?></label>
-					<input type="text" id="tmb-name" name="name" autocomplete="name" required minlength="2" maxlength="100">
+					<input type="text" id="tmb-name" aria-describedby="tmb-name-error" name="name" autocomplete="name" required minlength="2" maxlength="100">
+					<p class="tmb-error" id="tmb-name-error" hidden></p>
 				</div>
 				<div class="tmb-row">
 					<div class="tmb-field">
 						<label for="tmb-phone"><?php esc_html_e( 'Telefone', 'transfer-me-booking' ); ?></label>
-						<input type="tel" id="tmb-phone" name="phone" autocomplete="tel" required>
+						<input type="tel" id="tmb-phone" aria-describedby="tmb-phone-error" name="phone" autocomplete="tel" required>
+						<p class="tmb-error" id="tmb-phone-error" hidden></p>
 					</div>
 					<div class="tmb-field">
 						<label for="tmb-email"><?php esc_html_e( 'Email (opcional)', 'transfer-me-booking' ); ?></label>
-						<input type="email" id="tmb-email" name="email" autocomplete="email">
+						<input type="email" id="tmb-email" aria-describedby="tmb-email-error" name="email" autocomplete="email">
+						<p class="tmb-error" id="tmb-email-error" hidden></p>
 					</div>
 				</div>
 				<div class="tmb-field">
 					<label for="tmb-notes"><?php esc_html_e( 'Notas (opcional)', 'transfer-me-booking' ); ?></label>
-					<textarea id="tmb-notes" name="notes" rows="2" maxlength="<?php echo esc_attr( (string) Bookings::NOTES_MAX ); ?>"></textarea>
+					<textarea id="tmb-notes" aria-describedby="tmb-notes-error" name="notes" rows="2" maxlength="<?php echo esc_attr( (string) Bookings::NOTES_MAX ); ?>"></textarea>
+					<p class="tmb-error" id="tmb-notes-error" hidden></p>
 				</div>
 
 				<div class="tmb-field tmb-consent">
-					<label><input type="checkbox" id="tmb-consent" name="consent" required>
+					<label><input type="checkbox" id="tmb-consent" aria-describedby="tmb-consent-error" name="consent" required>
 						<?php
 						$privacy_url = get_privacy_policy_url();
 						printf(
@@ -242,10 +285,11 @@ final class Frontend {
 						);
 						?>
 					</label>
+					<p class="tmb-error" id="tmb-consent-error" hidden></p>
 				</div>
 
-				<div id="tmb-quote" class="tmb-quote" aria-live="polite"></div>
-				<button type="submit" id="tmb-submit" class="tmb-button" disabled><?php esc_html_e( 'Confirmar pedido', 'transfer-me-booking' ); ?></button>
+				<div id="tmb-quote" class="tmb-quote tmb-price" aria-live="polite"></div>
+				<button type="submit" id="tmb-submit" class="tmb-button"><?php esc_html_e( 'Confirmar pedido', 'transfer-me-booking' ); ?></button>
 				<div id="tmb-result" class="tmb-result" aria-live="polite"></div>
 			</form>
 
@@ -284,6 +328,15 @@ final class Frontend {
 	 * @param array $s Definições.
 	 */
 	private static function render_footer_notes( array $s ): void {
+		/**
+		 * Mostrar licença, nota de IVA e link de WhatsApp por baixo do formulário e na página da reserva?
+		 * Um tema que já mostre estes dados (por exemplo, no rodapé) pode devolver false.
+		 *
+		 * @param bool $show Por defeito, true.
+		 */
+		if ( ! apply_filters( 'transferme_booking_show_footer_notes', true ) ) {
+			return;
+		}
 		if ( $s['vat_label'] ) {
 			echo '<p class="tmb-note tmb-vat">' . esc_html( $s['vat_label'] ) . '</p>';
 		}
@@ -300,6 +353,7 @@ final class Frontend {
 	 * Painel do motorista.
 	 */
 	public static function render_driver(): string {
+		self::enqueue_assets();
 		ob_start();
 		?>
 		<div class="tmb tmb-driver">
@@ -347,6 +401,10 @@ final class Frontend {
 
 		$block_theme = function_exists( 'wp_is_block_theme' ) && wp_is_block_theme();
 		if ( $block_theme ) {
+			// As partes do tema são renderizadas antes de wp_head, para os scripts e módulos que elas pedem
+			// (por exemplo, a navegação) entrarem no <head> e no mapa de importação.
+			$header_html = do_blocks( '<!-- wp:template-part {"slug":"header","tagName":"header"} /-->' );
+			$footer_html = do_blocks( '<!-- wp:template-part {"slug":"footer","tagName":"footer"} /-->' );
 			?>
 			<!doctype html>
 			<html <?php language_attributes(); ?>>
@@ -359,12 +417,12 @@ final class Frontend {
 			<?php
 			wp_body_open();
 			echo '<div class="wp-site-blocks">';
-			block_template_part( 'header' );
+			echo $header_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- HTML de blocos do tema.
 		} else {
 			get_header();
 		}
 
-		echo '<main class="tmb tmb-booking-page">';
+		echo '<main class="tmb tmb-booking-page" id="main">';
 		if ( ! $post ) {
 			echo '<h1>' . esc_html__( 'Reserva não encontrada', 'transfer-me-booking' ) . '</h1>';
 			echo '<p>' . esc_html__( 'O link pode ter sido substituído por um mais recente. Consulte a reserva com o código e o telefone.', 'transfer-me-booking' ) . '</p>';
@@ -398,7 +456,7 @@ final class Frontend {
 		echo '</main>';
 
 		if ( $block_theme ) {
-			block_template_part( 'footer' );
+			echo $footer_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- HTML de blocos do tema.
 			echo '</div>';
 			wp_footer();
 			echo '</body></html>';

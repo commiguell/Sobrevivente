@@ -1,0 +1,794 @@
+# Copyright (C) 2026 Transfer.me
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Transfer.me Theme 1.0.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-11-08 17:31+0000\n"
+"Language: \n"
+"X-Domain: transfer-me-theme\n"
+
+#: patterns/page-privacidade.php:19
+msgid "Última atualização: [data]. Esta política explica que dados pessoais tratamos quando reserva um transfer neste site."
+msgstr ""
+
+#: patterns/page-privacidade.php:20
+msgid "Responsável pelo tratamento"
+msgstr ""
+
+#: patterns/page-privacidade.php:21
+msgid "[Nome ou firma], NIF [número], [morada]. Contacto para assuntos de privacidade: [email]."
+msgstr ""
+
+#: patterns/page-privacidade.php:22
+msgid "Que dados tratamos"
+msgstr ""
+
+#: patterns/page-privacidade.php:23
+msgid "Nome, telefone e, se indicar, email."
+msgstr ""
+
+#: patterns/page-privacidade.php:23
+msgid "Moradas e coordenadas de recolha e de destino, data e hora."
+msgstr ""
+
+#: patterns/page-privacidade.php:23
+msgid "Número de passageiros e de malas, notas e método de pagamento."
+msgstr ""
+
+#: patterns/page-privacidade.php:23
+msgid "Data e versão da política aceite."
+msgstr ""
+
+#: patterns/page-privacidade.php:23
+msgid "Se usar \"Usar a minha localização\", a posição do seu dispositivo nesse momento."
+msgstr ""
+
+#: patterns/page-privacidade.php:24
+msgid "Para quê e com que fundamento"
+msgstr ""
+
+#: patterns/page-privacidade.php:25
+msgid "Para fazer o transfer que pediu e falar consigo sobre ele (execução de contrato, artigo 6.º, n.º 1, alínea b) do RGPD) e para cumprir obrigações fiscais (obrigação legal, alínea c))."
+msgstr ""
+
+#: patterns/page-privacidade.php:26
+msgid "Quanto tempo guardamos"
+msgstr ""
+
+#: patterns/page-privacidade.php:27
+msgid "As reservas são apagadas automaticamente [365] dias depois da data da viagem. Os documentos de faturação são guardados pelo prazo legal."
+msgstr ""
+
+#: patterns/page-privacidade.php:28
+msgid "Com quem partilhamos"
+msgstr ""
+
+#: patterns/page-privacidade.php:29
+msgid "Google (Google Maps Platform), para sugerir moradas e calcular distâncias. Recebe o texto das moradas e coordenadas, nunca o seu nome, telefone ou email. Pode implicar transferência para fora da UE, ao abrigo de [mecanismo, por exemplo o Quadro de Privacidade de Dados UE-EUA]."
+msgstr ""
+
+#: patterns/page-privacidade.php:29
+msgid "Empresa de alojamento do site: [nome e país]."
+msgstr ""
+
+#: patterns/page-privacidade.php:29
+msgid "Autoridades, quando a lei o exigir."
+msgstr ""
+
+#: patterns/page-privacidade.php:30
+msgid "Cookies"
+msgstr ""
+
+#: patterns/page-privacidade.php:31
+msgid "Usamos apenas um cookie técnico (tmb_res) que guarda neste browser o acesso às suas reservas durante 180 dias. Não usamos cookies de publicidade nem de análise. [Atualizar se instalar ferramentas de estatística.]"
+msgstr ""
+
+#: patterns/page-privacidade.php:32
+msgid "Os seus direitos"
+msgstr ""
+
+#: patterns/page-privacidade.php:33
+msgid "Pode pedir acesso, retificação, apagamento, limitação ou portabilidade dos seus dados e opor-se ao tratamento, através de [email]. Tem também o direito de reclamar junto da Comissão Nacional de Proteção de Dados (<a href=\"https://www.cnpd.pt/\">www.cnpd.pt</a>)."
+msgstr ""
+
+#: patterns/page-privacidade.php
+msgctxt "Pattern title"
+msgid "Página: Política de privacidade (RGPD)"
+msgstr ""
+
+#: patterns/page-privacidade.php
+msgctxt "Pattern description"
+msgid "Estrutura da política de privacidade com os dados que o plugin trata."
+msgstr ""
+
+#: patterns/no-results.php:17
+msgid "Não encontrámos resultados. Tente outras palavras."
+msgstr ""
+
+#: patterns/no-results.php
+msgctxt "Pattern title"
+msgid "Sem resultados"
+msgstr ""
+
+#: patterns/no-results.php
+msgctxt "Pattern description"
+msgid "Mensagem quando a pesquisa ou o arquivo não têm conteúdo."
+msgstr ""
+
+#: patterns/page-como-funciona.php:18 patterns/header.php:46
+msgid "Reservar"
+msgstr ""
+
+#: patterns/page-como-funciona.php:19
+msgid "Escreva a morada de recolha e escolha-a na lista, ou use a sua localização atual."
+msgstr ""
+
+#: patterns/page-como-funciona.php:19
+msgid "Escreva a morada de destino e escolha-a na lista."
+msgstr ""
+
+#: patterns/page-como-funciona.php:19
+msgid "Escolha a data, a hora, o número de passageiros e de malas."
+msgstr ""
+
+#: patterns/page-como-funciona.php:19
+msgid "Veja o preço, preencha o nome e o telefone e confirme."
+msgstr ""
+
+#: patterns/page-como-funciona.php:20
+msgid "Como é calculado o preço"
+msgstr ""
+
+#: patterns/page-como-funciona.php:21
+msgid "O preço depende da distância por estrada entre a recolha e o destino, mais a deslocação do motorista até à recolha quando esta passa os primeiros quilómetros gratuitos. Há um valor mínimo por viagem."
+msgstr ""
+
+#: patterns/page-como-funciona.php:22
+msgid "O preço mostrado vale 10 minutos. Depois de confirmar, fica fixo, mesmo que haja trânsito ou desvios."
+msgstr ""
+
+#: patterns/page-como-funciona.php:23
+msgid "Se o preço não puder ser calculado no momento, pode enviar o pedido na mesma: confirmamos o valor consigo antes da viagem."
+msgstr ""
+
+#: patterns/page-como-funciona.php:24
+msgid "Depois de reservar"
+msgstr ""
+
+#: patterns/page-como-funciona.php:25
+msgid "Recebe um código de reserva e um link privado. Com o link pode ver o estado da reserva e cancelá-la dentro do prazo. Se perder o link, consulte a reserva com o código e o telefone."
+msgstr ""
+
+#: patterns/page-como-funciona.php:26
+msgid "Pagamento"
+msgstr ""
+
+#: patterns/page-como-funciona.php:27
+msgid "Paga a bordo, no fim da viagem, em numerário ou com cartão no terminal da viatura."
+msgstr ""
+
+#: patterns/page-como-funciona.php
+msgctxt "Pattern title"
+msgid "Página: Como funciona"
+msgstr ""
+
+#: patterns/page-como-funciona.php
+msgctxt "Pattern description"
+msgid "Explicação detalhada da reserva, do preço e do cancelamento."
+msgstr ""
+
+#: patterns/booking-section.php
+msgctxt "Pattern title"
+msgid "Secção de reserva"
+msgstr ""
+
+#: patterns/booking-section.php
+msgctxt "Pattern description"
+msgid "Formulário de reserva do plugin numa secção com a âncora #reservar."
+msgstr ""
+
+#: patterns/search-form.php:16
+msgid "Pesquisar no site"
+msgstr ""
+
+#: patterns/search-form.php:16
+msgid "Pesquisar"
+msgstr ""
+
+#: patterns/search-form.php
+msgctxt "Pattern title"
+msgid "Formulário de pesquisa"
+msgstr ""
+
+#: patterns/search-form.php
+msgctxt "Pattern description"
+msgid "Pesquisa com label visível."
+msgstr ""
+
+#: patterns/how-it-works.php:16
+msgid "Indique o percurso"
+msgstr ""
+
+#: patterns/how-it-works.php:16
+msgid "Escreva a morada de recolha e de destino, ou use a sua localização atual. Escolha a data, a hora e o número de passageiros."
+msgstr ""
+
+#: patterns/how-it-works.php:17
+msgid "Veja o preço fixo"
+msgstr ""
+
+#: patterns/how-it-works.php:17
+msgid "O preço é calculado pela distância por estrada e fica fixo quando confirma o pedido. Sem taxímetro nem surpresas."
+msgstr ""
+
+#: patterns/how-it-works.php:18
+msgid "Confirme e viaje"
+msgstr ""
+
+#: patterns/how-it-works.php:18
+msgid "Recebe um código e um link para acompanhar ou cancelar a reserva. Paga a bordo, em numerário ou com cartão."
+msgstr ""
+
+#: patterns/how-it-works.php:24 patterns/hero.php:34 patterns/header.php:18
+msgid "Como funciona"
+msgstr ""
+
+#: patterns/how-it-works.php
+msgctxt "Pattern title"
+msgid "Como funciona (3 passos)"
+msgstr ""
+
+#: patterns/how-it-works.php
+msgctxt "Pattern description"
+msgid "Secção com título e três passos numerados."
+msgstr ""
+
+#: patterns/footer.php:19
+msgid "Condições de serviço"
+msgstr ""
+
+#: patterns/footer.php:20
+msgid "Política de privacidade"
+msgstr ""
+
+#: patterns/footer.php:21
+msgid "Livro de Reclamações"
+msgstr ""
+
+#: patterns/footer.php:32
+msgid "Transfers privados na Madeira e no Porto Santo, com preço fixo."
+msgstr ""
+
+#: patterns/footer.php:46 patterns/header.php:20
+msgid "Contactos"
+msgstr ""
+
+#: patterns/footer.php:56
+msgid "Todos os contactos"
+msgstr ""
+
+#: patterns/footer.php:64 patterns/footer.php:66
+msgid "Informação legal"
+msgstr ""
+
+#. translators: 1: year, 2: site name.
+#: patterns/footer.php:80
+#, php-format
+msgid "© %1$s %2$s"
+msgstr ""
+
+#: patterns/footer.php
+msgctxt "Pattern title"
+msgid "Rodapé"
+msgstr ""
+
+#: patterns/footer.php
+msgctxt "Pattern description"
+msgid "Licença (das definições do plugin), contactos e links legais, incluindo o Livro de Reclamações."
+msgstr ""
+
+#: patterns/404.php:17
+msgid "Página não encontrada"
+msgstr ""
+
+#: patterns/404.php:20
+msgid "O endereço pode estar errado ou a página pode ter mudado de sítio. Pesquise ou volte à página inicial."
+msgstr ""
+
+#: patterns/404.php:26
+msgid "Reservar um transfer"
+msgstr ""
+
+#: patterns/404.php:29
+msgid "Página inicial"
+msgstr ""
+
+#: patterns/404.php
+msgctxt "Pattern title"
+msgid "Página não encontrada (404)"
+msgstr ""
+
+#: patterns/404.php
+msgctxt "Pattern description"
+msgid "Conteúdo do template 404."
+msgstr ""
+
+#: patterns/index-title.php:17
+msgid "Novidades"
+msgstr ""
+
+#: patterns/index-title.php
+msgctxt "Pattern title"
+msgid "Título das novidades"
+msgstr ""
+
+#: patterns/index-title.php
+msgctxt "Pattern description"
+msgid "Título H1 da lista de artigos."
+msgstr ""
+
+#: patterns/booking-intro.php:17
+msgid "Indique a recolha, o destino, a data e a hora para ver o preço fixo. Não precisa de criar conta e paga a bordo."
+msgstr ""
+
+#: patterns/booking-intro.php
+msgctxt "Pattern title"
+msgid "Introdução da página Reservar"
+msgstr ""
+
+#: patterns/booking-intro.php
+msgctxt "Pattern description"
+msgid "Texto curto antes do formulário na página Reservar."
+msgstr ""
+
+#: patterns/hero.php:23
+msgid "Transfers privados na Madeira e no Porto Santo"
+msgstr ""
+
+#: patterns/hero.php:26
+msgid "Do aeroporto, do porto ou do hotel até onde precisar. Veja o preço fixo antes de reservar e pague a bordo."
+msgstr ""
+
+#: patterns/hero.php:31
+msgid "Ver preço e reservar"
+msgstr ""
+
+#: patterns/hero.php:43
+msgid "Ilustração de um carro numa estrada costeira, entre o mar e as montanhas"
+msgstr ""
+
+#: patterns/hero.php
+msgctxt "Pattern title"
+msgid "Hero da página inicial"
+msgstr ""
+
+#: patterns/hero.php
+msgctxt "Pattern description"
+msgid "Título H1, subtítulo, botões e imagem principal (carregada com prioridade alta)."
+msgstr ""
+
+#: patterns/page-condicoes.php:20
+msgid "1. Prestador do serviço"
+msgstr ""
+
+#: patterns/page-condicoes.php:20
+msgid "[Nome ou firma], NIF [número], com sede em [morada]. Licença de transporte n.º [número]."
+msgstr ""
+
+#: patterns/page-condicoes.php:21
+msgid "2. Reserva"
+msgstr ""
+
+#: patterns/page-condicoes.php:21
+msgid "A reserva fica registada quando recebe o código de reserva. A reserva com preço por confirmar só fica garantida depois de confirmarmos o valor consigo."
+msgstr ""
+
+#: patterns/page-condicoes.php:22
+msgid "3. Preço"
+msgstr ""
+
+#: patterns/page-condicoes.php:22
+msgid "O preço apresentado e aceite na reserva é fixo e inclui [IVA à taxa legal em vigor / outras taxas]. Portagens, esperas superiores a [X] minutos e paragens extra: [regras]."
+msgstr ""
+
+#: patterns/page-condicoes.php:23
+msgid "4. Cancelamento e alterações"
+msgstr ""
+
+#: patterns/page-condicoes.php:23
+msgid "Pode cancelar sem custos através do link da reserva até [X] horas antes da hora marcada. Depois desse prazo: [regras]. Para alterar a reserva, contacte-nos."
+msgstr ""
+
+#: patterns/page-condicoes.php:24
+msgid "5. Tempo de espera e atrasos"
+msgstr ""
+
+#: patterns/page-condicoes.php:24
+msgid "Esperamos até [X] minutos sem custos. Em recolhas no aeroporto acompanhamos a hora de chegada do voo indicado nas notas. [Regras para atrasos maiores e não comparência.]"
+msgstr ""
+
+#: patterns/page-condicoes.php:25
+msgid "6. Passageiros, bagagem e crianças"
+msgstr ""
+
+#: patterns/page-condicoes.php:25
+msgid "Máximo de 4 passageiros. Bagagem: [limites]. O transporte de crianças cumpre o Código da Estrada; indique nas notas se precisa de cadeira."
+msgstr ""
+
+#: patterns/page-condicoes.php:26
+msgid "7. Pagamento"
+msgstr ""
+
+#: patterns/page-condicoes.php:26
+msgid "Pagamento a bordo, em numerário ou cartão. É emitida fatura com o NIF indicado pelo cliente."
+msgstr ""
+
+#: patterns/page-condicoes.php:27
+msgid "8. Responsabilidade"
+msgstr ""
+
+#: patterns/page-condicoes.php:27
+msgid "[Limites de responsabilidade, objetos esquecidos, danos na viatura.]"
+msgstr ""
+
+#: patterns/page-condicoes.php:28
+msgid "9. Reclamações e litígios"
+msgstr ""
+
+#: patterns/page-condicoes.php:28
+msgid "Pode reclamar no <a href=\"https://www.livroreclamacoes.pt/\">Livro de Reclamações Eletrónico</a>. Em caso de litígio de consumo, pode recorrer a [entidade de resolução alternativa de litígios competente, com contacto e site]."
+msgstr ""
+
+#: patterns/page-condicoes.php:29
+msgid "10. Lei aplicável"
+msgstr ""
+
+#: patterns/page-condicoes.php:29
+msgid "Estas condições regem-se pela lei portuguesa."
+msgstr ""
+
+#: patterns/page-condicoes.php
+msgctxt "Pattern title"
+msgid "Página: Condições de serviço"
+msgstr ""
+
+#: patterns/page-condicoes.php
+msgctxt "Pattern description"
+msgid "Estrutura das condições gerais do serviço, com campos a preencher."
+msgstr ""
+
+#: patterns/booking-form.php:26
+msgid "Reservas online indisponíveis"
+msgstr ""
+
+#: patterns/booking-form.php:30
+msgid "De momento não é possível reservar online."
+msgstr ""
+
+#: patterns/booking-form.php:31
+msgid "Contacte-nos para reservar."
+msgstr ""
+
+#: patterns/booking-form.php:36
+msgid "Nota para administradores: ative o plugin Transfer.me Booking (versão 1.2 ou superior) para mostrar aqui o formulário."
+msgstr ""
+
+#: patterns/booking-form.php
+msgctxt "Pattern title"
+msgid "Formulário de reserva"
+msgstr ""
+
+#: patterns/booking-form.php
+msgctxt "Pattern description"
+msgid "Bloco do plugin Transfer.me Booking. Sem o plugin ativo, mostra um aviso com o contacto."
+msgstr ""
+
+#: patterns/page-sobre.php:19
+msgid "Somos um serviço de transfers privados na Madeira e no Porto Santo. Levamos residentes e visitantes entre o aeroporto, o porto, hotéis e qualquer ponto da ilha, com preço fixo combinado antes da viagem."
+msgstr ""
+
+#: patterns/page-sobre.php:20
+msgid "Quem somos"
+msgstr ""
+
+#: patterns/page-sobre.php:21
+msgid "[Nome do motorista ou da empresa], a trabalhar na Madeira desde [ano]. [Uma ou duas frases sobre a experiência e a forma de trabalhar.]"
+msgstr ""
+
+#: patterns/page-sobre.php:22
+msgid "A viatura"
+msgstr ""
+
+#: patterns/page-sobre.php:23
+msgid "Até 4 passageiros e respetiva bagagem."
+msgstr ""
+
+#: patterns/page-sobre.php:23
+msgid "[Marca e modelo], com ar condicionado."
+msgstr ""
+
+#: patterns/page-sobre.php:23
+msgid "Cadeira de criança: [disponível a pedido / não disponível]."
+msgstr ""
+
+#: patterns/page-sobre.php:24
+msgid "Licença e seguro"
+msgstr ""
+
+#: patterns/page-sobre.php:25
+msgid "Licença n.º [número], emitida por [entidade]. Seguro de responsabilidade civil e de passageiros: [seguradora]."
+msgstr ""
+
+#: patterns/page-sobre.php
+msgctxt "Pattern title"
+msgid "Página: Sobre"
+msgstr ""
+
+#: patterns/page-sobre.php
+msgctxt "Pattern description"
+msgid "Apresentação do serviço."
+msgstr ""
+
+#: patterns/page-contactos.php:19
+msgid "A forma mais rápida de nos contactar é por WhatsApp. Para reservas, use o formulário: vê logo o preço."
+msgstr ""
+
+#: patterns/page-contactos.php:27
+msgid "Reservar online"
+msgstr ""
+
+#: patterns/page-contactos.php:32
+msgid "Outros contactos"
+msgstr ""
+
+#: patterns/page-contactos.php:33
+msgid "Telefone: [número]"
+msgstr ""
+
+#: patterns/page-contactos.php:33
+msgid "Email: [email]"
+msgstr ""
+
+#: patterns/page-contactos.php:33
+msgid "Horário de atendimento: [horário]"
+msgstr ""
+
+#: patterns/page-contactos.php:33
+msgid "Morada: [morada da sede]"
+msgstr ""
+
+#: patterns/page-contactos.php:34
+msgid "Reclamações"
+msgstr ""
+
+#: patterns/page-contactos.php:35
+msgid "Pode usar o <a href=\"https://www.livroreclamacoes.pt/\">Livro de Reclamações Eletrónico</a> ou pedir o livro físico na viatura."
+msgstr ""
+
+#: patterns/page-contactos.php
+msgctxt "Pattern title"
+msgid "Página: Contactos"
+msgstr ""
+
+#: patterns/page-contactos.php
+msgctxt "Pattern description"
+msgid "Contactos, horário e reclamações."
+msgstr ""
+
+#: patterns/trust.php:19
+msgid "Pode contar connosco"
+msgstr ""
+
+#: patterns/trust.php:26
+msgid "Motorista licenciado"
+msgstr ""
+
+#: patterns/trust.php:29
+msgid "Serviço de transporte de passageiros com licença válida e viatura com seguro."
+msgstr ""
+
+#: patterns/trust.php:39
+msgid "Pagamento a bordo"
+msgstr ""
+
+#: patterns/trust.php:42
+msgid "Paga no fim da viagem, em numerário ou com cartão no terminal da viatura. Não pedimos dados de pagamento online."
+msgstr ""
+
+#: patterns/trust.php:49
+msgid "Toda a ilha"
+msgstr ""
+
+#: patterns/trust.php:52
+msgid "Servimos toda a Madeira e o Porto Santo: aeroporto, porto, hotéis, levadas e miradouros."
+msgstr ""
+
+#: patterns/trust.php
+msgctxt "Pattern title"
+msgid "Confiança"
+msgstr ""
+
+#: patterns/trust.php
+msgctxt "Pattern description"
+msgid "Licença, pagamento e cobertura da ilha. O número de licença vem das definições do plugin."
+msgstr ""
+
+#: patterns/header.php:19
+msgid "Sobre"
+msgstr ""
+
+#: patterns/header.php:37
+msgid "Navegação principal"
+msgstr ""
+
+#: patterns/header.php
+msgctxt "Pattern title"
+msgid "Cabeçalho"
+msgstr ""
+
+#: patterns/header.php
+msgctxt "Pattern description"
+msgid "Logótipo ou nome do site, navegação e botão \"Reservar\" (fixo em baixo em mobile)."
+msgstr ""
+
+#: functions.php:54
+msgid "Saltar para o conteúdo"
+msgstr ""
+
+#. Author of the theme
+#: functions.php:92 style.css
+msgid "Transfer.me"
+msgstr ""
+
+#: functions.php:96
+msgid "Transfer.me: páginas"
+msgstr ""
+
+#: functions.php:109
+msgid "Cartão"
+msgstr ""
+
+#: inc/plugin-bridge.php:67
+msgid "Transfer.me: dados do plugin"
+msgstr ""
+
+#. translators: %s: licence number set in the Transfer.me Booking plugin.
+#: inc/plugin-bridge.php:85
+#, php-format
+msgid "Licença n.º %s"
+msgstr ""
+
+#. translators: %s: WhatsApp number with country code.
+#: inc/plugin-bridge.php:94
+#, php-format
+msgid "WhatsApp: +%s"
+msgstr ""
+
+#: inc/pattern-helpers.php:56
+msgid "Texto provisório: substitua os campos entre parênteses retos e peça revisão jurídica antes de publicar. Apague este aviso no fim."
+msgstr ""
+
+#: inc/seo.php:50
+msgid "Transfers privados na Madeira e no Porto Santo, com preço fixo calculado pela distância. Reserve online sem criar conta."
+msgstr ""
+
+#: inc/seo.php:79
+msgid "Transfer.me: transfers privados na Madeira e no Porto Santo"
+msgstr ""
+
+#: inc/seo.php:144
+msgid "Transfer privado"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Base"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Superfície"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Contraste"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Texto secundário"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Primária"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Primária forte"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Destaque"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Contorno"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Erro"
+msgstr ""
+
+#: theme.json
+msgctxt "Color name"
+msgid "Sucesso"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Pequeno"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Normal"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Grande"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Muito grande"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Enorme"
+msgstr ""
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Inter"
+msgstr ""
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Sistema"
+msgstr ""
+
+#: theme.json
+msgctxt "Custom template name"
+msgid "Reservar"
+msgstr ""
+
+#: theme.json
+msgctxt "Template part name"
+msgid "Cabeçalho"
+msgstr ""
+
+#: theme.json
+msgctxt "Template part name"
+msgid "Rodapé"
+msgstr ""
+
+#. Theme Name of the theme
+#: style.css
+msgid "Transfer.me Theme"
+msgstr ""
+
+#. Description of the theme
+#: style.css
+msgid "Block theme for Transfer.me, a private transfer service in Madeira and Porto Santo. It presents the booking form of the Transfer.me Booking plugin and has no booking or pricing logic of its own."
+msgstr ""

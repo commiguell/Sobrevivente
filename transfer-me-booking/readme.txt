@@ -4,7 +4,7 @@ Tags: booking, transfer, taxi, distance pricing, madeira
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,6 +44,13 @@ Google privacy policy: https://policies.google.com/privacy
 4. Enable Places API (New), Routes API and Geocoding API in Google Cloud and restrict the key to the server IP and to these three APIs.
 
 == Changelog ==
+
+= 1.2.0 =
+* New: "Formulário de reserva" block (transfer-me/booking-form), so themes can place and style the form in templates and theme.json.
+* New: per-field error messages linked with aria-describedby; the submit button is no longer disabled.
+* New: .tmb-price class on the price box.
+* New: transferme_booking_public_info() for themes (licence number, WhatsApp, VAT note, booking page URL).
+* Assets are also loaded when the form is rendered from a template or a block.
 
 = 1.1.0 =
 * Fix: registering the bookings post type removed the manage_options capability from administrators.

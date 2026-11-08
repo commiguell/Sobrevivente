@@ -1,0 +1,391 @@
+/*
+Theme Name: Transfer.me Theme
+Theme URI: https://madeiratransfer.me
+Author: Transfer.me
+Author URI: https://madeiratransfer.me
+Description: Block theme for Transfer.me, a private transfer service in Madeira and Porto Santo. It presents the booking form of the Transfer.me Booking plugin and has no booking or pricing logic of its own.
+Requires at least: 6.5
+Tested up to: 7.1
+Requires PHP: 8.1
+Version: 1.0.0
+License: GNU General Public License v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: transfer-me-theme
+Tags: one-column, wide-blocks, block-patterns, block-styles, custom-colors, editor-style, full-site-editing, translation-ready, accessibility-ready
+*/
+
+/* ==========================================================================
+   Índice
+   1. Base e acessibilidade
+   2. Cabeçalho e botão "Reservar" fixo em mobile
+   3. Secções da página inicial
+   4. Formulário do plugin (classes .tmb-*)
+   5. Rodapé
+   Cores, fontes e espaçamentos vêm de theme.json (variáveis --wp--preset--*).
+   ========================================================================== */
+
+/* 1. Base e acessibilidade ------------------------------------------------- */
+
+html {
+	/* Âncoras e campos focados não ficam escondidos atrás do botão fixo (WCAG 2.4.11). */
+	scroll-padding-bottom: calc(var(--wp--custom--sticky-cta-height) + 1rem);
+	scroll-padding-top: 1rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}
+
+:where(.wp-site-blocks) :focus-visible {
+	outline: var(--wp--custom--focus--width) solid var(--wp--preset--color--primary);
+	outline-offset: var(--wp--custom--focus--offset);
+}
+
+/* Em fundos escuros o foco usa a cor de destaque. */
+.has-contrast-background-color :focus-visible,
+.has-primary-background-color :focus-visible,
+.has-primary-strong-background-color :focus-visible {
+	outline-color: var(--wp--preset--color--accent);
+}
+
+.skip-link.screen-reader-text:focus {
+	background: var(--wp--preset--color--base);
+	clip: auto;
+	clip-path: none;
+	color: var(--wp--preset--color--contrast);
+	display: block;
+	font-weight: 600;
+	height: auto;
+	left: 0.5rem;
+	padding: 0.75rem 1rem;
+	position: fixed;
+	text-decoration: underline;
+	top: 0.5rem;
+	width: auto;
+	z-index: 100000;
+}
+
+p:empty {
+	display: none;
+}
+
+img {
+	height: auto;
+	max-width: 100%;
+}
+
+/* 2. Cabeçalho ------------------------------------------------------------- */
+
+/* Alvos de toque de 44 px. Não mexe em "display": o core esconde o botão do menu em ecrãs largos. */
+.tmt-header .wp-block-navigation a {
+	align-items: center;
+	display: inline-flex;
+	min-height: var(--wp--custom--touch-target);
+}
+
+.tmt-header .wp-block-navigation__responsive-container-open,
+.tmt-header .wp-block-navigation__responsive-container-close {
+	min-height: var(--wp--custom--touch-target);
+	min-width: var(--wp--custom--touch-target);
+	justify-content: center;
+	align-items: center;
+}
+
+.tmt-header .wp-block-site-logo img {
+	display: block;
+}
+
+.wp-block-button__link {
+	min-height: var(--wp--custom--touch-target);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Botão "Reservar": no cabeçalho em ecrãs largos, fixo em baixo em mobile. */
+@media (max-width: 781px) {
+	.tmt-sticky-cta {
+		background: var(--wp--preset--color--base);
+		border-top: 1px solid var(--wp--preset--color--border);
+		bottom: 0;
+		box-shadow: 0 -4px 16px rgb(15 27 36 / 0.12);
+		left: 0;
+		margin: 0 !important;
+		padding: 0.625rem var(--wp--preset--spacing--30) calc(0.625rem + env(safe-area-inset-bottom));
+		position: fixed;
+		right: 0;
+		z-index: 50;
+	}
+
+	.tmt-sticky-cta .wp-block-button,
+	.tmt-sticky-cta .wp-block-button__link {
+		width: 100%;
+	}
+
+	body {
+		padding-bottom: var(--wp--custom--sticky-cta-height);
+	}
+
+	/* Na página de reserva o botão não faz sentido (o formulário já está no ecrã). */
+	body.page-template-page-reservar .tmt-sticky-cta,
+	body.tmt-has-booking-form .tmt-sticky-cta {
+		display: none;
+	}
+
+	body.page-template-page-reservar,
+	body.tmt-has-booking-form {
+		padding-bottom: 0;
+	}
+}
+
+/* Com zoom grande (altura útil pequena) o botão deixa de ser fixo, para não tapar conteúdo. */
+@media (max-width: 781px) and (max-height: 500px) {
+	.tmt-sticky-cta {
+		position: static;
+		box-shadow: none;
+	}
+
+	body {
+		padding-bottom: 0;
+	}
+}
+
+/* 3. Secções --------------------------------------------------------------- */
+
+.tmt-hero .wp-block-image img {
+	aspect-ratio: 16 / 10;
+	border-radius: var(--wp--custom--radius--medium);
+	object-fit: cover;
+	width: 100%;
+}
+
+.tmt-steps {
+	counter-reset: tmt-step;
+}
+
+.tmt-step {
+	counter-increment: tmt-step;
+	position: relative;
+}
+
+.tmt-step h3::before {
+	align-items: center;
+	background: var(--wp--preset--color--primary);
+	border-radius: 50%;
+	color: var(--wp--preset--color--base);
+	content: counter(tmt-step);
+	display: inline-flex;
+	font-size: 1rem;
+	height: 2rem;
+	justify-content: center;
+	margin-right: 0.5rem;
+	vertical-align: middle;
+	width: 2rem;
+}
+
+.tmt-card {
+	border: 1px solid var(--wp--preset--color--border);
+	border-radius: var(--wp--custom--radius--medium);
+}
+
+/* 4. Formulário do plugin --------------------------------------------------
+   Classes do plugin Transfer.me Booking que o tema estiliza. Pode sobrescrevê-las
+   num tema-filho ou em Aparência > Editor > Estilos > CSS adicional.
+
+   .tmb             Contentor de qualquer ecrã do plugin.
+   .tmb-form        Formulário (reserva e consulta).
+   .tmb-field       Grupo de um campo: label, controlo e mensagem de erro.
+   .tmb-row         Linha com dois campos lado a lado (uma coluna em mobile).
+   .tmb-error       Mensagem de erro de um campo (ligada com aria-describedby).
+   .tmb-price       Caixa da cotação (também tem .tmb-quote).
+   .tmb-total       Total dentro da cotação.
+   .tmb-note        Texto secundário.
+   .tmb-button      Botão principal. .tmb-button-secondary para o secundário.
+   .tmb-link        Botão com aspeto de link (ex.: "Usar a minha localização").
+   .tmb-suggestions Lista de sugestões de moradas.
+   .tmb-result      Mensagem depois de enviar.
+   .tmb-mine        Lista "As minhas reservas".
+   .tmb-lookup      Consulta por código e telefone.
+   .tmb-summary     Resumo na página privada da reserva.
+   .tmb-card        Cartão de reserva no painel do motorista.
+   ------------------------------------------------------------------------- */
+
+.tmb {
+	color: var(--wp--preset--color--contrast);
+	font-family: inherit;
+}
+
+.tmb .tmb-form label,
+.tmb .tmb-form legend {
+	color: var(--wp--preset--color--contrast);
+	font-weight: 600;
+}
+
+.tmb .tmb-form input[type="text"],
+.tmb .tmb-form input[type="tel"],
+.tmb .tmb-form input[type="email"],
+.tmb .tmb-form input[type="date"],
+.tmb .tmb-form input[type="time"],
+.tmb .tmb-form select,
+.tmb .tmb-form textarea {
+	background: var(--wp--preset--color--base);
+	border: 1px solid var(--wp--preset--color--border);
+	border-radius: var(--wp--custom--radius--small);
+	color: var(--wp--preset--color--contrast);
+	font-size: max(1rem, 16px); /* 16 px evita o zoom automático no iOS. */
+	min-height: var(--wp--custom--touch-target);
+}
+
+.tmb .tmb-form input:focus,
+.tmb .tmb-form input:focus-within,
+.tmb .tmb-form select:focus,
+.tmb .tmb-form textarea:focus {
+	border-color: var(--wp--preset--color--primary);
+	outline: var(--wp--custom--focus--width) solid var(--wp--preset--color--primary);
+	outline-offset: 1px;
+}
+
+/* Ícone do calendário/relógio dos campos de data e hora (Chromium): também é um ponto de paragem do teclado. */
+.tmb .tmb-form input::-webkit-calendar-picker-indicator:focus-visible {
+	outline: var(--wp--custom--focus--width) solid var(--wp--preset--color--primary);
+	outline-offset: 2px;
+}
+
+.tmb .tmb-form [aria-invalid="true"] {
+	border-color: var(--wp--preset--color--error);
+	outline: 2px solid var(--wp--preset--color--error);
+	outline-offset: 1px;
+}
+
+.tmb .tmb-form fieldset label {
+	align-items: center;
+	display: flex;
+	font-weight: 400;
+	gap: 0.5rem;
+	min-height: var(--wp--custom--touch-target);
+}
+
+.tmb .tmb-form input[type="radio"],
+.tmb .tmb-form input[type="checkbox"] {
+	accent-color: var(--wp--preset--color--primary);
+	flex: none;
+	height: 1.25rem;
+	width: 1.25rem;
+}
+
+.tmb .tmb-consent label {
+	align-items: flex-start;
+	display: flex;
+	font-weight: 400;
+	gap: 0.5rem;
+	min-height: var(--wp--custom--touch-target);
+}
+
+.tmb .tmb-error {
+	color: var(--wp--preset--color--error);
+	font-weight: 500;
+}
+
+.tmb .tmb-price {
+	background: var(--wp--preset--color--surface);
+	border-left: 4px solid var(--wp--preset--color--primary);
+	border-radius: var(--wp--custom--radius--small);
+	color: var(--wp--preset--color--contrast);
+}
+
+.tmb .tmb-total {
+	color: var(--wp--preset--color--contrast);
+}
+
+.tmb .tmb-note {
+	color: var(--wp--preset--color--muted);
+	opacity: 1;
+}
+
+.tmb .tmb-button {
+	background: var(--wp--preset--color--primary);
+	border-radius: var(--wp--custom--radius--small);
+	color: var(--wp--preset--color--base);
+	min-height: var(--wp--custom--touch-target);
+	width: 100%;
+}
+
+.tmb .tmb-button:hover {
+	background: var(--wp--preset--color--primary-strong);
+}
+
+.tmb .tmb-button:focus-visible {
+	outline: var(--wp--custom--focus--width) solid var(--wp--preset--color--contrast);
+	outline-offset: var(--wp--custom--focus--offset);
+}
+
+.tmb .tmb-button-secondary {
+	background: var(--wp--preset--color--base);
+	border: 2px solid var(--wp--preset--color--primary);
+	color: var(--wp--preset--color--primary);
+	width: auto;
+}
+
+.tmb .tmb-button-secondary:hover {
+	background: var(--wp--preset--color--surface);
+	color: var(--wp--preset--color--primary-strong);
+}
+
+.tmb .tmb-link {
+	background: none;
+	color: var(--wp--preset--color--primary);
+	padding-left: 0;
+	padding-right: 0;
+}
+
+.tmb .tmb-suggestions {
+	background: var(--wp--preset--color--base);
+	border-color: var(--wp--preset--color--border);
+	border-radius: 0 0 var(--wp--custom--radius--small) var(--wp--custom--radius--small);
+	color: var(--wp--preset--color--contrast);
+}
+
+.tmb .tmb-suggestions li:hover,
+.tmb .tmb-suggestions li:focus {
+	background: var(--wp--preset--color--surface);
+}
+
+.tmb .tmb-lookup,
+.tmb .tmb-mine {
+	border-top: 1px solid var(--wp--preset--color--border);
+	margin-top: var(--wp--preset--spacing--50);
+	padding-top: var(--wp--preset--spacing--30);
+}
+
+.tmb .tmb-card {
+	border-color: var(--wp--preset--color--border);
+}
+
+/* Aviso quando o plugin não está ativo. */
+.tmt-plugin-missing {
+	border: 2px dashed var(--wp--preset--color--border);
+	border-radius: var(--wp--custom--radius--medium);
+	padding: var(--wp--preset--spacing--40);
+}
+
+/* 5. Rodapé ---------------------------------------------------------------- */
+
+.tmt-footer a {
+	color: var(--wp--preset--color--base);
+}
+
+.tmt-footer a:hover {
+	color: var(--wp--preset--color--accent);
+}
+
+.tmt-footer .wp-block-navigation a {
+	min-height: var(--wp--custom--touch-target);
+	display: inline-flex;
+	align-items: center;
+}
+
+.tmt-legal-links {
+	row-gap: 0;
+}

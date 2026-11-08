@@ -1,0 +1,26 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "transfer-me/booking-form",
+	"version": "1.2.0",
+	"title": "Formulário de reserva",
+	"category": "widgets",
+	"icon": "car",
+	"description": "Formulário de reserva de transfers com cotação por distância.",
+	"keywords": [ "transfer", "reserva", "booking", "táxi" ],
+	"textdomain": "transfer-me-booking",
+	"supports": {
+		"html": false,
+		"multiple": false,
+		"reusable": false,
+		"align": [ "wide", "full" ],
+		"anchor": true,
+		"color": { "background": true, "text": true, "link": true },
+		"spacing": { "margin": true, "padding": true },
+		"typography": { "fontSize": true },
+		"__experimentalBorder": { "color": true, "radius": true, "width": true, "style": true },
+		"shadow": true
+	},
+	"editorScript": "file:./editor.js",
+	"render": "file:./render.php"
+}

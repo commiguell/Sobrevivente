@@ -1,0 +1,603 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Transfer.me Theme 1.0.0\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: transfer-me-theme\n"
+
+msgid "Última atualização: [data]. Esta política explica que dados pessoais tratamos quando reserva um transfer neste site."
+msgstr "Last updated: [date]. This policy explains which personal data we process when you book a transfer on this site."
+
+msgid "Responsável pelo tratamento"
+msgstr "Data controller"
+
+msgid "[Nome ou firma], NIF [número], [morada]. Contacto para assuntos de privacidade: [email]."
+msgstr "[Name or company], tax number [number], [address]. Privacy contact: [email]."
+
+msgid "Que dados tratamos"
+msgstr "What data we process"
+
+msgid "Nome, telefone e, se indicar, email."
+msgstr "Name, phone number and, if provided, email."
+
+msgid "Moradas e coordenadas de recolha e de destino, data e hora."
+msgstr "Pickup and destination addresses and coordinates, date and time."
+
+msgid "Número de passageiros e de malas, notas e método de pagamento."
+msgstr "Number of passengers and bags, notes and payment method."
+
+msgid "Data e versão da política aceite."
+msgstr "Date and version of the accepted policy."
+
+msgid "Se usar \"Usar a minha localização\", a posição do seu dispositivo nesse momento."
+msgstr "If you use \"Use my location\", your device's position at that moment."
+
+msgid "Para quê e com que fundamento"
+msgstr "Purposes and legal basis"
+
+msgid "Para fazer o transfer que pediu e falar consigo sobre ele (execução de contrato, artigo 6.º, n.º 1, alínea b) do RGPD) e para cumprir obrigações fiscais (obrigação legal, alínea c))."
+msgstr "To carry out the transfer you requested and contact you about it (performance of a contract, Article 6(1)(b) GDPR) and to meet tax obligations (legal obligation, point (c))."
+
+msgid "Quanto tempo guardamos"
+msgstr "How long we keep data"
+
+msgid "As reservas são apagadas automaticamente [365] dias depois da data da viagem. Os documentos de faturação são guardados pelo prazo legal."
+msgstr "Bookings are deleted automatically [365] days after the trip date. Invoices are kept for the period required by law."
+
+msgid "Com quem partilhamos"
+msgstr "Who we share data with"
+
+msgid "Google (Google Maps Platform), para sugerir moradas e calcular distâncias. Recebe o texto das moradas e coordenadas, nunca o seu nome, telefone ou email. Pode implicar transferência para fora da UE, ao abrigo de [mecanismo, por exemplo o Quadro de Privacidade de Dados UE-EUA]."
+msgstr "Google (Google Maps Platform), to suggest addresses and calculate distances. It receives the address text and coordinates, never your name, phone number or email. This may involve a transfer outside the EU under [mechanism, for example the EU-US Data Privacy Framework]."
+
+msgid "Empresa de alojamento do site: [nome e país]."
+msgstr "Website hosting company: [name and country]."
+
+msgid "Autoridades, quando a lei o exigir."
+msgstr "Authorities, when required by law."
+
+msgid "Cookies"
+msgstr "Cookies"
+
+msgid "Usamos apenas um cookie técnico (tmb_res) que guarda neste browser o acesso às suas reservas durante 180 dias. Não usamos cookies de publicidade nem de análise. [Atualizar se instalar ferramentas de estatística.]"
+msgstr "We only use one technical cookie (tmb_res), which keeps access to your bookings in this browser for 180 days. We do not use advertising or analytics cookies. [Update if you install statistics tools.]"
+
+msgid "Os seus direitos"
+msgstr "Your rights"
+
+msgid "Pode pedir acesso, retificação, apagamento, limitação ou portabilidade dos seus dados e opor-se ao tratamento, através de [email]. Tem também o direito de reclamar junto da Comissão Nacional de Proteção de Dados (<a href=\"https://www.cnpd.pt/\">www.cnpd.pt</a>)."
+msgstr "You can request access, rectification, erasure, restriction or portability of your data and object to processing via [email]. You also have the right to lodge a complaint with the Portuguese data protection authority, CNPD (<a href=\"https://www.cnpd.pt/\">www.cnpd.pt</a>)."
+
+msgctxt "Pattern title"
+msgid "Página: Política de privacidade (RGPD)"
+msgstr "Page: Privacy policy (GDPR)"
+
+msgctxt "Pattern description"
+msgid "Estrutura da política de privacidade com os dados que o plugin trata."
+msgstr "Privacy policy structure covering the data the plugin processes."
+
+msgid "Não encontrámos resultados. Tente outras palavras."
+msgstr "No results found. Try different words."
+
+msgctxt "Pattern title"
+msgid "Sem resultados"
+msgstr "No results"
+
+msgctxt "Pattern description"
+msgid "Mensagem quando a pesquisa ou o arquivo não têm conteúdo."
+msgstr "Message shown when a search or archive has no content."
+
+msgid "Reservar"
+msgstr "Book"
+
+msgid "Escreva a morada de recolha e escolha-a na lista, ou use a sua localização atual."
+msgstr "Type the pickup address and choose it from the list, or use your current location."
+
+msgid "Escreva a morada de destino e escolha-a na lista."
+msgstr "Type the destination address and choose it from the list."
+
+msgid "Escolha a data, a hora, o número de passageiros e de malas."
+msgstr "Choose the date, time, number of passengers and bags."
+
+msgid "Veja o preço, preencha o nome e o telefone e confirme."
+msgstr "See the price, enter your name and phone number, and confirm."
+
+msgid "Como é calculado o preço"
+msgstr "How the price is calculated"
+
+msgid "O preço depende da distância por estrada entre a recolha e o destino, mais a deslocação do motorista até à recolha quando esta passa os primeiros quilómetros gratuitos. Há um valor mínimo por viagem."
+msgstr "The price depends on the road distance between pickup and destination, plus the driver's trip to the pickup when it exceeds the first free kilometres. There is a minimum fare per trip."
+
+msgid "O preço mostrado vale 10 minutos. Depois de confirmar, fica fixo, mesmo que haja trânsito ou desvios."
+msgstr "The price shown is valid for 10 minutes. Once you confirm, it is fixed, even with traffic or detours."
+
+msgid "Se o preço não puder ser calculado no momento, pode enviar o pedido na mesma: confirmamos o valor consigo antes da viagem."
+msgstr "If the price cannot be calculated at that moment, you can still send the request: we will confirm the amount with you before the trip."
+
+msgid "Depois de reservar"
+msgstr "After booking"
+
+msgid "Recebe um código de reserva e um link privado. Com o link pode ver o estado da reserva e cancelá-la dentro do prazo. Se perder o link, consulte a reserva com o código e o telefone."
+msgstr "You receive a booking code and a private link. With the link you can see the booking status and cancel within the deadline. If you lose the link, look up the booking with the code and your phone number."
+
+msgid "Pagamento"
+msgstr "Payment"
+
+msgid "Paga a bordo, no fim da viagem, em numerário ou com cartão no terminal da viatura."
+msgstr "You pay on board at the end of the trip, in cash or by card at the vehicle's terminal."
+
+msgctxt "Pattern title"
+msgid "Página: Como funciona"
+msgstr "Page: How it works"
+
+msgctxt "Pattern description"
+msgid "Explicação detalhada da reserva, do preço e do cancelamento."
+msgstr "Detailed explanation of booking, price and cancellation."
+
+msgctxt "Pattern title"
+msgid "Secção de reserva"
+msgstr "Booking section"
+
+msgctxt "Pattern description"
+msgid "Formulário de reserva do plugin numa secção com a âncora #reservar."
+msgstr "The plugin's booking form in a section with the #reservar anchor."
+
+msgid "Pesquisar no site"
+msgstr "Search this site"
+
+msgid "Pesquisar"
+msgstr "Search"
+
+msgctxt "Pattern title"
+msgid "Formulário de pesquisa"
+msgstr "Search form"
+
+msgctxt "Pattern description"
+msgid "Pesquisa com label visível."
+msgstr "Search with a visible label."
+
+msgid "Indique o percurso"
+msgstr "Enter your route"
+
+msgid "Escreva a morada de recolha e de destino, ou use a sua localização atual. Escolha a data, a hora e o número de passageiros."
+msgstr "Type the pickup and destination addresses, or use your current location. Choose the date, time and number of passengers."
+
+msgid "Veja o preço fixo"
+msgstr "See the fixed price"
+
+msgid "O preço é calculado pela distância por estrada e fica fixo quando confirma o pedido. Sem taxímetro nem surpresas."
+msgstr "The price is calculated from the road distance and is fixed when you confirm the request. No meter, no surprises."
+
+msgid "Confirme e viaje"
+msgstr "Confirm and travel"
+
+msgid "Recebe um código e um link para acompanhar ou cancelar a reserva. Paga a bordo, em numerário ou com cartão."
+msgstr "You receive a code and a link to follow or cancel the booking. Pay on board, in cash or by card."
+
+msgid "Como funciona"
+msgstr "How it works"
+
+msgctxt "Pattern title"
+msgid "Como funciona (3 passos)"
+msgstr "How it works (3 steps)"
+
+msgctxt "Pattern description"
+msgid "Secção com título e três passos numerados."
+msgstr "Section with a heading and three numbered steps."
+
+msgid "Condições de serviço"
+msgstr "Terms of service"
+
+msgid "Política de privacidade"
+msgstr "Privacy policy"
+
+msgid "Livro de Reclamações"
+msgstr "Complaints Book"
+
+msgid "Transfers privados na Madeira e no Porto Santo, com preço fixo."
+msgstr "Private transfers in Madeira and Porto Santo, at a fixed price."
+
+msgid "Contactos"
+msgstr "Contact"
+
+msgid "Todos os contactos"
+msgstr "All contact details"
+
+msgid "Informação legal"
+msgstr "Legal information"
+
+msgid "© %1$s %2$s"
+msgstr "© %1$s %2$s"
+
+msgctxt "Pattern title"
+msgid "Rodapé"
+msgstr "Footer"
+
+msgctxt "Pattern description"
+msgid "Licença (das definições do plugin), contactos e links legais, incluindo o Livro de Reclamações."
+msgstr "Licence (from the plugin settings), contacts and legal links, including the Complaints Book."
+
+msgid "Página não encontrada"
+msgstr "Page not found"
+
+msgid "O endereço pode estar errado ou a página pode ter mudado de sítio. Pesquise ou volte à página inicial."
+msgstr "The address may be wrong or the page may have moved. Search or go back to the home page."
+
+msgid "Reservar um transfer"
+msgstr "Book a transfer"
+
+msgid "Página inicial"
+msgstr "Home page"
+
+msgctxt "Pattern title"
+msgid "Página não encontrada (404)"
+msgstr "Page not found (404)"
+
+msgctxt "Pattern description"
+msgid "Conteúdo do template 404."
+msgstr "Content of the 404 template."
+
+msgid "Novidades"
+msgstr "News"
+
+msgctxt "Pattern title"
+msgid "Título das novidades"
+msgstr "News title"
+
+msgctxt "Pattern description"
+msgid "Título H1 da lista de artigos."
+msgstr "H1 heading of the post list."
+
+msgid "Indique a recolha, o destino, a data e a hora para ver o preço fixo. Não precisa de criar conta e paga a bordo."
+msgstr "Enter the pickup, destination, date and time to see the fixed price. No account needed, and you pay on board."
+
+msgctxt "Pattern title"
+msgid "Introdução da página Reservar"
+msgstr "Booking page introduction"
+
+msgctxt "Pattern description"
+msgid "Texto curto antes do formulário na página Reservar."
+msgstr "Short text before the form on the Book page."
+
+msgid "Transfers privados na Madeira e no Porto Santo"
+msgstr "Private transfers in Madeira and Porto Santo"
+
+msgid "Do aeroporto, do porto ou do hotel até onde precisar. Veja o preço fixo antes de reservar e pague a bordo."
+msgstr "From the airport, the port or your hotel to wherever you need. See the fixed price before booking and pay on board."
+
+msgid "Ver preço e reservar"
+msgstr "See price and book"
+
+msgid "Ilustração de um carro numa estrada costeira, entre o mar e as montanhas"
+msgstr "Illustration of a car on a coastal road, between the sea and the mountains"
+
+msgctxt "Pattern title"
+msgid "Hero da página inicial"
+msgstr "Home page hero"
+
+msgctxt "Pattern description"
+msgid "Título H1, subtítulo, botões e imagem principal (carregada com prioridade alta)."
+msgstr "H1 heading, subtitle, buttons and main image (loaded with high priority)."
+
+msgid "1. Prestador do serviço"
+msgstr "1. Service provider"
+
+msgid "[Nome ou firma], NIF [número], com sede em [morada]. Licença de transporte n.º [número]."
+msgstr "[Name or company], tax number [number], registered office at [address]. Transport licence no. [number]."
+
+msgid "2. Reserva"
+msgstr "2. Booking"
+
+msgid "A reserva fica registada quando recebe o código de reserva. A reserva com preço por confirmar só fica garantida depois de confirmarmos o valor consigo."
+msgstr "The booking is registered when you receive the booking code. A booking with the price still to be confirmed is only guaranteed once we have confirmed the amount with you."
+
+msgid "3. Preço"
+msgstr "3. Price"
+
+msgid "O preço apresentado e aceite na reserva é fixo e inclui [IVA à taxa legal em vigor / outras taxas]. Portagens, esperas superiores a [X] minutos e paragens extra: [regras]."
+msgstr "The price shown and accepted at booking is fixed and includes [VAT at the legal rate / other charges]. Tolls, waiting over [X] minutes and extra stops: [rules]."
+
+msgid "4. Cancelamento e alterações"
+msgstr "4. Cancellation and changes"
+
+msgid "Pode cancelar sem custos através do link da reserva até [X] horas antes da hora marcada. Depois desse prazo: [regras]. Para alterar a reserva, contacte-nos."
+msgstr "You can cancel free of charge through the booking link up to [X] hours before the scheduled time. After that: [rules]. To change the booking, contact us."
+
+msgid "5. Tempo de espera e atrasos"
+msgstr "5. Waiting time and delays"
+
+msgid "Esperamos até [X] minutos sem custos. Em recolhas no aeroporto acompanhamos a hora de chegada do voo indicado nas notas. [Regras para atrasos maiores e não comparência.]"
+msgstr "We wait up to [X] minutes free of charge. For airport pickups we track the arrival time of the flight given in the notes. [Rules for longer delays and no-shows.]"
+
+msgid "6. Passageiros, bagagem e crianças"
+msgstr "6. Passengers, luggage and children"
+
+msgid "Máximo de 4 passageiros. Bagagem: [limites]. O transporte de crianças cumpre o Código da Estrada; indique nas notas se precisa de cadeira."
+msgstr "Maximum of 4 passengers. Luggage: [limits]. Children are carried in line with the Portuguese Highway Code; say in the notes if you need a child seat."
+
+msgid "7. Pagamento"
+msgstr "7. Payment"
+
+msgid "Pagamento a bordo, em numerário ou cartão. É emitida fatura com o NIF indicado pelo cliente."
+msgstr "Payment on board, in cash or by card. An invoice is issued with the tax number given by the customer."
+
+msgid "8. Responsabilidade"
+msgstr "8. Liability"
+
+msgid "[Limites de responsabilidade, objetos esquecidos, danos na viatura.]"
+msgstr "[Limits of liability, lost items, damage to the vehicle.]"
+
+msgid "9. Reclamações e litígios"
+msgstr "9. Complaints and disputes"
+
+msgid "Pode reclamar no <a href=\"https://www.livroreclamacoes.pt/\">Livro de Reclamações Eletrónico</a>. Em caso de litígio de consumo, pode recorrer a [entidade de resolução alternativa de litígios competente, com contacto e site]."
+msgstr "You can file a complaint in the <a href=\"https://www.livroreclamacoes.pt/\">Electronic Complaints Book</a>. In a consumer dispute, you can turn to [competent alternative dispute resolution body, with contact and website]."
+
+msgid "10. Lei aplicável"
+msgstr "10. Applicable law"
+
+msgid "Estas condições regem-se pela lei portuguesa."
+msgstr "These terms are governed by Portuguese law."
+
+msgctxt "Pattern title"
+msgid "Página: Condições de serviço"
+msgstr "Page: Terms of service"
+
+msgctxt "Pattern description"
+msgid "Estrutura das condições gerais do serviço, com campos a preencher."
+msgstr "Structure of the general terms of service, with fields to fill in."
+
+msgid "Reservas online indisponíveis"
+msgstr "Online booking unavailable"
+
+msgid "De momento não é possível reservar online."
+msgstr "Online booking is not available at the moment."
+
+msgid "Contacte-nos para reservar."
+msgstr "Contact us to book."
+
+msgid "Nota para administradores: ative o plugin Transfer.me Booking (versão 1.2 ou superior) para mostrar aqui o formulário."
+msgstr "Note for administrators: activate the Transfer.me Booking plugin (version 1.2 or later) to show the form here."
+
+msgctxt "Pattern title"
+msgid "Formulário de reserva"
+msgstr "Booking form"
+
+msgctxt "Pattern description"
+msgid "Bloco do plugin Transfer.me Booking. Sem o plugin ativo, mostra um aviso com o contacto."
+msgstr "Block from the Transfer.me Booking plugin. Without the plugin active, shows a notice with contact details."
+
+msgid "Somos um serviço de transfers privados na Madeira e no Porto Santo. Levamos residentes e visitantes entre o aeroporto, o porto, hotéis e qualquer ponto da ilha, com preço fixo combinado antes da viagem."
+msgstr "We are a private transfer service in Madeira and Porto Santo. We take residents and visitors between the airport, the port, hotels and anywhere on the island, at a fixed price agreed before the trip."
+
+msgid "Quem somos"
+msgstr "About us"
+
+msgid "[Nome do motorista ou da empresa], a trabalhar na Madeira desde [ano]. [Uma ou duas frases sobre a experiência e a forma de trabalhar.]"
+msgstr "[Driver or company name], working in Madeira since [year]. [One or two sentences about experience and way of working.]"
+
+msgid "A viatura"
+msgstr "The vehicle"
+
+msgid "Até 4 passageiros e respetiva bagagem."
+msgstr "Up to 4 passengers and their luggage."
+
+msgid "[Marca e modelo], com ar condicionado."
+msgstr "[Make and model], with air conditioning."
+
+msgid "Cadeira de criança: [disponível a pedido / não disponível]."
+msgstr "Child seat: [available on request / not available]."
+
+msgid "Licença e seguro"
+msgstr "Licence and insurance"
+
+msgid "Licença n.º [número], emitida por [entidade]. Seguro de responsabilidade civil e de passageiros: [seguradora]."
+msgstr "Licence no. [number], issued by [authority]. Liability and passenger insurance: [insurer]."
+
+msgctxt "Pattern title"
+msgid "Página: Sobre"
+msgstr "Page: About"
+
+msgctxt "Pattern description"
+msgid "Apresentação do serviço."
+msgstr "Introduction to the service."
+
+msgid "A forma mais rápida de nos contactar é por WhatsApp. Para reservas, use o formulário: vê logo o preço."
+msgstr "The fastest way to reach us is WhatsApp. To book, use the form: you see the price right away."
+
+msgid "Reservar online"
+msgstr "Book online"
+
+msgid "Outros contactos"
+msgstr "Other contacts"
+
+msgid "Telefone: [número]"
+msgstr "Phone: [number]"
+
+msgid "Email: [email]"
+msgstr "Email: [email]"
+
+msgid "Horário de atendimento: [horário]"
+msgstr "Opening hours: [hours]"
+
+msgid "Morada: [morada da sede]"
+msgstr "Address: [registered address]"
+
+msgid "Reclamações"
+msgstr "Complaints"
+
+msgid "Pode usar o <a href=\"https://www.livroreclamacoes.pt/\">Livro de Reclamações Eletrónico</a> ou pedir o livro físico na viatura."
+msgstr "You can use the <a href=\"https://www.livroreclamacoes.pt/\">Electronic Complaints Book</a> or ask for the paper book in the vehicle."
+
+msgctxt "Pattern title"
+msgid "Página: Contactos"
+msgstr "Page: Contact"
+
+msgctxt "Pattern description"
+msgid "Contactos, horário e reclamações."
+msgstr "Contact details, opening hours and complaints."
+
+msgid "Pode contar connosco"
+msgstr "You can count on us"
+
+msgid "Motorista licenciado"
+msgstr "Licensed driver"
+
+msgid "Serviço de transporte de passageiros com licença válida e viatura com seguro."
+msgstr "Passenger transport service with a valid licence and an insured vehicle."
+
+msgid "Pagamento a bordo"
+msgstr "Pay on board"
+
+msgid "Paga no fim da viagem, em numerário ou com cartão no terminal da viatura. Não pedimos dados de pagamento online."
+msgstr "Pay at the end of the trip, in cash or by card at the vehicle's terminal. We never ask for payment details online."
+
+msgid "Toda a ilha"
+msgstr "The whole island"
+
+msgid "Servimos toda a Madeira e o Porto Santo: aeroporto, porto, hotéis, levadas e miradouros."
+msgstr "We cover all of Madeira and Porto Santo: airport, port, hotels, levadas and viewpoints."
+
+msgctxt "Pattern title"
+msgid "Confiança"
+msgstr "Trust"
+
+msgctxt "Pattern description"
+msgid "Licença, pagamento e cobertura da ilha. O número de licença vem das definições do plugin."
+msgstr "Licence, payment and island coverage. The licence number comes from the plugin settings."
+
+msgid "Sobre"
+msgstr "About"
+
+msgid "Navegação principal"
+msgstr "Main navigation"
+
+msgctxt "Pattern title"
+msgid "Cabeçalho"
+msgstr "Header"
+
+msgctxt "Pattern description"
+msgid "Logótipo ou nome do site, navegação e botão \"Reservar\" (fixo em baixo em mobile)."
+msgstr "Logo or site name, navigation and \"Book\" button (fixed at the bottom on mobile)."
+
+msgid "Saltar para o conteúdo"
+msgstr "Skip to content"
+
+msgid "Transfer.me"
+msgstr "Transfer.me"
+
+msgid "Transfer.me: páginas"
+msgstr "Transfer.me: pages"
+
+msgid "Cartão"
+msgstr "Card"
+
+msgid "Transfer.me: dados do plugin"
+msgstr "Transfer.me: plugin data"
+
+msgid "Licença n.º %s"
+msgstr "Licence no. %s"
+
+msgid "WhatsApp: +%s"
+msgstr "WhatsApp: +%s"
+
+msgid "Texto provisório: substitua os campos entre parênteses retos e peça revisão jurídica antes de publicar. Apague este aviso no fim."
+msgstr "Draft text: replace the fields in square brackets and have it legally reviewed before publishing. Delete this notice when done."
+
+msgid "Transfers privados na Madeira e no Porto Santo, com preço fixo calculado pela distância. Reserve online sem criar conta."
+msgstr "Private transfers in Madeira and Porto Santo, with a fixed price based on distance. Book online without creating an account."
+
+msgid "Transfer.me: transfers privados na Madeira e no Porto Santo"
+msgstr "Transfer.me: private transfers in Madeira and Porto Santo"
+
+msgid "Transfer privado"
+msgstr "Private transfer"
+
+msgctxt "Color name"
+msgid "Base"
+msgstr "Base"
+
+msgctxt "Color name"
+msgid "Superfície"
+msgstr "Surface"
+
+msgctxt "Color name"
+msgid "Contraste"
+msgstr "Contrast"
+
+msgctxt "Color name"
+msgid "Texto secundário"
+msgstr "Secondary text"
+
+msgctxt "Color name"
+msgid "Primária"
+msgstr "Primary"
+
+msgctxt "Color name"
+msgid "Primária forte"
+msgstr "Strong primary"
+
+msgctxt "Color name"
+msgid "Destaque"
+msgstr "Accent"
+
+msgctxt "Color name"
+msgid "Contorno"
+msgstr "Border"
+
+msgctxt "Color name"
+msgid "Erro"
+msgstr "Error"
+
+msgctxt "Color name"
+msgid "Sucesso"
+msgstr "Success"
+
+msgctxt "Font size name"
+msgid "Pequeno"
+msgstr "Small"
+
+msgctxt "Font size name"
+msgid "Normal"
+msgstr "Normal"
+
+msgctxt "Font size name"
+msgid "Grande"
+msgstr "Large"
+
+msgctxt "Font size name"
+msgid "Muito grande"
+msgstr "Extra large"
+
+msgctxt "Font size name"
+msgid "Enorme"
+msgstr "Huge"
+
+msgctxt "Font family name"
+msgid "Inter"
+msgstr "Inter"
+
+msgctxt "Font family name"
+msgid "Sistema"
+msgstr "System"
+
+msgctxt "Custom template name"
+msgid "Reservar"
+msgstr "Book"
+
+msgctxt "Template part name"
+msgid "Cabeçalho"
+msgstr "Header"
+
+msgctxt "Template part name"
+msgid "Rodapé"
+msgstr "Footer"
+
+msgid "Transfer.me Theme"
+msgstr "Transfer.me Theme"
+
+msgid "Block theme for Transfer.me, a private transfer service in Madeira and Porto Santo. It presents the booking form of the Transfer.me Booking plugin and has no booking or pricing logic of its own."
+msgstr "Block theme for Transfer.me, a private transfer service in Madeira and Porto Santo. It presents the booking form of the Transfer.me Booking plugin and has no booking or pricing logic of its own."

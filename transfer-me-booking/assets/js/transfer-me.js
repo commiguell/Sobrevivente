@@ -87,6 +87,58 @@
 
 		function el(id) { return document.getElementById(id); }
 
+		/*
+		 * Erros por campo: cada campo aponta para o seu <p class="tmb-error"> com aria-describedby,
+		 * e fica com aria-invalid="true" enquanto o erro estiver visível.
+		 */
+		const errorTargets = {
+			pickup: ['tmb-pickup-text'], dropoff: ['tmb-dropoff-text'], datetime: ['tmb-date', 'tmb-time'],
+			name: ['tmb-name'], phone: ['tmb-phone'], email: ['tmb-email'], notes: ['tmb-notes'], consent: ['tmb-consent'],
+			passengers: ['tmb-passengers'], bags: ['tmb-bags'], payment: [],
+		};
+		const errorBox = { passengers: 'datetime', bags: 'datetime', payment: 'consent' };
+
+		function showError(key) {
+			const msgs = t.errors || {};
+			const box = el('tmb-' + (errorBox[key] || key) + '-error');
+			if (box) {
+				box.textContent = msgs[key] || t.error;
+				box.hidden = false;
+			}
+			(errorTargets[key] || []).forEach(function (id) { if (el(id)) { el(id).setAttribute('aria-invalid', 'true'); } });
+		}
+
+		function clearError(key) {
+			const box = el('tmb-' + (errorBox[key] || key) + '-error');
+			if (box) { box.hidden = true; box.textContent = ''; }
+			(errorTargets[key] || []).forEach(function (id) { if (el(id)) { el(id).removeAttribute('aria-invalid'); } });
+		}
+
+		function clearErrors() {
+			Object.keys(errorTargets).forEach(clearError);
+		}
+
+		function focusFirstError(keys) {
+			for (let i = 0; i < keys.length; i++) {
+				const ids = errorTargets[keys[i]] || [];
+				if (ids.length && el(ids[0])) { el(ids[0]).focus(); return; }
+			}
+		}
+
+		/** Validação no browser, com as mesmas regras do servidor. */
+		function validate(data) {
+			const bad = [];
+			if (!pointPayload('pickup')) { bad.push('pickup'); }
+			if (!pointPayload('dropoff')) { bad.push('dropoff'); }
+			if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date) || !/^\d{2}:\d{2}$/.test(data.time)) { bad.push('datetime'); }
+			if (data.name.length < 2 || data.name.length > 100) { bad.push('name'); }
+			const digits = data.phone.replace(/\D+/g, '').length;
+			if (digits < 9 || digits > 15) { bad.push('phone'); }
+			if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { bad.push('email'); }
+			if (!data.consent) { bad.push('consent'); }
+			return bad;
+		}
+
 		function invalidate() {
 			state.canSubmit = false;
 			state.quoteId = '';
@@ -150,6 +202,7 @@
 				});
 			}, 300);
 			input.addEventListener('input', function () {
+				clearError(kind);
 				clearPoint(kind);
 				invalidate();
 				el('tmb-quote').textContent = '';
@@ -185,7 +238,7 @@
 		// Cotação: só quando há recolha, destino, data e hora.
 		const scheduleQuote = debounce(requestQuote, 400);
 		['tmb-date', 'tmb-time'].forEach(function (id) {
-			el(id).addEventListener('change', scheduleQuote);
+			el(id).addEventListener('change', function () { clearError('datetime'); scheduleQuote(); });
 		});
 
 		function pointPayload(kind) {
@@ -243,15 +296,24 @@
 			});
 		}
 
+		// O botão nunca fica desativado: ao submeter, a validação explica o que falta.
 		function updateSubmit() {
-			el('tmb-submit').disabled = !state.canSubmit;
+			el('tmb-submit').classList.toggle('tmb-button-waiting', !state.canSubmit);
 		}
+
+		// Os erros desaparecem quando o campo é corrigido.
+		// Limpa enquanto se escreve (evento input), e não ao sair do campo: assim o layout não salta
+		// no momento em que se clica no campo seguinte.
+		[['tmb-name', 'name'], ['tmb-phone', 'phone'], ['tmb-email', 'email'], ['tmb-notes', 'notes']].forEach(function (p) {
+			el(p[0]).addEventListener('input', function () { clearError(p[1]); });
+		});
+		el('tmb-consent').addEventListener('change', function () { clearError('consent'); });
 
 		// Envio da reserva.
 		form.addEventListener('submit', function (e) {
 			e.preventDefault();
 			const result = el('tmb-result');
-			if (!state.canSubmit) {
+			if (state.sending) {
 				return;
 			}
 			const data = {
@@ -267,10 +329,26 @@
 				notes: el('tmb-notes').value.trim(),
 				consent: el('tmb-consent').checked,
 			};
+			clearErrors();
+			const invalid = validate(data);
+			if (invalid.length) {
+				invalid.forEach(showError);
+				focusFirstError(invalid);
+				result.textContent = '';
+				return;
+			}
+			if (!state.canSubmit) {
+				// Campos válidos mas ainda sem cotação (a calcular ou falhou): pede de novo.
+				result.textContent = t.calculating;
+				requestQuote();
+				return;
+			}
 			result.textContent = t.sending;
-			el('tmb-submit').disabled = true;
-			form.querySelectorAll('[aria-invalid]').forEach(function (n) { n.removeAttribute('aria-invalid'); });
+			state.sending = true;
+			el('tmb-submit').setAttribute('aria-disabled', 'true');
 			api('booking', data).then(function (res) {
+				state.sending = false;
+				el('tmb-submit').removeAttribute('aria-disabled');
 				if (res.ok) {
 					result.innerHTML = '';
 					result.appendChild(text('p', '', (res.data.price_pending ? t.sentPending : t.sent) + ' ' + res.data.ref));
@@ -287,8 +365,8 @@
 				}
 				result.textContent = (res.data && res.data.message) || t.error;
 				const bad = (res.data && res.data.data && res.data.data.fields) || [];
-				const map = { name: 'tmb-name', phone: 'tmb-phone', email: 'tmb-email', datetime: 'tmb-date', passengers: 'tmb-passengers', bags: 'tmb-bags', notes: 'tmb-notes', consent: 'tmb-consent' };
-				bad.forEach(function (f) { if (map[f] && el(map[f])) { el(map[f]).setAttribute('aria-invalid', 'true'); } });
+				bad.forEach(showError);
+				focusFirstError(bad);
 				if (res.status === 409) {
 					requestQuote(); // Cotação expirada ou usada: calcula de novo.
 				} else {

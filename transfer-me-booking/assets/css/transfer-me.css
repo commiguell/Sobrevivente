@@ -37,3 +37,7 @@ a.tmb-link { display: inline-flex; align-items: center; margin-right: 1rem; }
 .tmb-card.tmb-status-pending { border-color: #b8860b; }
 .tmb-mine ul { padding-left: 1.25rem; }
 .tmb-result a, .tmb-mine a { overflow-wrap: anywhere; }
+.tmb-error { color: #b02a37; font-size: 0.875rem; margin: 0.25rem 0 0; }
+.tmb-error::before { content: "⚠ "; }
+.tmb-button-waiting, .tmb-button[aria-disabled="true"] { opacity: 0.75; }
+.tmb-editor-preview [inert] { pointer-events: none; }

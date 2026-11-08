@@ -49,6 +49,14 @@ Reservas de transfers privados com cotação por distância. Clientes reservam s
 - **Ferramentas > Exportar dados pessoais** e **Apagar dados pessoais** encontram as reservas pelo email do cliente.
 - A página da reserva e o painel do motorista enviam cabeçalhos sem cache, `DONOTCACHEPAGE` e `noindex`. A lista "As minhas reservas" é carregada por JavaScript a partir do cookie, para nunca ficar guardada numa cache de página.
 
+## Bloco e integração com temas (1.2)
+
+- Bloco **Formulário de reserva** (`transfer-me/booking-form`): o mesmo formulário do shortcode `[transfer_me_booking]`, mas pode ser colocado em templates e estilizado em `theme.json` (`styles.blocks["transfer-me/booking-form"]`) ou no Editor de estilos.
+- Cada campo tem uma mensagem de erro própria (`.tmb-error`), ligada com `aria-describedby`. O botão de envio nunca fica desativado: ao enviar, a validação mostra o que falta.
+- A caixa do preço tem a classe `.tmb-price`.
+- `transferme_booking_public_info()` devolve dados públicos para temas: número de licença, WhatsApp, nota de IVA e URL da página de reservas. Nunca inclui a chave Google nem emails.
+- Filtro `transferme_booking_show_footer_notes`: devolver `false` para não mostrar licença, IVA e WhatsApp por baixo do formulário (quando o tema já os mostra).
+
 ## Para programadores
 
 - Ganchos: `transferme_client_ip` (filtro do IP usado na limitação de pedidos, para sites atrás de um proxy de confiança) e `transferme_google_error` (ação disparada quando uma chamada ao Google falha).
